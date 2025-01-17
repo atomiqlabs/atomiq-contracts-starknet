@@ -1,19 +1,46 @@
+[workspace]
+members = [
+    "packages/common",
+    "packages/btc_relay",
+    "packages/escrow_manager",
+    "packages/timelock_refund_handler",
+    "packages/hashlock_claim_handler"
+]
+
 [package]
-name = "atomiq_escrow"
+name = "atomiq_contracts"
+version.workspace = true
+edition.workspace = true
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024_07"
+cairo-version = "2.9.2"
+scarb-version = "2.9.2"
+authors = ["Adam Borcany <adam@atomiqlabs.com>"]
+description = "atomiq labs contracts for Starknet"
+documentation = "https://github.com/atomiqlabs/atomiq-contracts-starknet"
+repository = "https://github.com/atomiqlabs/atomiq-contracts-starknet"
+license-file = "LICENSE"
 
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
 
 [dependencies]
-openzeppelin_account = "0.20.0"
-openzeppelin_token = "0.20.0"
-openzeppelin_utils = "0.20.0"
-starknet = "2.9.2"
+starknet.workspace = true
+btc_relay = { path = "packages/btc_relay" }
+escrow_manager = { path = "packages/escrow_manager" }
+hashlock_claim_handler = { path = "packages/hashlock_claim_handler" }
+timelock_refund_handler = { path = "packages/timelock_refund_handler" }
 
-[dev-dependencies]
+[workspace.dependencies]
+starknet = "2.9.2"
 snforge_std = "0.35.1"
 assert_macros = "2.9.2"
+
+[dev-dependencies]
+snforge_std.workspace = true
+
+[lib]
 
 [[target.starknet-contract]]
 sierra = true

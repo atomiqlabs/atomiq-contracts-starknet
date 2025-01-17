@@ -1,0 +1,27 @@
+[package]
+name = "hashlock_claim_handler"
+version.workspace = true
+edition.workspace = true
+cairo-version.workspace = true
+scarb-version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license-file.workspace = true
+
+[dependencies]
+starknet.workspace = true
+common = { path = "../common" }
+
+[dev-dependencies]
+assert_macros.workspace = true
+snforge_std.workspace = true
+
+[features]
+fuzzing = []
+
+[lib]
+
+[[target.starknet-contract]]
+sierra = true

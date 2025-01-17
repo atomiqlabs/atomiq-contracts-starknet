@@ -2,12 +2,46 @@
 version = 1
 
 [[package]]
-name = "atomiq_escrow"
+name = "atomiq_contracts"
 version = "0.1.0"
 dependencies = [
+ "btc_relay",
+ "escrow_manager",
+ "hashlock_claim_handler",
+ "snforge_std",
+ "timelock_refund_handler",
+]
+
+[[package]]
+name = "btc_relay"
+version = "0.1.0"
+dependencies = [
+ "snforge_std",
+]
+
+[[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "snforge_std",
+]
+
+[[package]]
+name = "escrow_manager"
+version = "0.1.0"
+dependencies = [
+ "common",
  "openzeppelin_account",
  "openzeppelin_token",
  "openzeppelin_utils",
+ "snforge_std",
+]
+
+[[package]]
+name = "hashlock_claim_handler"
+version = "0.1.0"
+dependencies = [
+ "common",
  "snforge_std",
 ]
 
@@ -67,4 +101,12 @@ source = "registry+https://scarbs.xyz/"
 checksum = "sha256:e25cbeb9cbed6da8e14ab19ad0e7c1d888055dfee62978a845ce669cfaba5d93"
 dependencies = [
  "snforge_scarb_plugin",
+]
+
+[[package]]
+name = "timelock_refund_handler"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "snforge_std",
 ]

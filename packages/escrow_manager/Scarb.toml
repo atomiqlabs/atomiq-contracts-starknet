@@ -1,0 +1,31 @@
+[package]
+name = "escrow_manager"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+cairo-version.workspace = true
+scarb-version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license-file.workspace = true
+
+[dependencies]
+starknet.workspace = true
+openzeppelin_account = "0.20.0"
+openzeppelin_token = "0.20.0"
+openzeppelin_utils = "0.20.0"
+common = { path = "../common" }
+
+[dev-dependencies]
+assert_macros.workspace = true
+snforge_std.workspace = true
+
+[features]
+fuzzing = []
+
+[lib]
+
+[[target.starknet-contract]]
+sierra = true

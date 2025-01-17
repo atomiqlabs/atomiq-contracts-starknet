@@ -1,0 +1,63 @@
+use crate::utils::contract::{
+    deploy_and_submit_main_headers_assert, 
+};
+
+#[test]
+#[should_panic(expected: 'update_chain: invalid PoW')]
+fn block_invalid_pow() {
+    deploy_and_submit_main_headers_assert(
+        crate::data::block_invalid_pow::STORED_BLOCKHEADERS.span(),
+        crate::data::block_invalid_pow::BLOCKHEADERS.span(),
+        crate::data::block_invalid_pow::TIMESTAMP
+    );
+}
+
+#[test]
+#[should_panic(expected: 'update_chain: nbits')]
+fn block_invalid_nbits() {
+    deploy_and_submit_main_headers_assert(
+        crate::data::block_invalid_nbits::STORED_BLOCKHEADERS.span(),
+        crate::data::block_invalid_nbits::BLOCKHEADERS.span(),
+        crate::data::block_invalid_nbits::TIMESTAMP
+    );
+}
+
+#[test]
+#[should_panic(expected: 'update_chain: new nbits')]
+fn block_invalid_nbits_diff_adjustment() {
+    deploy_and_submit_main_headers_assert(
+        crate::data::block_invalid_nbits_diff_adjustment::STORED_BLOCKHEADERS.span(),
+        crate::data::block_invalid_nbits_diff_adjustment::BLOCKHEADERS.span(),
+        crate::data::block_invalid_nbits_diff_adjustment::TIMESTAMP
+    );
+}
+
+#[test]
+#[should_panic(expected: 'update_chain: prev blockhash')]
+fn block_invalid_prev_block() {
+    deploy_and_submit_main_headers_assert(
+        crate::data::block_invalid_prev_block::STORED_BLOCKHEADERS.span(),
+        crate::data::block_invalid_prev_block::BLOCKHEADERS.span(),
+        crate::data::block_invalid_prev_block::TIMESTAMP
+    );
+}
+
+#[test]
+#[should_panic(expected: 'update_chain: timestamp median')]
+fn block_invalid_median_timestamp() {
+    deploy_and_submit_main_headers_assert(
+        crate::data::block_invalid_median_timestamp::STORED_BLOCKHEADERS.span(),
+        crate::data::block_invalid_median_timestamp::BLOCKHEADERS.span(),
+        crate::data::block_invalid_median_timestamp::TIMESTAMP
+    );
+}
+
+#[test]
+#[should_panic(expected: 'update_chain: timestamp future')]
+fn block_invalid_future_timestamp() {
+    deploy_and_submit_main_headers_assert(
+        crate::data::block_invalid_future_timestamp::STORED_BLOCKHEADERS.span(),
+        crate::data::block_invalid_future_timestamp::BLOCKHEADERS.span(),
+        crate::data::block_invalid_future_timestamp::TIMESTAMP
+    );
+}
