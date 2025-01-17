@@ -1,7 +1,8 @@
 use snforge_std::{
     declare, ContractClassTrait, DeclareResultTrait, spy_events,
     EventSpyAssertionsTrait, // Add for assertions on the EventSpy
-    cheat_block_timestamp, cheat_caller_address, CheatSpan
+    cheat_block_timestamp, cheat_caller_address, CheatSpan, load,
+    map_entry_address
 };
 use starknet::contract_address::{ContractAddress, contract_address_const};
 
@@ -96,6 +97,94 @@ pub fn submit_short_fork_and_assert(
     assert!(dispatcher.get_blockheight() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).block_height);
 }
 
+fn long_fork_assert_start_height(
+    contract_address: ContractAddress,
+    fork_submitter: ContractAddress,
+    fork_id: felt252,
+    fork_start_height: u32
+) {
+    let loaded_start_height = load(
+        contract_address,
+        map_entry_address(
+            selector!("forks_start_height"),
+            array![
+                fork_submitter.into(),
+                fork_id
+            ].span(),
+        ),
+        1
+    );
+    assert!(*loaded_start_height[0] == fork_start_height.into());
+}
+
+fn load_main_chain_commitment(
+    contract_address: ContractAddress,
+    block_height: u32
+) -> felt252 {
+    *load(
+        contract_address,
+        map_entry_address(
+            selector!("main_chain"),
+            array![
+                block_height.into()
+            ].span(),
+        ),
+        1
+    )[0]
+}
+
+fn load_fork_chain_commitment(
+    contract_address: ContractAddress,
+    fork_submitter: ContractAddress,
+    fork_id: felt252,
+    block_height: u32
+) -> felt252 {
+    *load(
+        contract_address,
+        map_entry_address(
+            selector!("forks"),
+            array![
+                fork_submitter.into(),
+                fork_id,
+                block_height.into()
+            ].span(),
+        ),
+        1
+    )[0]
+}
+
+fn assert_fork_blockheader_commitment(
+    contract_address: ContractAddress,
+    fork_submitter: ContractAddress,
+    fork_id: felt252,
+    stored_blockheader: StoredBlockHeader
+) {
+    let fork_header_commitment = load_fork_chain_commitment(
+        contract_address,
+        fork_submitter, 
+        fork_id, 
+        stored_blockheader.block_height
+    );
+    assert!(fork_header_commitment == stored_blockheader.get_hash());
+}
+
+fn assert_fork_copied_to_main_chain(
+    contract_address: ContractAddress,
+    fork_submitter: ContractAddress,
+    fork_id: felt252,
+    start_height: u32,
+    end_height: u32
+) {
+    let mut height = start_height;
+    while(height != end_height + 1) {
+        assert_eq!(
+            load_main_chain_commitment(contract_address, height),
+            load_fork_chain_commitment(contract_address, fork_submitter, fork_id, height)
+        );
+        height += 1;
+    }
+}
+
 pub fn submit_long_fork_and_assert(
     contract_address: ContractAddress, 
     dispatcher: IBtcRelayDispatcher,
@@ -115,6 +204,12 @@ pub fn submit_long_fork_and_assert(
     spy.assert_emitted(
         @fork_stored_blockheaders.to_fork_events(contract_address, fork_id, 1, fork_stored_blockheaders.len())
     );
+    long_fork_assert_start_height(contract_address, fork_submitter, fork_id, fork_start_height);
+
+    for stored_blockheader in fork_stored_blockheaders.slice(1, fork_stored_blockheaders.len() - 1) {
+        assert_fork_blockheader_commitment(contract_address, fork_submitter, fork_id, *stored_blockheader);
+    };
+
     if should_reorg {
         spy.assert_emitted(
             @array![(
@@ -131,10 +226,12 @@ pub fn submit_long_fork_and_assert(
             )]
         );
 
-        //TODO: Check fork header commitments copied to the main header commitments
+        let last_stored_blockheader = *fork_stored_blockheaders[fork_stored_blockheaders.len() - 1];
 
-        assert!(dispatcher.get_chainwork() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).chain_work);
-        assert!(dispatcher.get_blockheight() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).block_height);
+        assert_fork_copied_to_main_chain(contract_address, fork_submitter, fork_id, fork_start_height, last_stored_blockheader.block_height);
+
+        assert!(dispatcher.get_chainwork() == last_stored_blockheader.chain_work);
+        assert!(dispatcher.get_blockheight() == last_stored_blockheader.block_height);
     } else {
         spy.assert_not_emitted(
             @array![(
@@ -149,9 +246,7 @@ pub fn submit_long_fork_and_assert(
                     }
                 )
             )]
-        );
-
-        //TODO: Check fork headers committed
+        );        
     }
 }
 

@@ -1,5 +1,6 @@
 const {createChain, mine} = require("../utils/blockchain_utils");
 const { exportToCairoFile } = require('../utils/cairo_structs');
+const fs = require("fs");
 
 const genesis = mine(Buffer.alloc(32).toString("hex"), 1500000000, "1f7fffff");
 
@@ -21,5 +22,8 @@ const successfulForkChain = createChain(
     116+19
 );
 
+if(!fs.existsSync("./tests/data/fork_chain_chainwork")) fs.mkdirSync("./tests/data/fork_chain_chainwork");
 exportToCairoFile(cannonicalChain, 1900, 2015 + 20, 1700000000, "./tests/data/fork_chain_chainwork/main_chain.cairo");
 exportToCairoFile(successfulForkChain, 1900, 2015 + 19, 1700000000, "./tests/data/fork_chain_chainwork/fork_chain.cairo");
+
+fs.writeFileSync("./tests/data/fork_chain_chainwork.cairo", "pub mod fork_chain;\npub mod main_chain;\n");

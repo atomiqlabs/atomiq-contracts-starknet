@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 const tests = [
 	"main_chain",
 	"main_chain_diff_adjustment",
@@ -12,6 +14,8 @@ const tests = [
 	"block_invalid_median_timestamp",
 	"block_invalid_future_timestamp"
 ];
+
+if(!fs.existsSync("./tests/data")) fs.mkdirSync("./tests/data");
 
 for(let test of tests) {
     require("./tests/"+test);
