@@ -16,11 +16,29 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_reverse_endianness_u32() {
-        let val: u32 = 0x10323201;
-        assert!(val.rev_endianness() == 0x01323210);
-        let val: u32 = 0xc8b367ca;
-        assert!(val.rev_endianness() == 0xca67b3c8);
+    fn manual() {
+        assert_eq!(0x03020100_u32.rev_endianness(), 0x00010203);
+        assert_eq!(0x01000000_u32.rev_endianness(), 0x00000001);
+        assert_eq!(0x0000ffff_u32.rev_endianness(), 0xffff0000);
+        assert_eq!(0xffff0000_u32.rev_endianness(), 0x0000ffff);
+        assert_eq!(0xff0000ff_u32.rev_endianness(), 0xff0000ff);
+        assert_eq!(0x00000001_u32.rev_endianness(), 0x01000000);
+        assert_eq!(0xffffffff_u32.rev_endianness(), 0xffffffff);
+        assert_eq!(0x00000000_u32.rev_endianness(), 0x00000000);
+    }
+
+    #[test]
+    fn random() {
+        assert_eq!(0x35d88cbb_u32.rev_endianness(), 0xbb8cd835);
+        assert_eq!(0x6e67d8a7_u32.rev_endianness(), 0xa7d8676e);
+        assert_eq!(0x35b158f5_u32.rev_endianness(), 0xf558b135);
+        assert_eq!(0x29826eea_u32.rev_endianness(), 0xea6e8229);
+        assert_eq!(0x86812292_u32.rev_endianness(), 0x92228186);
+        assert_eq!(0x7411bb34_u32.rev_endianness(), 0x34bb1174);
+        assert_eq!(0xb1e08f65_u32.rev_endianness(), 0x658fe0b1);
+        assert_eq!(0x51b7fd3e_u32.rev_endianness(), 0x3efdb751);
+        assert_eq!(0x8ae0181c_u32.rev_endianness(), 0x1c18e08a);
+        assert_eq!(0x9dec5ed5_u32.rev_endianness(), 0xd55eec9d);
     }
 
 }

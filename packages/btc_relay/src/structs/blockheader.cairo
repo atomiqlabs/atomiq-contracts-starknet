@@ -34,19 +34,230 @@ pub impl BlockHeaderSha256Hash of BlockHeaderSha256HashTrait {
 mod tests {
     use super::*;
 
-    const blockheader: BlockHeader = BlockHeader {
-        reversed_version: 0x00a09d30,
-        previous_blockhash: [0xd9b4483b, 0xfeea114d, 0x28cac19f, 0xff38342c, 0x46f806c2, 0xe56c0200, 0x00000000, 0x00000000],
-        merkle_root: [0x96358d74, 0x49b41091, 0x5558c859, 0x135e1b1b, 0xcce967c1, 0x40eb5f07, 0x922a6c74, 0x3fe80855],
-        reversed_timestamp: 0xefcf8367,
-        nbits: 0x5c900217,
-        nonce: 0xb6b877b1
-    };
-    const block_hash: [u32; 8] = [0xad0d7f7c, 0x596123cd, 0xda3901a7, 0xad2a234b, 0xb6d49674, 0xdff30100, 0x00000000, 0x00000000];
+    #[test]
+    fn hash_real_blockheaders() {
+        //Blockheight: 787007
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x00604b20,
+            previous_blockhash: [0x14ea81dc, 0x0bbd31cb, 0x1e75ab18, 0xef4ab5df, 0x74e2e778, 0xe1110300, 0x00000000, 0x00000000],
+            merkle_root: [0x474aee58, 0x0cba4c83, 0x4768a2be, 0x2b7daf7b, 0x461ae36b, 0x841eb141, 0x675b5080, 0xfa633cde],
+            reversed_timestamp: 0xe75a4864,
+            nbits: 0x39c70517,
+            nonce: 0xcaae710f
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x0c3361c7, 0xd25e400a, 0x068e1956, 0x1acb7f9e, 0x83166207, 0xd0660200, 0x00000000, 0x00000000]);
+
+        //Blockheight: 634201
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x00008020,
+            previous_blockhash: [0x33a11830, 0x34611370, 0x75d5757e, 0x5ea08469, 0x825eec2a, 0x2c3f0100, 0x00000000, 0x00000000],
+            merkle_root: [0x84a66473, 0x53ed0b76, 0xce56693f, 0xddbce80c, 0x1ffba4d0, 0x845dc6e4, 0x7633cfc4, 0x9b63b543],
+            reversed_timestamp: 0x592de25e,
+            nbits: 0x357f1417,
+            nonce: 0x311f891a
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x63d45c95, 0x768c6f69, 0x5196e539, 0xace86dd0, 0xc317319c, 0x2c0f0d00, 0x00000000, 0x00000000]);
+
+        //Blockheight: 684497
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x04e0ff2f,
+            previous_blockhash: [0x380e6adb, 0x72dff766, 0x37ba8e17, 0x3c882977, 0x93c1649b, 0x022d0300, 0x00000000, 0x00000000],
+            merkle_root: [0xea16feea, 0x42ab21d1, 0x69e64d1e, 0xbb13e5f9, 0x0af84bd5, 0x6709201a, 0x40ed1120, 0x8e7c5d4e],
+            reversed_timestamp: 0xc29ba860,
+            nbits: 0xe93c0b17,
+            nonce: 0xc6168307
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x998e1e77, 0x7d0b4fd2, 0xa4a86d2b, 0x6b181bfb, 0x06784b0a, 0xdf2a0300, 0x00000000, 0x00000000]);
+
+        //Blockheight: 593479
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x0000ff3f,
+            previous_blockhash: [0x068e0573, 0x899f9d80, 0xb695d310, 0xecd103ff, 0x63052d5f, 0x725c0900, 0x00000000, 0x00000000],
+            merkle_root: [0x03b734f3, 0x2fbf92b2, 0x7f495894, 0x76504caf, 0xe0564797, 0xac205da7, 0x025dadb2, 0xb15a09eb],
+            reversed_timestamp: 0xeaea715d,
+            nbits: 0x3e211a17,
+            nonce: 0x6938966e
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x8148b20a, 0xc7fad599, 0x0816d52f, 0x85c56899, 0x1ae8cf17, 0xe97b1000, 0x00000000, 0x00000000]);
+
+        //Blockheight: 871539
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x00807b25,
+            previous_blockhash: [0xc16d4d5d, 0x2b14876f, 0x44e5baf8, 0xe62df463, 0xd21385bc, 0xfe570100, 0x00000000, 0x00000000],
+            merkle_root: [0x259beb33, 0xc0f6a68e, 0x33b56e46, 0xe6448aaf, 0x95bc0de7, 0x1d91525a, 0x51c741ca, 0x271a163f],
+            reversed_timestamp: 0xb7f84067,
+            nbits: 0x70c00217,
+            nonce: 0x97db4bcd
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x6709a313, 0x15d196f0, 0xb9a64d2e, 0x6594764c, 0xdc84d4f7, 0xb7930100, 0x00000000, 0x00000000]);
+
+        //Blockheight: 837627
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x00e0d227,
+            previous_blockhash: [0x900f86fa, 0xe431c70f, 0x98afd21a, 0x3e1d477a, 0x11ed4081, 0x45260300, 0x00000000, 0x00000000],
+            merkle_root: [0x7e98e899, 0x72f92cae, 0xe6091e48, 0xa53ff165, 0x5dccd3fc, 0x3c2af9ed, 0x41df5285, 0xb1d36e41],
+            reversed_timestamp: 0xca240e66,
+            nbits: 0xd3620317,
+            nonce: 0xb8c1567f
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x99d36e4b, 0x925cf037, 0x1bf12f17, 0x5bf4b97e, 0x2d88cbe0, 0xfe630000, 0x00000000, 0x00000000]);
+
+        //Blockheight: 670878
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x00e00020,
+            previous_blockhash: [0x55669091, 0x4e779ce4, 0xb351cbbf, 0x4814fcfd, 0x864b9189, 0xc7370500, 0x00000000, 0x00000000],
+            merkle_root: [0xd063fe61, 0xd85bdc76, 0x51465578, 0x753b4d8d, 0xd9f86aa0, 0xf1523f7f, 0x773630f2, 0xcd176da0],
+            reversed_timestamp: 0xb4142c60,
+            nbits: 0xb9210d17,
+            nonce: 0x016af830
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0xef5e4e72, 0x2da1ee71, 0x71e6272e, 0x062fa25d, 0x5e695e67, 0x83be0a00, 0x00000000, 0x00000000]);
+
+        //Blockheight: 225913
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x02000000,
+            previous_blockhash: [0x902077f9, 0x3ac16364, 0xb310a3ce, 0xf46699d7, 0x560bf9b4, 0x9d0d9e86, 0x93020000, 0x00000000],
+            merkle_root: [0x7e44e268, 0x9c08fc3f, 0xca011dbd, 0x783356e3, 0x050a4411, 0x43be6b3c, 0x565e981d, 0x77dc81d9],
+            reversed_timestamp: 0xe9724251,
+            nbits: 0xfa75031a,
+            nonce: 0x9608c17a
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x3b08982f, 0x6a22925e, 0x02f7bdaf, 0x8125c28c, 0x09bd4fa6, 0xdee3379b, 0x6d000000, 0x00000000]);
+
+        //Blockheight: 360090
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x03000000,
+            previous_blockhash: [0x959c9053, 0x1736cd1e, 0x9a3a8379, 0x4173ad53, 0x191bec72, 0x0dcd1014, 0x00000000, 0x00000000],
+            merkle_root: [0xb36bc3a4, 0xcfc79464, 0xf3d083d1, 0x9d3bd435, 0x7cf68bd3, 0xfdbe35b5, 0xa85102ea, 0xd615857e],
+            reversed_timestamp: 0xb56d7655,
+            nbits: 0x8b1a1718,
+            nonce: 0xd2da0381
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0xb6e280f3, 0x4600ca2e, 0x34f11ee0, 0x253f8667, 0xfbb6da4f, 0x795caf0a, 0x00000000, 0x00000000]);
+
+        //Blockheight: 606688
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x00004020,
+            previous_blockhash: [0x052759dd, 0x286aa6db, 0x1cb031c1, 0xff339066, 0xe96bd8a3, 0x2f980600, 0x00000000, 0x00000000],
+            merkle_root: [0xcb30dcf9, 0x5112df4d, 0xc91d541c, 0x93e2381e, 0xb44eec43, 0xf496296b, 0xcdbb52d6, 0xd51ade07],
+            reversed_timestamp: 0xf23de85d,
+            nbits: 0x3eb21517,
+            nonce: 0x04799952
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0xb27a7cca, 0x07c84eae, 0xb3ee71b5, 0x573ec7fb, 0x5620f903, 0x79451400, 0x00000000, 0x00000000]);
+    }
 
     #[test]
-    fn hash_blockheader() {
-        let hash = blockheader.dbl_sha256_hash();
-        assert!(hash == block_hash);
+    fn hash_random_blockheaders() {
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x8f9fa625,
+            previous_blockhash: [0x16311d38, 0xe7cc0951, 0x07a43483, 0x06f977b4, 0x8114d60a, 0x999d1b3b, 0x41109e19, 0x0304da87],
+            merkle_root: [0x69383a7c, 0xbd6384fd, 0x1b0e1de9, 0xf5786aff, 0x7fb3f24c, 0xd867492b, 0xf00295a9, 0x0912fb31],
+            reversed_timestamp: 0x7eabc813,
+            nbits: 0xb7e0b790,
+            nonce: 0x623959ee
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x88fcf7d0, 0xa85c9d69, 0xf795e4b5, 0xca9292f9, 0x7ea04535, 0x31971611, 0xe9a9656a, 0x77fb9b4c]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x324c3f19,
+            previous_blockhash: [0xc6374469, 0x871c7fa3, 0x7572c033, 0x6f9a14ca, 0x45b11c06, 0x1ca64579, 0xe6ae4d28, 0xd1cfecb4],
+            merkle_root: [0x3ef8b159, 0x439c9b49, 0xfb0be964, 0x9fed14db, 0x84194d7d, 0xe1049e07, 0xfc113eec, 0x9eeabbdc],
+            reversed_timestamp: 0x0cfa21eb,
+            nbits: 0xdb36cfa2,
+            nonce: 0x5c631b8d
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x0aef2563, 0x378ba70d, 0x0e367eb4, 0x9468ff24, 0xf9b71814, 0x1308ef31, 0x680fd21b, 0x5cd50e2d]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x420bf099,
+            previous_blockhash: [0x9cf239b6, 0x67279ac3, 0x76eca231, 0x13db78cc, 0x1bed7b0e, 0xca3ea8bb, 0x60e6dfaa, 0x24ce9c88],
+            merkle_root: [0x6ecec06d, 0x270340e7, 0x49f970de, 0x08bd7589, 0xb68be9c5, 0x8f2af53e, 0x824c6278, 0x27d6fcb5],
+            reversed_timestamp: 0x06df5056,
+            nbits: 0xa8ac79f6,
+            nonce: 0x46a646b9
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x1d17efad, 0xb4f8a3cc, 0x0e5bcc7a, 0x54ef5658, 0x9166b1f6, 0x0fbf1a82, 0x498d6b85, 0xe08c9884]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x4427b512,
+            previous_blockhash: [0x8abfda16, 0x64ff4bc8, 0x48691448, 0x290dfdb6, 0xacc2c8b2, 0xc904b605, 0x97c2768d, 0xa7e22786],
+            merkle_root: [0x3c82aecc, 0xf58d6b42, 0x2201d21f, 0xbe0d4783, 0x5c7fbddb, 0x33bc0e83, 0x9c9ae4a4, 0x092be55c],
+            reversed_timestamp: 0x97de72b1,
+            nbits: 0x1703d270,
+            nonce: 0xfe86e9e7
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x7853d104, 0x771e356c, 0xa8c681ac, 0xfd54b522, 0x58477eb2, 0xe33def7e, 0x0b0323ea, 0xcff4e66d]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0xdd45f271,
+            previous_blockhash: [0x3639a18e, 0x71385c79, 0xc814645d, 0xe392fa7b, 0x5830a2ca, 0x51c423e4, 0x7c809fca, 0x92fed4da],
+            merkle_root: [0xb55159d7, 0xd3999eb8, 0x39cedfec, 0x53ced504, 0xd190a44a, 0x4ed5dd88, 0x9a001ae3, 0x25408aa1],
+            reversed_timestamp: 0x64ee3ea2,
+            nbits: 0xa37ececc,
+            nonce: 0xdb29606b
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0xb9ff03a6, 0x965e186d, 0xbff8a8fe, 0x194e2cb5, 0x528c5736, 0xd0f2cdbc, 0x9dfd1c88, 0x3dc2081e]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0xd793dd1c,
+            previous_blockhash: [0xc3c51659, 0x70598e1b, 0xe7e15e3f, 0xcdf38194, 0x2f781672, 0xca62eb21, 0xbb97c1c5, 0xfb167e3e],
+            merkle_root: [0x71d405af, 0x6649d388, 0x648dbb43, 0x09ccf419, 0x5e1d8bcf, 0x46f1307a, 0x09c36d56, 0x9882cfb6],
+            reversed_timestamp: 0x9d125daa,
+            nbits: 0x9cb84786,
+            nonce: 0x4bf6b5ea
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0xf32ddafe, 0x6077f4df, 0xf38b266b, 0x2163ec7e, 0x0ef74bbf, 0x6708d800, 0xe507d6d6, 0x5208e07a]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0xfb195525,
+            previous_blockhash: [0xc89df3a7, 0xa611f190, 0xed3c59e2, 0x7c75b760, 0x22e3f0ba, 0xe1635151, 0xc15af962, 0xa820de62],
+            merkle_root: [0x8b0c0d8f, 0x79d9ddcd, 0xe9dd2730, 0xc216a2f4, 0xd7c3af4b, 0xf6ac0f47, 0x95a3f3f9, 0x9b9ca149],
+            reversed_timestamp: 0xd3ecf1c7,
+            nbits: 0xfcc580ab,
+            nonce: 0xe6d6cc40
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x84b15473, 0x61d8f0a5, 0x4b84124b, 0x8162b138, 0x1c2981ec, 0xa93a61a2, 0x0c26e063, 0x7a503000]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x19c3cd39,
+            previous_blockhash: [0xed2228cf, 0x3559f222, 0x361a23be, 0x676ea1aa, 0x25a0ae12, 0x44542437, 0xf255ab9b, 0x00665b87],
+            merkle_root: [0xc3f665ac, 0x29ffde6b, 0xca084b27, 0x6006b350, 0xf17fdb67, 0xbc496e11, 0x26f05e3d, 0x4d9c3274],
+            reversed_timestamp: 0x0f5949c2,
+            nbits: 0x52b35fa8,
+            nonce: 0xc89c8b38
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x1141aaa6, 0x127be1ca, 0xd1db4a8b, 0xcb10e1dd, 0xc9bd766b, 0x78111466, 0x5d92d44d, 0x46555411]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0x2e890839,
+            previous_blockhash: [0x4be9634a, 0x2ef3ecbb, 0x6bcacc15, 0xdbe5e66b, 0xf9ab63d3, 0x3210ba2e, 0x55989263, 0x10b41b5c],
+            merkle_root: [0x5c7b0b46, 0x23ba0d87, 0xbed8eb03, 0x42e20448, 0xcd4d618e, 0x06ab1575, 0x1f6b4d60, 0xb9ace8d6],
+            reversed_timestamp: 0xe788d59e,
+            nbits: 0x1a496a20,
+            nonce: 0x4f72e3c6
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x73feb6c8, 0x496bd655, 0xe01b145d, 0xcb19a7e6, 0x342cc58a, 0x43f7475e, 0x02ccf77d, 0xe514317f]);
+
+        //Blockheight: 0
+        let blockheader: BlockHeader = BlockHeader {
+            reversed_version: 0xf10f8864,
+            previous_blockhash: [0x898ef9fc, 0x477328bb, 0x978f717d, 0x90e41b79, 0x7266be54, 0x9f3d4886, 0x0113c3b8, 0x8e7d591d],
+            merkle_root: [0xbac82459, 0x7e35235c, 0x21044a91, 0xecf1bc70, 0xb49aba2f, 0xa48357e7, 0x990c0f16, 0x1f0b6d79],
+            reversed_timestamp: 0xef284f31,
+            nbits: 0x3cc950b3,
+            nonce: 0xc022d9fe
+        };
+        assert_eq!(blockheader.dbl_sha256_hash(), [0x1ba65970, 0x4da5451e, 0xdb1b0397, 0x27baaa13, 0x234f97d3, 0x64cfafc7, 0x836c820f, 0x3d0b80e9]);
     }
+
 }

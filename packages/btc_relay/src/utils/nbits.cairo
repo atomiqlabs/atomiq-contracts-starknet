@@ -80,17 +80,29 @@ pub type nbits = u32;
 pub impl nBitsConvertor of nBitsConvertorTrait {
     //Calculates difficulty target from nBits
     //Description: https://btcinformation.org/en/developer-reference#target-nbits
+    //This implementation panics on negative and overflown targets
     fn to_target(self: nbits) -> u256 {
         let n_size = self & 0xFF;
-    
+
         // let n_word: u32 = ((nbits / 0x100) & 0xFF) * 0x10000 +
         //     ((nbits / 0x10000) & 0xFF) * 0x100 +
         //     ((nbits / 0x1000000) & 0x7F);
+        // Simplifies to:
         let n_word: u32 = (self & 0x7F00) * 0x100 +
             ((self / 0x100) & 0xFF00) +
             ((self / 0x1000000) & 0xFF);
     
-        n_word.into() * one_shift_left_bytes_u256(n_size - 3)
+        let result = if n_size < 3 {
+            n_word.into() / one_shift_left_bytes_u256(3 - n_size)
+        } else {
+            n_word.into() * one_shift_left_bytes_u256(n_size - 3)
+        };
+
+        if result!=0 {
+            assert(self & 0x8000 == 0, 'nbits: negative');
+        }
+
+        result
     }
 
     //Compresses difficulty target to nBits
@@ -104,7 +116,11 @@ pub impl nBitsConvertor of nBitsConvertorTrait {
             32 - get_leading_zeroes_u128(self.high)
         };
     
-        let mut result: u32 = (self / one_shift_left_bytes_u256(n_size - 3)).low.try_into().unwrap();
+        let mut result: u32 = if n_size < 3 {
+            (self * one_shift_left_bytes_u256(3 - n_size)).low.try_into().unwrap()
+        } else {
+            (self / one_shift_left_bytes_u256(n_size - 3)).low.try_into().unwrap()
+        };
     
         if (result & 0x00800000) == 0x00800000 {
             result /= 0x100;
@@ -112,6 +128,7 @@ pub impl nBitsConvertor of nBitsConvertorTrait {
         }
         
         // (result & 0xFF) * 0x1000000 + ((result / 0x100) & 0xFF) * 0x10000 + ((result / 0x10000) & 0xFF) * 0x100 + n_size
+        // Simplifies to:
         (result & 0xFF) * 0x1000000 + (result & 0xFF00) * 0x100 + ((result / 0x100) & 0xFF00) + n_size
     }
 }
@@ -119,6 +136,7 @@ pub impl nBitsConvertor of nBitsConvertorTrait {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::endianness::ReverseEndiannessTrait;
 
     #[test]
     fn test_nbits_to_target() {
@@ -128,6 +146,99 @@ mod tests {
     #[test]
     fn test_target_to_nbits() {
         assert!(0x028c610000000000000000000000000000000000000000.to_nbits() == 0x618c0217);
+    }
+
+    //Test vectors from https://github.com/bitcoin/bitcoin/blob/master/src/test/arith_uint256_tests.cpp#L409
+    #[test]
+    fn bitcoin_core_test_vectors() {
+        let target = 0_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x00123456_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x01003456_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x02000056_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x03000000_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x04000000_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x00923456_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x01803456_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x02800056_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x03800000_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+        
+        let target = 0x04800000_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0);
+    
+        let target = 0x01123456_u32.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000000012);
+        assert!(target.to_nbits().rev_endianness() == 0x01120000);
+
+        // Make sure that we don't generate compacts with the 0x00800000 bit set
+        assert!(0x80_u256.to_nbits().rev_endianness() == 0x02008000);
+
+        let target = 0x02123456.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000001234);
+        assert!(target.to_nbits().rev_endianness() == 0x02123400);
+
+        let target = 0x03123456.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000000123456);
+        assert!(target.to_nbits().rev_endianness() == 0x03123456);
+
+        let target = 0x04123456.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000012345600);
+        assert!(target.to_nbits().rev_endianness() == 0x04123456);
+
+        let target = 0x05009234.rev_endianness().to_target();
+        assert!(target == 0x0000000000000000000000000000000000000000000000000000000092340000);
+        assert!(target.to_nbits().rev_endianness() == 0x05009234);
+
+        let target = 0x20123456.rev_endianness().to_target();
+        assert!(target == 0x1234560000000000000000000000000000000000000000000000000000000000);
+        assert!(target.to_nbits().rev_endianness() == 0x20123456);
+    }
+
+    #[test]
+    #[should_panic(expected: 'nbits: negative')]
+    fn bitcoin_core_negative_nbits_test_vector_1() {
+        0x01fedcba.rev_endianness().to_target();
+    }
+
+    #[test]
+    #[should_panic(expected: 'nbits: negative')]
+    fn bitcoin_core_negative_nbits_test_vector_2() {
+        0x04923456.rev_endianness().to_target();
+    }
+
+    #[test]
+    #[should_panic(expected: 'n_bytes too large')]
+    fn bitcoin_core_overflow_nbits_test_vector() {
+        0xff123456.rev_endianness().to_target();
     }
 
 }

@@ -64,11 +64,93 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_u32_arr_to_u256() {
-        let arr: [u32; 8] = [0xad0d7f7c, 0x596123cd, 0xda3901a7, 0xad2a234b, 0xb6d49674, 0xdff30100, 0x00000000, 0x00000000];
-        let expected: u256 = 0x00000000000000000001f3df7496d4b64b232aada70139dacd2361597c7f0dad;
-        let got: u256 = arr.from_le_to_u256();
-        assert!(got == expected);
+    fn block_hashes() {
+        let input: [u32; 8] = [0xb1616584, 0x5ecff429, 0xbef33f79, 0x50c76e53, 0x84dcc079, 0xe8dbe3bd, 0xd5fe780a, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x000000000a78fed5bde3dbe879c0dc84536ec750793ff3be29f4cf5e846561b1);
+
+        let input: [u32; 8] = [0x4124f818, 0x9bd3788d, 0x14a0b86c, 0x6186a256, 0x139671d6, 0xaec17ec6, 0x2c830000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x000000000000832cc67ec1aed671961356a286616cb8a0148d78d39b18f82441);
+
+        let input: [u32; 8] = [0x58beddbc, 0x61e1bfe7, 0x8bf0551e, 0xda960ca8, 0xd918db36, 0x466a7100, 0x11040000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x000000000000041100716a4636db18d9a80c96da1e55f08be7bfe161bcddbe58);
+
+        let input: [u32; 8] = [0x0869fe4b, 0x8306c515, 0xa0a796ee, 0xa612ae18, 0xa22aa21e, 0xcc5f0619, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x000000000000000019065fcc1ea22aa218ae12a6ee96a7a015c506834bfe6908);
+
+        let input: [u32; 8] = [0x0d8d9eba, 0xbc63e746, 0x08a8d17c, 0x354831e1, 0x62684c5d, 0x95cb3601, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x00000000000000000136cb955d4c6862e13148357cd1a80846e763bcba9e8d0d);
+
+        let input: [u32; 8] = [0x826f6ab2, 0xc77fdc7e, 0x76422152, 0x306b7578, 0x288ea3fe, 0xbbbb0900, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x00000000000000000009bbbbfea38e2878756b30522142767edc7fc7b26a6f82);
+
+        let input: [u32; 8] = [0xb34240ff, 0xfe544328, 0x8d3be696, 0xc77a3791, 0x0af52a44, 0xea7b0600, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x000000000000000000067bea442af50a91377ac796e63b8d284354feff4042b3);
+
+        let input: [u32; 8] = [0x273fb0be, 0x3d25e570, 0x2a53c642, 0x7f3856fc, 0xe99dd140, 0xc55a0800, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x000000000000000000085ac540d19de9fc56387f42c6532a70e5253dbeb03f27);
+
+        let input: [u32; 8] = [0xdfbf94b1, 0x10f7de09, 0x4297ddb0, 0x2117c8b4, 0x3047ab23, 0x29f30100, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x00000000000000000001f32923ab4730b4c81721b0dd974209def710b194bfdf);
+    }
+
+    #[test]
+    fn random() {
+        let input: [u32; 8] = [0xb859049b, 0xc0e28d08, 0xaf990e7e, 0xb782bec5, 0x8b77eae9, 0x25857872, 0x4292e359, 0x1e062c2c];
+        assert_eq!(input.from_le_to_u256(), 0x2c2c061e59e3924272788525e9ea778bc5be82b77e0e99af088de2c09b0459b8);
+
+        let input: [u32; 8] = [0xd1519fd5, 0x1b0ee597, 0x273c12c4, 0xca3c432f, 0x12723e07, 0x2ddbd129, 0x164ba9b3, 0x974922e4];
+        assert_eq!(input.from_le_to_u256(), 0xe4224997b3a94b1629d1db2d073e72122f433ccac4123c2797e50e1bd59f51d1);
+
+        let input: [u32; 8] = [0x50c45f68, 0x24a706f9, 0x5d16830e, 0x9d1c6fa2, 0xc0e39725, 0x14d9eda9, 0x544376eb, 0xaa50a139];
+        assert_eq!(input.from_le_to_u256(), 0x39a150aaeb764354a9edd9142597e3c0a26f1c9d0e83165df906a724685fc450);
+
+        let input: [u32; 8] = [0x1586f1b0, 0xb1169004, 0x1f9da24d, 0xee8390ad, 0x1e0af09b, 0x25d5356e, 0x87b32d3f, 0x52201d92];
+        assert_eq!(input.from_le_to_u256(), 0x921d20523f2db3876e35d5259bf00a1ead9083ee4da29d1f049016b1b0f18615);
+
+        let input: [u32; 8] = [0xaf638399, 0xb81c7de9, 0x0a290951, 0x847ac4ab, 0x85485f3d, 0xc3dcf407, 0x2e0d0bc6, 0x16974267];
+        assert_eq!(input.from_le_to_u256(), 0x67429716c60b0d2e07f4dcc33d5f4885abc47a845109290ae97d1cb8998363af);
+
+        let input: [u32; 8] = [0x6399d03a, 0x65ca523f, 0x343820d6, 0x4b000141, 0x819035ba, 0x710b4bcd, 0x0cf4004c, 0xdd13d634];
+        assert_eq!(input.from_le_to_u256(), 0x34d613dd4c00f40ccd4b0b71ba3590814101004bd62038343f52ca653ad09963);
+
+        let input: [u32; 8] = [0x333772fc, 0x6ed1e20b, 0xb7e39418, 0xd80acae4, 0x245f5d93, 0x3219e694, 0xf7717a25, 0x7879fcec];
+        assert_eq!(input.from_le_to_u256(), 0xecfc7978257a71f794e61932935d5f24e4ca0ad81894e3b70be2d16efc723733);
+
+        let input: [u32; 8] = [0x04c20496, 0xc921ec57, 0x862fe566, 0xca9b2078, 0xd8f46c79, 0xb890dc9e, 0xed6ae3fc, 0x44eb9e03];
+        assert_eq!(input.from_le_to_u256(), 0x039eeb44fce36aed9edc90b8796cf4d878209bca66e52f8657ec21c99604c204);
+
+        let input: [u32; 8] = [0xdc50ea23, 0x6b43d99d, 0x39b357f8, 0x8b4dcbd4, 0x608d8bc4, 0x07af74b8, 0x8c4faf3e, 0x7908f578];
+        assert_eq!(input.from_le_to_u256(), 0x78f508793eaf4f8cb874af07c48b8d60d4cb4d8bf857b3399dd9436b23ea50dc);
+
+        let input: [u32; 8] = [0xc682755f, 0x1211ffba, 0xf28c7b41, 0xec066f76, 0x97c984ca, 0x5980756a, 0x40f31e78, 0x598e3fca];
+        assert_eq!(input.from_le_to_u256(), 0xca3f8e59781ef3406a758059ca84c997766f06ec417b8cf2baff11125f7582c6);
+    }
+
+    #[test]
+    fn manual() {
+        let input: [u32; 8] = [0x201f1d1c, 0x1b1a1918, 0x17161514, 0x13121110, 0x0f0e0d0c, 0x0b0a0908, 0x07060504, 0x03020100];
+        assert_eq!(input.from_le_to_u256(), 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1f20);
+        
+        let input: [u32; 8] = [0x01000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x0000000000000000000000000000000000000000000000000000000000000001);
+        
+        let input: [u32; 8] = [0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff];
+        assert_eq!(input.from_le_to_u256(), 0xffffffffffffffffffffffffffffffff00000000000000000000000000000000);
+        
+        let input: [u32; 8] = [0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x00000000000000000000000000000000ffffffffffffffffffffffffffffffff);
+        
+        let input: [u32; 8] = [0xff00ff00, 0xff00ff00, 0xff00ff00, 0xff00ff00, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff];
+        assert_eq!(input.from_le_to_u256(), 0xff00ff00ff00ff00ff00ff00ff00ff0000ff00ff00ff00ff00ff00ff00ff00ff);
+        
+        let input: [u32; 8] = [0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000001];
+        assert_eq!(input.from_le_to_u256(), 0x0100000000000000000000000000000000000000000000000000000000000000);
+        
+        let input: [u32; 8] = [0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff];
+        assert_eq!(input.from_le_to_u256(), 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        
+        let input: [u32; 8] = [0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000];
+        assert_eq!(input.from_le_to_u256(), 0x0000000000000000000000000000000000000000000000000000000000000000);
     }
 
 }

@@ -1,21 +1,25 @@
 use crate::constants;
+
 #[cfg(feature: 'test')]
-use core::integer::{u256_wide_mul, u512_safe_div_rem_by_u256};
+use core::integer::{u512_safe_div_rem_by_u256};
+#[cfg(feature: 'test')]
+use core::num::traits::WideMul;
 
 //Pre-calculated multiples for target timespan
 pub const TARGET_TIMESPAN_DIV_4: u32 = constants::TARGET_TIMESPAN_u32 / 4;
 pub const TARGET_TIMESPAN_MUL_4: u32 = constants::TARGET_TIMESPAN_u32 * 4;
 
-//////////////////////////
-// ENABLED TESTING ONLY //
-//////////////////////////
+//////////////////////////////
+// ENABLED FOR TESTING ONLY //
+//////////////////////////////
 //Difficulty retargetting algorithm
 //https://minerdaily.com/2021/how-are-bitcoins-difficulty-and-hash-rate-calculated/#Difficulty_Adjustments
 // new_difficulty_target = prev_difficulty_target * (timespan / target_timespan)
 //This is adjusted to skip verification of the MAX_TARGET, to allow for testing with higher target (lower difficulties)
 //Also u512 multiplication is implemented, because the u256 multiplication overflows on high targets
 #[cfg(feature: 'test')]
-pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
+#[inline(always)]
+pub fn compute_new_target_test(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
     let mut time_span = prev_time - start_time;
 
     //Difficulty increase/decrease multiples are clamped between 0.25 (-75%) and 4 (+300%)
@@ -26,7 +30,7 @@ pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) ->
         time_span = TARGET_TIMESPAN_MUL_4;
     }
 
-    let (quotient, _) = u512_safe_div_rem_by_u256(u256_wide_mul(prev_target, time_span.into()), constants::TARGET_TIMESPAN.try_into().unwrap());
+    let (quotient, _) = u512_safe_div_rem_by_u256(prev_target.wide_mul(time_span.into()), constants::TARGET_TIMESPAN.try_into().unwrap());
     let new_target: u256 = quotient.try_into().unwrap();
     return new_target;
 }
@@ -34,8 +38,8 @@ pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) ->
 //Difficulty retargetting algorithm
 //https://minerdaily.com/2021/how-are-bitcoins-difficulty-and-hash-rate-calculated/#Difficulty_Adjustments
 // new_difficulty_target = prev_difficulty_target * (timespan / target_timespan)
-#[cfg(feature: 'release')]
-pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
+#[inline(always)]
+pub fn compute_new_target_release(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
     let mut time_span = prev_time - start_time;
 
     //Difficulty increase/decrease multiples are clamped between 0.25 (-75%) and 4 (+300%)
@@ -57,8 +61,186 @@ pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) ->
     new_target
 }
 
+//We use different implementation for this function for testing purposes, to allow
+// us to use higher PoW targets and generate test blockheaders with lower difficulty
+#[cfg(feature: 'test')]
+pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
+    compute_new_target_test(prev_time, start_time, prev_target)
+}
+#[cfg(feature: 'release')]
+pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
+    compute_new_target_release(prev_time, start_time, prev_target)
+}
+
 //Compute chainwork according to bitcoin core implementation
 // https://github.com/bitcoin/bitcoin/blob/master/src/chain.cpp#L131
-pub fn get_difficulty(target: u256) -> u256 {
+pub fn get_chainwork(target: u256) -> u256 {
     (~target / (target + 1)) + 1
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::nbits::{nbits, nBitsConvertorTrait};
+
+    #[test]
+    fn compute_new_target_real_adjustments() {
+        //Epoch 397 (800352-802367)
+        let nbits: nbits = 0x02610517;
+        let target: u256 = 0x0000000000000000000561020000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1691583496, 1690375347, target);
+        let next_nbits: nbits = 0x5b5f0517;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 8 (16128-18143)
+        let nbits: nbits = 0xffff001d;
+        let target: u256 = 0x00000000ffff0000000000000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1246050840, 1243737085, target);
+        let next_nbits: nbits = 0xffff001d;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 311 (626976-628991)
+        let nbits: nbits = 0x33a31117;
+        let target: u256 = 0x00000000000000000011a3330000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1588651347, 1587452724, target);
+        let next_nbits: nbits = 0x397a1117;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 154 (310464-312479)
+        let nbits: nbits = 0xe66b3f18;
+        let target: u256 = 0x00000000000000003f6be6000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1406325104, 1405205894, target);
+        let next_nbits: nbits = 0xa2ae3a18;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 113 (227808-229823)
+        let nbits: nbits = 0x6e81021a;
+        let target: u256 = 0x00000000000002816e0000000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1365181981, 1364126425, target);
+        let next_nbits: nbits = 0xbe2f021a;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 315 (635040-637055)
+        let nbits: nbits = 0xf2d41117;
+        let target: u256 = 0x00000000000000000011d4f20000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1593535908, 1592326267, target);
+        let next_nbits: nbits = 0x19d51117;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 17 (34272-36287)
+        let nbits: nbits = 0x28c4001d;
+        let target: u256 = 0x00000000c4280000000000000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1264424481, 1263250117, target);
+        let next_nbits: nbits = 0x71be001d;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 321 (647136-649151)
+        let nbits: nbits = 0x123a1017;
+        let target: u256 = 0x000000000000000000103a120000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1600569231, 1599482920, target);
+        let next_nbits: nbits = 0xaa920e17;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 360 (725760-727775)
+        let nbits: nbits = 0x73370a17;
+        let target: u256 = 0x0000000000000000000a37730000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1647538413, 1646324511, target);
+        let next_nbits: nbits = 0xc0400a17;
+        assert_eq!(next_target.to_nbits(), next_nbits);
+
+        //Epoch 332 (669312-671327)
+        let nbits: nbits = 0xb9210d17;
+        let target: u256 = 0x0000000000000000000d21b90000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        let next_target: u256 = compute_new_target_release(1613771771, 1612578303, target);
+        let next_nbits: nbits = 0xe3f40c17;
+        assert_eq!(next_target.to_nbits(), next_nbits)
+    }
+
+    #[test]
+    fn get_chainwork_real_data() {
+        //Blockheight 711872
+        let nbits: nbits = 0x139a0c17;
+        let target: u256 = 0x0000000000000000000c9a130000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x0000000000000000000000000000000000000000000014508159dca2406ee065);
+
+        //Blockheight 255612
+        let nbits: nbits = 0x57524119;
+        let target: u256 = 0x0000000000000041525700000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x00000000000000000000000000000000000000000000000003eb48176e41da55);
+
+        //Blockheight 149491
+        let nbits: nbits = 0x4b6d0b1a;
+        let target: u256 = 0x0000000000000b6d4b0000000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x00000000000000000000000000000000000000000000000000166739d4982cc2);
+
+        //Blockheight 198286
+        let nbits: nbits = 0x383a061a;
+        let target: u256 = 0x000000000000063a380000000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x00000000000000000000000000000000000000000000000000291bc90fbdebd6);
+
+        //Blockheight 755576
+        let nbits: nbits = 0x94c80817;
+        let target: u256 = 0x00000000000000000008c8940000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x000000000000000000000000000000000000000000001d25416b4b627068a807);
+
+        //Blockheight 123258
+        let nbits: nbits = 0xb3936a1a;
+        let target: u256 = 0x0000000000006a93b30000000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x000000000000000000000000000000000000000000000000000266eacdca077c);
+
+        //Blockheight 409280
+        let nbits: nbits = 0x76270618;
+        let target: u256 = 0x0000000000000000062776000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x000000000000000000000000000000000000000000000029991586c20dbe4790);
+
+        //Blockheight 494862
+        let nbits: nbits = 0x4bce0018;
+        let target: u256 = 0x000000000000000000ce4b000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x00000000000000000000000000000000000000000000013daf2269878f446221);
+
+        //Blockheight 397412
+        let nbits: nbits = 0x14a10718;
+        let target: u256 = 0x000000000000000007a114000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x0000000000000000000000000000000000000000000000218e24088b61ccecfd);
+
+        //Blockheight 27569
+        let nbits: nbits = 0xffff001d;
+        let target: u256 = 0x00000000ffff0000000000000000000000000000000000000000000000000000;
+        assert_eq!(nbits.to_target(), target);
+        assert_eq!(get_chainwork(target), 0x0000000000000000000000000000000000000000000000000000000100010001);
+    }
+
+    #[test]
+    fn get_chainwork_random_data() {
+        assert_eq!(get_chainwork(0x000000000000000000000000000000000000000072075113525a1b85b8273ae6), 0x0000000000000000000000023ebbac9322f0e3af84fe877488211dc51982a62f);
+        assert_eq!(get_chainwork(0x000000000000000000000000000000000000000000000001b484d043ee3853e5), 0x000000000000000096221eb082019fc9b1206d2cbf3952481d4714d0aff9d017);
+        assert_eq!(get_chainwork(0x000000000000000000002955564ea9b477a7c73e2c22a63c291be21a52c3654d), 0x00000000000000000000000000000000000000000006318c3dbc7c14f6778c57);
+        assert_eq!(get_chainwork(0x0000000000000000000000000000002ed8562c0f3fed64abdd832c2544998128), 0x000000000000000000000000000000000576fea82b4d27efe4a1dcb16ffb2b56);
+        assert_eq!(get_chainwork(0x0000021eba4433706d817e4c010c3e98314be81f1fc7ec67c1aae592a31886e8), 0x000000000000000000000000000000000000000000000000000000000078c0c6);
+        assert_eq!(get_chainwork(0x00000000000000000000000000000000000000000000000000000d7050e4f1ea), 0x0000000000130ca6538dcb5153d1b2807043460b5b5cc5ed66def3d59dacd1d5);
+        assert_eq!(get_chainwork(0x00000000000000000000000000000000000001399524765a0cf40116e57e9144), 0x00000000000000000000000000d0fdbf03b2b7b9a5d156971fcf6164d50378cb);
+        assert_eq!(get_chainwork(0x0000000000000000000000000009e74fedeb47df672aa9a7d4368d2c158fe4e9), 0x00000000000000000000000000000000000019d96a87549a9b0d74ad1cf40688);
+        assert_eq!(get_chainwork(0x000000ba55c1dcb64cff36fe250c87f8cce5f1bcb209564977ca2fa722e38374), 0x00000000000000000000000000000000000000000000000000000000015fb5ed);
+        assert_eq!(get_chainwork(0x000032971be062df4933b48fe75eab62fe071f595b27317d74d6a428bf08da5c), 0x0000000000000000000000000000000000000000000000000000000000050f6d);
+    }
+
 }

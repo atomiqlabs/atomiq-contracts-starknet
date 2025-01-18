@@ -36,21 +36,28 @@ function getPrevBlockTimestamps(headers, height) {
     for(let i=height-10;i<height;i++) {
         timestamps.push(i<0 ? headers[0].time : headers[i].time);
     }
-    return "["+timestamps.join(", ")+"]";
+    return timestamps;
 }
 
-function toCairoStoredBlockheader(headers, height, spaces) {
+function toCairoStoredBlockheader(header, epochStartTimestamp, prevBlockTimestamps, spaces) {
     const prefix = " ".repeat(spaces);
+    return prefix+"StoredBlockHeader {\n"+
+        prefix+"    blockheader: BLOCKHEADER_"+header.height+",\n"+
+        prefix+"    block_hash: "+hex256bitReverseToU32Arr(header.hash)+",\n"+
+        prefix+"    chain_work: 0x"+header.chainwork+",\n"+
+        prefix+"    block_height: "+header.height+",\n"+
+        prefix+"    last_diff_adjustment: "+epochStartTimestamp+",\n"+
+        prefix+"    prev_block_timestamps: "+"["+prevBlockTimestamps.join(", ")+"]"+"\n"+
+        prefix+"}";
+}
+
+function _toCairoStoredBlockheader(headers, height, spaces) {
     const epochFirstBlockheight = Math.floor(height/2016) * 2016;
     const header = headers[height];
-    return prefix+"StoredBlockHeader {\n"+
-    prefix+"    blockheader: BLOCKHEADER_"+height+",\n"+
-    prefix+"    block_hash: "+hex256bitReverseToU32Arr(header.hash)+",\n"+
-    prefix+"    chain_work: 0x"+header.chainwork+",\n"+
-    prefix+"    block_height: "+height+",\n"+
-    prefix+"    last_diff_adjustment: "+headers[epochFirstBlockheight].time+",\n"+
-    prefix+"    prev_block_timestamps: "+getPrevBlockTimestamps(headers, height)+"\n"+
-    prefix+"}";
+    return toCairoStoredBlockheader(
+        header, headers[epochFirstBlockheight].time, 
+        getPrevBlockTimestamps(headers, height), spaces
+    );
 }
 
 function exportToCairoFile(headers, startBlock, endBlock, currTimestamp, outputFile) {
@@ -77,11 +84,14 @@ function exportToCairoFile(headers, startBlock, endBlock, currTimestamp, outputF
     fs.appendFileSync(outputFile, "\n");
     fs.appendFileSync(outputFile, "pub const STORED_BLOCKHEADERS: [StoredBlockHeader; "+(endBlock-startBlock+1)+"] = [\n");
     for(let i=startBlock;i<=endBlock;i++) {
-        fs.appendFileSync(outputFile, toCairoStoredBlockheader(headers, i, 4)+",\n");
+        fs.appendFileSync(outputFile, _toCairoStoredBlockheader(headers, i, 4)+",\n");
     }
     fs.appendFileSync(outputFile, "];\n");
 }
 
 module.exports = {
-    exportToCairoFile
+    exportToCairoFile,
+    toCairoStoredBlockheader,
+    toCairoBlockheader,
+    hex256bitReverseToU32Arr
 };
