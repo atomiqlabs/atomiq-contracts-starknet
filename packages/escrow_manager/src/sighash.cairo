@@ -44,7 +44,7 @@ struct RefundStruct {
 impl RefundStructHashImpl of StructHash<RefundStruct> {
     fn hash_struct(self: @RefundStruct) -> felt252 {
         let hash_state = PoseidonTrait::new();
-        hash_state.update_with(INITIALIZE_STRUCT_TYPE_HASH).update_with(*self).finalize()
+        hash_state.update_with(REFUND_STRUCT_TYPE_HASH).update_with(*self).finalize()
     }
 }
 
