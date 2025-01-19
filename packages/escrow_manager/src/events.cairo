@@ -21,7 +21,7 @@ pub struct Claim {
     pub claim_data: felt252,
     pub escrow_hash: felt252,
 
-    pub witness_result: ByteArray
+    pub witness_result: Span<felt252>
 }
 
 #[derive(Drop, starknet::Event)]
@@ -34,5 +34,5 @@ pub struct Refund {
     pub claim_data: felt252,
     pub escrow_hash: felt252,
 
-    pub witness_result: ByteArray
+    pub witness_result: Span<felt252>
 }

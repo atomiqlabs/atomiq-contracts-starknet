@@ -10,8 +10,8 @@ use crate::structs::escrow::EscrowData;
 #[starknet::interface]
 pub trait IEscrowManager<TContractState> {
     fn initialize(ref self: TContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: ByteArray);
-    fn claim(ref self: TContractState, escrow: EscrowData, witness: ByteArray);
-    fn refund(ref self: TContractState, escrow: EscrowData, witness: ByteArray);
+    fn claim(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>);
+    fn refund(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>);
     fn cooperative_refund(ref self: TContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64);
 }
 
@@ -113,7 +113,7 @@ mod EscrowManager {
             });
         }
 
-        fn claim(ref self: ContractState, escrow: EscrowData, witness: ByteArray) {
+        fn claim(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>) {
             //Check committed
             let escrow_hash = self.escrow_storage._uncommit(escrow, true);
 
@@ -153,7 +153,7 @@ mod EscrowManager {
             });
         }
 
-        fn refund(ref self: ContractState, escrow: EscrowData, witness: ByteArray) {
+        fn refund(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>) {
             //Check committed
             let escrow_hash = self.escrow_storage._uncommit(escrow, false);
 
@@ -218,7 +218,7 @@ mod EscrowManager {
                 claimer: escrow.claimer,
                 claim_data: escrow.claim_data,
                 escrow_hash: escrow_hash,
-                witness_result: ""
+                witness_result: array![].span()
             });
         }
     }
