@@ -90,8 +90,7 @@ mod EscrowManager {
             } else if caller == escrow.claimer {
                 escrow.offerer
             } else {
-                panic(array!['init: caller_address']);
-                return;
+                panic(array!['init: caller_address'])
             };
 
             let sighash = sighash::get_init_sighash(escrow_hash, timeout, signer);
