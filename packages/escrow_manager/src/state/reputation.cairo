@@ -1,4 +1,5 @@
 use core::starknet::storage_access::StorePacking;
+use core::num::traits::SaturatingAdd;
 
 #[derive(Drop, Serde)]
 pub struct Reputation {
@@ -31,5 +32,13 @@ pub impl ReputationStorePacking of StorePacking<Reputation, [felt252; 2]> {
             amount: amount,
             count: count.try_into().unwrap()
         }
+    }
+}
+
+#[generate_trait]
+pub impl ReputationUpdate of ReputationUpdateTrait {
+    fn update(ref self: Reputation, amount: u256) {
+        self.amount = self.amount.saturating_add(amount);
+        self.count = self.count.saturating_add(1);
     }
 }

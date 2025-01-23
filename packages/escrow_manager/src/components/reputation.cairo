@@ -12,8 +12,7 @@ pub mod reputation {
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use core::starknet::ContractAddress;
-    use core::num::traits::SaturatingAdd;
-    use crate::state::reputation::{Reputation, ReputationStorePacking};
+    use crate::state::reputation::{Reputation, ReputationStorePacking, ReputationUpdateTrait, ReputationUpdate};
 
     pub const REPUTATION_SUCCESS: felt252 = 0;
     pub const REPUTATION_COOP_REFUND: felt252 = 1;
@@ -66,8 +65,7 @@ pub mod reputation {
         ) {
             let reputation_ptr = self.reputation.entry(claimer).entry(token).entry(claim_handler).entry(reputation_type);
             let mut reputation = reputation_ptr.read();
-            reputation.amount = reputation.amount.saturating_add(amount);
-            reputation.count = reputation.count.saturating_add(1);
+            reputation.update(amount);
             reputation_ptr.write(reputation);
         }
     }
