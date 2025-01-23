@@ -104,3 +104,10 @@ fn test_fail_overflow_2_manual() {
     let (_, dispatcher) = deploy();
     execute(dispatcher, 3618502788666131213697322783095070105623107215331596699973092056135872020480, 0);
 }
+
+#[test]
+#[should_panic(expected: 'timestamp_lock: witness len!=0')]
+fn test_fail_non_empty_witness() {
+    let (_, dispatcher) = deploy();
+    dispatcher.refund(0, array![0xfacb3adc]);
+}
