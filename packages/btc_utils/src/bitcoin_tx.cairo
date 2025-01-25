@@ -52,7 +52,7 @@ pub struct BitcoinTxInput {
 #[generate_trait]
 pub impl BitcoinTxInputImpl of BitcoinTxInputTrait {
     fn get_utxo(self: @BitcoinTxInput) -> (u256, u32) {
-        ((*self.data).read_u256_be(*self.initial_offset), (*self.data).read_u32_le(*self.initial_offset+32))
+        ((*self.data).read_u256(*self.initial_offset), (*self.data).read_u32_le(*self.initial_offset+32))
     }
     
     fn get_script_hash(self: @BitcoinTxInput) -> felt252 {

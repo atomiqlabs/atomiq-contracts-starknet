@@ -1,4 +1,5 @@
 const fs = require('fs');
+const starknet = require("micro-starknet");
 
 function poseidonHashRange(buffer, startIndex, endIndex) {
     const values = [];
