@@ -1,0 +1,16 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bitcoinjs-lib": "^6.1.7",
+    "bn.js": "^5.2.1",
+    "micro-starknet": "^0.2.3"
+  }
+}
