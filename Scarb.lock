@@ -6,6 +6,8 @@ name = "atomiq_contracts"
 version = "0.1.0"
 dependencies = [
  "btc_relay",
+ "btc_utils",
+ "common",
  "escrow_manager",
  "hashlock_claim_handler",
  "snforge_std",
@@ -14,6 +16,13 @@ dependencies = [
 
 [[package]]
 name = "btc_relay"
+version = "0.1.0"
+dependencies = [
+ "snforge_std",
+]
+
+[[package]]
+name = "btc_utils"
 version = "0.1.0"
 dependencies = [
  "snforge_std",
