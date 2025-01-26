@@ -12,7 +12,7 @@ pub mod escrow_storage {
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use core::starknet::get_block_number;
-    use crate::structs::escrow::{EscrowData, EscrowDataStructHash};
+    use crate::structs::escrow::{EscrowData, EscrowDataImpl};
     use crate::state::escrow::{EscrowState, EscrowStateStorePacking};
 
     pub const STATE_NOT_COMMITTED: u8 = 0;

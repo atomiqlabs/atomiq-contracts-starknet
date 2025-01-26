@@ -16,11 +16,11 @@ pub trait IEscrowManager<TContractState> {
 }
 
 #[starknet::contract]
-mod EscrowManager {
+pub mod EscrowManager {
     use core::num::traits::SaturatingSub;
     use starknet::event::EventEmitter;
     use core::starknet::{get_execution_info, get_caller_address};
-    use crate::structs::escrow::{EscrowData, EscrowDataStructHash};
+    use crate::structs::escrow::{EscrowData, EscrowDataImpl};
     use crate::sighash;
     use crate::utils::snip6;
     use crate::utils::erc20;
@@ -30,10 +30,6 @@ mod EscrowManager {
     use crate::components::lp_vault::lp_vault;
     use crate::components::reputation::reputation;
     use crate::components::escrow_storage::escrow_storage;
-
-    const FLAG_PAY_OUT: u128 = 0x01;
-    const FLAG_PAY_IN: u128 = 0x02;
-    const FLAG_REPUTATION: u128 = 0x04;
     
     component!(path: lp_vault, storage: lp_vault, event: LPVaultEvent);
     component!(path: reputation, storage: reputation, event: ReputationTrackerEvent);
@@ -98,10 +94,10 @@ mod EscrowManager {
 
             //Transfer deposit
             let deposit_amount = if escrow.security_deposit > escrow.claimer_bounty { escrow.security_deposit } else { escrow.claimer_bounty };
-            erc20::transfer_in(escrow.fee_token, caller, deposit_amount);
+            if deposit_amount!=0 { erc20::transfer_in(escrow.fee_token, caller, deposit_amount) };
 
             //Transfer funds
-            self.lp_vault._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.flags & FLAG_PAY_IN == FLAG_PAY_IN);
+            self.lp_vault._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Initialize {
@@ -121,7 +117,7 @@ mod EscrowManager {
             let claim_result = claim_dispatcher.claim(escrow.claim_data, witness);
 
             //Update reputation
-            if escrow.flags & FLAG_REPUTATION == FLAG_REPUTATION {
+            if escrow.is_tracking_reputation() {
                 self.reputation._update_reputation(reputation::REPUTATION_SUCCESS, escrow.claimer, escrow.token, escrow.claim_handler, escrow.amount);
             }
 
@@ -135,12 +131,8 @@ mod EscrowManager {
                 erc20::transfer_out(escrow.fee_token, escrow.claimer, security_deposit);
             }
 
-            //Pay out funds or execute success actions
-            if escrow.success_action.len() == 0 {
-                self.lp_vault._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.flags & FLAG_PAY_OUT == FLAG_PAY_OUT);
-            } else {
-                
-            }
+            //Pay out funds
+            self.lp_vault._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out());
 
             //Emit event
             self.emit(events::Claim {
@@ -161,7 +153,7 @@ mod EscrowManager {
             let refund_result = refund_dispatcher.refund(escrow.refund_data, witness);
 
             //Update reputation
-            if escrow.flags & FLAG_REPUTATION == FLAG_REPUTATION {
+            if escrow.is_tracking_reputation() {
                 self.reputation._update_reputation(reputation::REPUTATION_FAILED, escrow.claimer, escrow.token, escrow.claim_handler, escrow.amount);
             }
 
@@ -175,7 +167,7 @@ mod EscrowManager {
             }
 
             //Refund funds
-            self.lp_vault._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.flags & FLAG_PAY_IN == FLAG_PAY_IN);
+            self.lp_vault._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Refund {
@@ -200,7 +192,7 @@ mod EscrowManager {
             snip6::verify_signature(escrow.claimer, sighash, signature);
 
             //Update reputation
-            if escrow.flags & FLAG_REPUTATION == FLAG_REPUTATION {
+            if escrow.is_tracking_reputation() {
                 self.reputation._update_reputation(reputation::REPUTATION_COOP_REFUND, escrow.claimer, escrow.token, escrow.claim_handler, escrow.amount);
             }
 
@@ -209,7 +201,7 @@ mod EscrowManager {
             erc20::transfer_out(escrow.fee_token, escrow.claimer, deposit_amount);
 
             //Refund funds
-            self.lp_vault._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.flags & FLAG_PAY_IN == FLAG_PAY_IN);
+            self.lp_vault._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Refund {
