@@ -4,7 +4,7 @@ use starknet::ContractAddress;
 pub trait ILPVault<TContractState> {
     fn deposit(ref self: TContractState, token: ContractAddress, amount: u256);
     fn withdraw(ref self: TContractState, token: ContractAddress, amount: u256, destination: ContractAddress);
-    fn get_balance(self: @TContractState, owners: Span<ContractAddress>, tokens: Span<ContractAddress>) -> Array<Array<u256>>;
+    fn get_balance(self: @TContractState, data: Span<(ContractAddress, ContractAddress)>) -> Array<u256>;
 }
 
 #[starknet::component]
@@ -40,22 +40,18 @@ pub mod lp_vault {
         fn withdraw(ref self: ComponentState<TContractState>, token: ContractAddress, amount: u256, destination: ContractAddress) {
             let caller = get_caller_address();
             let current_balance = self.lp_vault.entry(caller).entry(token).read();
-            assert(current_balance >= amount, 'wihdraw: not enough balance');
+            assert(current_balance >= amount, 'withdraw: not enough balance');
             self.lp_vault.entry(caller).entry(token).write(current_balance - amount);
 
-            erc20::transfer_out(token, caller, amount);
+            erc20::transfer_out(token, destination, amount);
         }
 
-        fn get_balance(self: @ComponentState<TContractState>, owners: Span<ContractAddress>, tokens: Span<ContractAddress>) -> Array<Array<u256>> {
-            let mut _owners: Array<Array<u256>> = array![];
-            for owner in owners {
-                let mut _tokens: Array<u256> = array![];
-                for token in tokens {
-                    _tokens.append(self.lp_vault.entry(*owner).entry(*token).read());
-                };
-                _owners.append(_tokens);
+        fn get_balance(self: @ComponentState<TContractState>, data: Span<(ContractAddress, ContractAddress)>) -> Array<u256> {
+            let mut balances: Array<u256> = array![];
+            for (owner, token) in data {
+                balances.append(self.lp_vault.entry(*owner).entry(*token).read());
             };
-            _owners
+            balances
         }
     }
 
