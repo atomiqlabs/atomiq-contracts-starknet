@@ -54,3 +54,5 @@ pub fn get_refund_sighash(escrow_hash: felt252, timeout: u64, signer: ContractAd
         timeout: timeout
     }.get_message_hash(signer)
 }
+
+//TODO: Add unit tests for sighashes

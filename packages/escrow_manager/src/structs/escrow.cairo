@@ -80,3 +80,7 @@ pub impl EscrowDataImpl of EscrowDataImplTrait {
         if (*self.claimer_bounty) > (*self.security_deposit) { *self.claimer_bounty } else { *self.security_deposit }
     }
 }
+
+//TODO: Add unit tests for flag reads
+
+//TODO: Add unit tests for total deposit function

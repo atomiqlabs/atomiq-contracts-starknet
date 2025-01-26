@@ -42,3 +42,7 @@ pub impl ReputationUpdate of ReputationUpdateTrait {
         self.count = self.count.saturating_add(1);
     }
 }
+
+//TODO: Add unit tests checking pack/unpack consistency
+
+//TODO: Add unit tests checking update overflow handling
