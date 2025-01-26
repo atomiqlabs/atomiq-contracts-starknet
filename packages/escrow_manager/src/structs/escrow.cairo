@@ -32,11 +32,11 @@ use core::poseidon::PoseidonTrait;
 //     pub calldata: Span<felt252>
 // }
 
-pub const FLAG_PAY_OUT: u128 = 0x01;
-pub const FLAG_PAY_IN: u128 = 0x02;
-pub const FLAG_REPUTATION: u128 = 0x04;
+pub const FLAG_PAY_OUT: u8 = 0x01;
+pub const FLAG_PAY_IN: u8 = 0x02;
+pub const FLAG_REPUTATION: u8 = 0x04;
 
-#[derive(Drop, Hash, Copy, Serde)]
+#[derive(Drop, Hash, Copy, Serde, Debug)]
 pub struct EscrowData {
     pub offerer: ContractAddress,
     pub claimer: ContractAddress,
@@ -44,7 +44,7 @@ pub struct EscrowData {
     pub refund_handler: ContractAddress,
     pub claim_handler: ContractAddress,
 
-    pub flags: u128,
+    pub flags: u8,
 
     pub claim_data: felt252,
     pub refund_data: felt252,
@@ -65,14 +65,18 @@ pub impl EscrowDataImpl of EscrowDataImplTrait {
     }
 
     fn is_pay_in(self: @EscrowData) -> bool {
-        *self.flags | FLAG_PAY_IN == FLAG_PAY_IN
+        (*self.flags) & FLAG_PAY_IN == FLAG_PAY_IN
     }
 
     fn is_pay_out(self: @EscrowData) -> bool {
-        *self.flags | FLAG_PAY_OUT == FLAG_PAY_OUT
+        (*self.flags) & FLAG_PAY_OUT == FLAG_PAY_OUT
     }
 
     fn is_tracking_reputation(self: @EscrowData) -> bool {
-        *self.flags | FLAG_REPUTATION == FLAG_REPUTATION
+        (*self.flags) & FLAG_REPUTATION == FLAG_REPUTATION
+    }
+
+    fn get_total_deposit(self: @EscrowData) -> u256 {
+        if (*self.claimer_bounty) > (*self.security_deposit) { *self.claimer_bounty } else { *self.security_deposit }
     }
 }

@@ -1,6 +1,11 @@
 use core::starknet::storage_access::StorePacking;
 
-#[derive(Drop, Serde)]
+pub const STATE_NOT_COMMITTED: u8 = 0;
+pub const STATE_COMMITTED: u8 = 1;
+pub const STATE_CLAIMED: u8 = 2;
+pub const STATE_REFUNDED: u8 = 3;
+
+#[derive(Drop, Serde, Debug, PartialEq)]
 pub struct EscrowState {
     pub init_blockheight: u64,
     pub finish_blockheight: u64,

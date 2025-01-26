@@ -3,8 +3,10 @@ use snforge_std::{
 };
 use starknet::contract_address::{ContractAddress};
 
+use openzeppelin_token::erc20::{ERC20ABIDispatcher};
 use snforge_std::signature::stark_curve::{StarkCurveKeyPairImpl, StarkCurveSignerImpl};
 use snforge_std::signature::KeyPair;
+use crate::utils::erc20;
 
 pub fn deploy() -> ContractAddress {
     // First declare and deploy a contract
@@ -45,4 +47,23 @@ pub fn deploy_claim_handler() -> ContractAddress {
     
     // Create a Dispatcher object that will allow interacting with the deployed contract
     contract_address
+}
+
+#[derive(Copy, Drop)]
+pub struct Context {
+    pub contract_address: ContractAddress,
+    pub token: ERC20ABIDispatcher,
+    pub gas_token: ERC20ABIDispatcher,
+    pub refund_handler: ContractAddress,
+    pub claim_handler: ContractAddress
+}
+
+pub fn get_context() -> Context {
+    Context {
+        contract_address: deploy(),
+        token: erc20::deploy(),
+        gas_token: erc20::deploy(),
+        refund_handler: deploy_refund_handler(),
+        claim_handler: deploy_claim_handler()
+    }
 }

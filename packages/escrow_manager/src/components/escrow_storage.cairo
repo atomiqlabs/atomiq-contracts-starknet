@@ -4,21 +4,21 @@ use crate::structs::escrow::EscrowData;
 #[starknet::interface]
 pub trait IEscrowStorage<TContractState> {
     fn get_state(self: @TContractState, escrow: EscrowData) -> EscrowState;
+    fn get_hash_state(self: @TContractState, escrow_hash: felt252) -> EscrowState;
 }
 
 #[starknet::component]
 pub mod escrow_storage {
+    use super::IEscrowStorage;
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use core::starknet::get_block_number;
     use crate::structs::escrow::{EscrowData, EscrowDataImpl};
-    use crate::state::escrow::{EscrowState, EscrowStateStorePacking};
-
-    pub const STATE_NOT_COMMITTED: u8 = 0;
-    pub const STATE_COMMITTED: u8 = 1;
-    pub const STATE_CLAIMED: u8 = 2;
-    pub const STATE_REFUNDED: u8 = 3;
+    use crate::state::escrow::{
+        EscrowState, EscrowStateStorePacking, STATE_NOT_COMMITTED, 
+        STATE_COMMITTED, STATE_CLAIMED, STATE_REFUNDED
+    };
 
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -36,10 +36,14 @@ pub mod escrow_storage {
 
         fn get_state(self: @ComponentState<TContractState>, escrow: EscrowData) -> EscrowState {
             let hash = escrow.get_struct_hash();
-            let escrow_state = self.escrow_state.entry(hash).read();
-            escrow_state
+            self.get_hash_state(hash)
         }
         
+        fn get_hash_state(self: @ComponentState<TContractState>, escrow_hash: felt252) -> EscrowState {
+            let escrow_state = self.escrow_state.entry(escrow_hash).read();
+            escrow_state
+        }
+
     }
 
     #[generate_trait]

@@ -74,7 +74,7 @@ pub mod EscrowManager {
         fn initialize(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: ByteArray) {
             //Check expiry
             let execution_info = get_execution_info();
-            assert(execution_info.block_info.block_timestamp > timeout, 'init: Authorization expired');
+            assert(execution_info.block_info.block_timestamp < timeout, 'init: Authorization expired');
             
             //Check committed
             let escrow_hash = self.escrow_storage._commit(escrow);
@@ -93,7 +93,7 @@ pub mod EscrowManager {
             snip6::verify_signature(signer, sighash, signature);
 
             //Transfer deposit
-            let deposit_amount = if escrow.security_deposit > escrow.claimer_bounty { escrow.security_deposit } else { escrow.claimer_bounty };
+            let deposit_amount = escrow.get_total_deposit();
             if deposit_amount!=0 { erc20::transfer_in(escrow.fee_token, caller, deposit_amount) };
 
             //Transfer funds
