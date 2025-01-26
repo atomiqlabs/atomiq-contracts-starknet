@@ -157,7 +157,7 @@ pub mod EscrowManager {
                 self.reputation._update_reputation(reputation::REPUTATION_FAILED, escrow.claimer, escrow.token, escrow.claim_handler, escrow.amount);
             }
 
-            //Pay out claimer bounty
+            //Pay out security deposit
             if escrow.security_deposit != 0 {
                 erc20::transfer_out(escrow.fee_token, escrow.offerer, escrow.security_deposit);
             }
@@ -182,7 +182,7 @@ pub mod EscrowManager {
         fn cooperative_refund(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64) {
             //Check expiry
             let execution_info = get_execution_info();
-            assert(execution_info.block_info.block_timestamp > timeout, 'coop_refund: Auth expired');
+            assert(execution_info.block_info.block_timestamp < timeout, 'coop_refund: Auth expired');
             
             //Check committed
             let escrow_hash = self.escrow_storage._uncommit(escrow, false);
@@ -196,7 +196,7 @@ pub mod EscrowManager {
                 self.reputation._update_reputation(reputation::REPUTATION_COOP_REFUND, escrow.claimer, escrow.token, escrow.claim_handler, escrow.amount);
             }
 
-            //Pay out claimer bounty
+            //Pay out the whole deposit
             let deposit_amount = if escrow.security_deposit > escrow.claimer_bounty { escrow.security_deposit } else { escrow.claimer_bounty };
             erc20::transfer_out(escrow.fee_token, escrow.claimer, deposit_amount);
 

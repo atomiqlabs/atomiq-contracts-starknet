@@ -21,41 +21,42 @@ use crate::utils::escrow::get_initialized_escrow;
 
 use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
-const CLAIM_BLOCK_NUMBER: u64 = 92348243;
+const REFUND_BLOCK_NUMBER: u64 = 836263212;
 
-fn claim_escrow(
+fn refund_escrow(
     context: Context,
     escrow: structs::escrow::EscrowData,
     witness: Array<felt252>
 ) -> Result<(), felt252> {
-    let balance_erc20 = context.token.balance_of(escrow.claimer);
-    let balance_contract = *ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.claimer, context.token.contract_address)].span()).span()[0];
+    let balance_erc20 = context.token.balance_of(escrow.offerer);
+    let balance_contract = *ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.offerer, context.token.contract_address)].span()).span()[0];
     let balance_erc20_contract = context.token.balance_of(context.contract_address);
 
-    let external_claimer: ContractAddress = generate_random_felt().try_into().unwrap();
+    let external_refunder: ContractAddress = generate_random_felt().try_into().unwrap();
+
     let balance_gas_erc20_claimer = context.gas_token.balance_of(escrow.claimer);
-    let balance_gas_erc20_ext_claimer = context.gas_token.balance_of(external_claimer);
+    let balance_gas_erc20_offerer = context.gas_token.balance_of(escrow.offerer);
     let balance_gas_erc20_contract = context.gas_token.balance_of(context.contract_address);
 
-    let [initial_success_reputation, _, _] = IReputationTrackerDispatcher{contract_address: context.contract_address}.get_reputation(array![(escrow.claimer, escrow.token, escrow.claim_handler)].span()).span()[0];
+    let [_, _, initial_refund_reputation] = IReputationTrackerDispatcher{contract_address: context.contract_address}.get_reputation(array![(escrow.claimer, escrow.token, escrow.claim_handler)].span()).span()[0];
 
     let escrow_hash = escrow.get_struct_hash();
     let init_blockheight = IEscrowStorageDispatcher{contract_address: context.contract_address}.get_state(escrow).init_blockheight;
-    
+
     let expected_witness = witness.span();
 
     let mut spy = spy_events();
 
-    cheat_caller_address(context.contract_address, external_claimer, CheatSpan::TargetCalls(1));
-    cheat_block_number(context.contract_address, CLAIM_BLOCK_NUMBER, CheatSpan::TargetCalls(1));
-    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.claim(escrow, witness);
+    cheat_caller_address(context.contract_address, external_refunder, CheatSpan::TargetCalls(1));
+    cheat_block_number(context.contract_address, REFUND_BLOCK_NUMBER, CheatSpan::TargetCalls(1));
+    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.refund(escrow, witness);
     if result.is_err() {
         return Result::Err(*result.unwrap_err().span()[0]);
     }
 
     //Assert event emitted
     spy.assert_emitted(
-        @array![(context.contract_address, EscrowManager::Event::Claim(events::Claim {
+        @array![(context.contract_address, EscrowManager::Event::Refund(events::Refund {
             offerer: escrow.offerer,
             claimer: escrow.claimer,
             claim_data: escrow.claim_data,
@@ -67,41 +68,41 @@ fn claim_escrow(
     //Assert escrow state saved
     if (IEscrowStorageDispatcher{contract_address: context.contract_address}.get_state(escrow) != state::escrow::EscrowState {
         init_blockheight,
-        finish_blockheight: CLAIM_BLOCK_NUMBER,
-        state: state::escrow::STATE_CLAIMED
+        finish_blockheight: REFUND_BLOCK_NUMBER,
+        state: state::escrow::STATE_REFUNDED
     }) { return Result::Err('test: state'); };
 
     if escrow.is_tracking_reputation() {
-        let [success_reputation, _, _] = IReputationTrackerDispatcher{contract_address: context.contract_address}.get_reputation(array![(escrow.claimer, escrow.token, escrow.claim_handler)].span()).span()[0];
-        if *success_reputation.amount != (*initial_success_reputation.amount).saturating_add(escrow.amount) {
+        let [_, _, refund_reputation] = IReputationTrackerDispatcher{contract_address: context.contract_address}.get_reputation(array![(escrow.claimer, escrow.token, escrow.claim_handler)].span()).span()[0];
+        if *refund_reputation.amount != (*initial_refund_reputation.amount).saturating_add(escrow.amount) {
             return Result::Err('test: reputation amount');
         }
-        if *success_reputation.count != (*initial_success_reputation.count).saturating_add(1) {
+        if *refund_reputation.count != (*initial_refund_reputation.count).saturating_add(1) {
             return Result::Err('test: reputation count');
         }
     }
 
-    if escrow.is_pay_out() {
-        if (context.token.balance_of(escrow.claimer) != balance_erc20+escrow.amount) ||
+    if escrow.is_pay_in() {
+        if (context.token.balance_of(escrow.offerer) != balance_erc20+escrow.amount) ||
             (context.token.balance_of(context.contract_address) != balance_erc20_contract-escrow.amount) {
             return Result::Err('test: erc20 balance');
         }
     } else {
-        if (ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.claimer, context.token.contract_address)].span()) != array![balance_contract+escrow.amount]) {
+        if (ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.offerer, context.token.contract_address)].span()) != array![balance_contract+escrow.amount]) {
             return Result::Err('test: vault balance');
         }
     }
 
     let total_deposit = escrow.get_total_deposit();
-    if escrow.claimer_bounty != 0 {
-        if (context.gas_token.balance_of(external_claimer) != balance_gas_erc20_ext_claimer + escrow.claimer_bounty) {
-            return Result::Err('test: gas ext claimer balance');
+    if escrow.security_deposit != 0 {
+        if (context.gas_token.balance_of(escrow.offerer) != balance_gas_erc20_offerer + escrow.security_deposit) {
+            return Result::Err('test: gas offerer balance');
         }
     }
-    let return_to_claimer = total_deposit - escrow.claimer_bounty;
+    let return_to_claimer = total_deposit - escrow.security_deposit;
     if return_to_claimer != 0 {
         if (context.gas_token.balance_of(escrow.claimer) != balance_gas_erc20_claimer + return_to_claimer) {
-            return Result::Err('test: gas ext claimer balance');
+            return Result::Err('test: gas claimer balance');
         }
     }
     if total_deposit != 0 {
@@ -114,7 +115,7 @@ fn claim_escrow(
 }
 
 #[test]
-fn valid_claim() {
+fn valid_refund() {
     let context = get_context();
     for i in 0..64_u8 {
         let (escrow, _, _) = get_initialized_escrow(context, 
@@ -127,12 +128,12 @@ fn valid_claim() {
             false,
             true
         );
-        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
+        assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
 }
 
 #[test]
-fn valid_claim_invert_deposits() {
+fn valid_refund_invert_deposits() {
     let context = get_context();
     for i in 0..16_u8 {
         let (escrow, _, _) = get_initialized_escrow(context, 
@@ -145,12 +146,12 @@ fn valid_claim_invert_deposits() {
             true,
             true
         );
-        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
+        assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
 }
 
 #[test]
-fn invalid_claim_handler() {
+fn invalid_refund_handler() {
     let context = get_context();
     for i in 0..64_u8 {
         let (escrow, _, _) = get_initialized_escrow(context, 
@@ -163,12 +164,12 @@ fn invalid_claim_handler() {
             false,
             true
         );
-        assert_result_error(claim_escrow(context, escrow, array![]), 'mock_claim: witness len==0', escrow);
+        assert_result_error(refund_escrow(context, escrow, array![]), 'mock_refund: witness len==0', escrow);
     }
 }
 
 #[test]
-fn invalid_claim_uninitialized() {
+fn invalid_refund_uninitialized() {
     let context = get_context();
     for i in 0..64_u8 {
         let (escrow, _, _) = get_initialized_escrow(context, 
@@ -181,12 +182,12 @@ fn invalid_claim_uninitialized() {
             false,
             false
         );
-        assert_result_error(claim_escrow(context, escrow, array![]), '_uncommit: Not committed', escrow);
+        assert_result_error(refund_escrow(context, escrow, array![]), '_uncommit: Not committed', escrow);
     }
 }
 
 #[test]
-fn invalid_claim_double() {
+fn invalid_refund_double() {
     let context = get_context();
     for i in 0..64_u8 {
         let (escrow, _, _) = get_initialized_escrow(context, 
@@ -199,8 +200,8 @@ fn invalid_claim_double() {
             false,
             true
         );
-        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
-        assert_result_error(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), '_uncommit: Not committed', escrow);
+        assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
+        assert_result_error(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), '_uncommit: Not committed', escrow);
     }
 }
 

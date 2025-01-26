@@ -3,7 +3,7 @@ use crate::state::reputation::{Reputation, ReputationStorePacking};
 
 #[starknet::interface]
 pub trait IReputationTracker<TContractState> {
-    fn get_reputation(self: @TContractState, owners: Span<ContractAddress>, tokens: Span<ContractAddress>, claim_handlers: Span<ContractAddress>) -> Array<Array<Array<[Reputation; 3]>>>;
+    fn get_reputation(self: @TContractState, data: Span<(ContractAddress, ContractAddress, ContractAddress)>) -> Array<[Reputation; 3]>;
 }
 
 #[starknet::component]
@@ -31,23 +31,15 @@ pub mod reputation {
     pub impl ReputationTrackerImpl<
         TContractState, +HasComponent<TContractState>,
     > of super::IReputationTracker<ComponentState<TContractState>> {
-        fn get_reputation(self: @ComponentState<TContractState>, owners: Span<ContractAddress>, tokens: Span<ContractAddress>, claim_handlers: Span<ContractAddress>) -> Array<Array<Array<[Reputation; 3]>>> {
-            let mut _owners: Array<Array<Array<[Reputation; 3]>>> = array![];
-            for owner in owners {
-                let mut _tokens: Array<Array<[Reputation; 3]>> = array![];
-                for token in tokens {
-                    let mut _claim_handlers: Array<[Reputation; 3]> = array![];
-                    for claim_handler in claim_handlers {
-                        let ptr = self.reputation.entry(*owner).entry(*token).entry(*claim_handler);
-                        _claim_handlers.append([
-                            ptr.entry(REPUTATION_SUCCESS).read(), ptr.entry(REPUTATION_COOP_REFUND).read(), ptr.entry(REPUTATION_FAILED).read()
-                        ]);
-                    };
-                    _tokens.append(_claim_handlers);
-                };
-                _owners.append(_tokens);
+        fn get_reputation(self: @ComponentState<TContractState>, data: Span<(ContractAddress, ContractAddress, ContractAddress)>) -> Array<[Reputation; 3]> {
+            let mut result: Array<[Reputation; 3]> = array![];
+            for (owner, token, claim_handler) in data {
+                let ptr = self.reputation.entry(*owner).entry(*token).entry(*claim_handler);
+                result.append([
+                    ptr.entry(REPUTATION_SUCCESS).read(), ptr.entry(REPUTATION_COOP_REFUND).read(), ptr.entry(REPUTATION_FAILED).read()
+                ]);
             };
-            _owners
+            result
         }
     }
 

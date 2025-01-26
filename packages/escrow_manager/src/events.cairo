@@ -8,6 +8,7 @@ pub struct Initialize {
     pub claimer: ContractAddress,
     #[key]
     pub claim_data: felt252,
+    #[key]
     pub escrow_hash: felt252
 }
 
@@ -19,6 +20,7 @@ pub struct Claim {
     pub claimer: ContractAddress,
     #[key]
     pub claim_data: felt252,
+    #[key]
     pub escrow_hash: felt252,
 
     pub witness_result: Span<felt252>
@@ -32,6 +34,7 @@ pub struct Refund {
     pub claimer: ContractAddress,
     #[key]
     pub claim_data: felt252,
+    #[key]
     pub escrow_hash: felt252,
 
     pub witness_result: Span<felt252>

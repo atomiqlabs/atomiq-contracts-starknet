@@ -29,8 +29,8 @@ pub const ESCROW_INIT_AMOUNT: u256 = 1000;
 
 pub const ESCROW_GAS_MINT_AMOUNT: u256 = 1000;
 pub const ESCROW_GAS_MINT_NOT_ENOUGH_AMOUNT: u256 = 50;
-pub const ESCROW_SECURITY_DEPOSIT: u256 = 100;
-pub const ESCROW_CLAIMER_BOUNTY: u256 = 150;
+pub const ESCROW_DEPOSIT_SMALL: u256 = 100;
+pub const ESCROW_DEPOSIT_LARGE: u256 = 150;
 
 pub const INIT_BLOCK_NUMBER: u64 = 8577342;
 
@@ -176,7 +176,8 @@ pub fn _init_escrow_and_assert(
 
 pub fn get_initialized_escrow(
     context: Context,
-    sender_claimer: bool, pay_in: bool, pay_out: bool, reputation: bool, security_deposit: bool, claimer_bounty: bool
+    sender_claimer: bool, pay_in: bool, pay_out: bool, reputation: bool, security_deposit: bool, claimer_bounty: bool, deposit_invert: bool,
+    commit: bool
 ) -> (structs::escrow::EscrowData, KeyPair<felt252, felt252>, KeyPair<felt252, felt252>) {
     let (sender, escrow, signer, offerer_signer, claimer_signer) = create_escrow_data(context,
         sender_claimer,
@@ -186,10 +187,10 @@ pub fn get_initialized_escrow(
         1000,
         500,
         1000,
-        if security_deposit { ESCROW_SECURITY_DEPOSIT } else { 0 },
-        if claimer_bounty { ESCROW_CLAIMER_BOUNTY } else { 0 }
+        if security_deposit { if deposit_invert { ESCROW_DEPOSIT_LARGE } else { ESCROW_DEPOSIT_SMALL } } else { 0 },
+        if claimer_bounty { if deposit_invert { ESCROW_DEPOSIT_SMALL } else { ESCROW_DEPOSIT_LARGE } } else { 0 }
     );
-    assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0), escrow);
+    if commit { assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0), escrow); };
 
     (escrow, offerer_signer, claimer_signer)
 }
