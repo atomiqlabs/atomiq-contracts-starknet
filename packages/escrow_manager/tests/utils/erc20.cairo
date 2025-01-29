@@ -19,8 +19,6 @@ pub fn deploy() -> ERC20ABIDispatcher {
     let (contract_address, _) = contract.deploy(@array![random_owner.into()]).unwrap();
     cheat_caller_address(contract_address, random_owner, CheatSpan::TargetCalls(1));
     IOwnableDispatcher{contract_address}.transfer_ownership(contract_address_const::<'erc20 owner'>());
-    
-    println!("Deployed mock erc20: {:x}", contract_address);
 
     // Create a Dispatcher object that will allow interacting with the deployed contract
     ERC20ABIDispatcher { contract_address }

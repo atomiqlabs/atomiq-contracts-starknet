@@ -36,3 +36,5 @@ pub impl EscrowStateStorePacking of StorePacking<EscrowState, felt252> {
         }
     }
 }
+
+//TODO: Add unit tests checking pack/unpack consistency
