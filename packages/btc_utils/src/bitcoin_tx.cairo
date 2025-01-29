@@ -1,5 +1,5 @@
 use crate::byte_array::{ByteArrayReader, ByteArrayReaderTrait};
-use crate::varint;
+use crate::varint::{ByteArrayVarintReader, ByteArrayVarintReaderTrait};
 
 #[derive(Drop)]
 pub struct BitcoinTxOutput {
@@ -25,7 +25,7 @@ pub impl BitcoinTxOutputImpl of BitcoinTxOutputTrait {
         let value_offset = offset;
         offset += 8;
         
-        let (_script_length, bytes_read) = varint::read(data, offset);
+        let (_script_length, bytes_read) = data.read_varint(offset);
         let script_length: usize = _script_length.try_into().unwrap();
         offset += bytes_read;
         //output script
@@ -69,7 +69,7 @@ pub impl BitcoinTxInputImpl of BitcoinTxInputTrait {
         let initial_offset = offset;
         offset += 36;
         
-        let (_script_length, bytes_read) = varint::read(data, offset);
+        let (_script_length, bytes_read) = data.read_varint(offset);
         let script_length: usize = _script_length.try_into().unwrap();
         offset += bytes_read;
         //input script
@@ -119,7 +119,7 @@ pub impl BitcoinTransactionImpl of BitcoinTransactionTrait {
     }
 
     fn from_byte_array(data: @ByteArray) -> BitcoinTransaction {
-        let (input_count, bytes_read) = varint::read(data, 4);
+        let (input_count, bytes_read) = data.read_varint(4);
     
         //Check that segwit flag is not set (we only accept non-segwit transactions, or transactions with segwit data stripped)
         if input_count==0 && bytes_read==1 && data.at(5).unwrap()==0x01 {
@@ -133,7 +133,7 @@ pub impl BitcoinTransactionImpl of BitcoinTransactionTrait {
             ins.append(BitcoinTxInputImpl::from_byte_array(data, ref offset));
         };
     
-        let (output_count, bytes_read) = varint::read(data, offset);
+        let (output_count, bytes_read) = data.read_varint(offset);
         offset += bytes_read;
     
         let mut outs: Array<BitcoinTxOutput> = array![];

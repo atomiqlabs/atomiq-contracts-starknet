@@ -20,7 +20,7 @@ function getVarIntTest(value, position = 0, bufferSize) {
     const buffer = crypto.randomBytes(bufferSize ?? position+varintBuffer.length);
     varintBuffer.copy(buffer, position);
     return "let mut serialized_byte_array = "+toCairoSerializedByteArray(buffer)+".span();\n"+
-        "assert_eq!(read(@Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap(), "+position+"), (0x"+value.toString("hex")+", "+varintBuffer.length+"));\n";
+        "assert_eq!(Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap().read_varint("+position+"), (0x"+value.toString("hex")+", "+varintBuffer.length+"));\n";
 }
 
 function getRandomAccessVarIntTest() {
