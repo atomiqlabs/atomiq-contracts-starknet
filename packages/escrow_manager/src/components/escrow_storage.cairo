@@ -3,7 +3,9 @@ use crate::structs::escrow::EscrowData;
 
 #[starknet::interface]
 pub trait IEscrowStorage<TContractState> {
+    //Read the current state of the escrow
     fn get_state(self: @TContractState, escrow: EscrowData) -> EscrowState;
+    //Read the current state of the escrow, based on its hash
     fn get_hash_state(self: @TContractState, escrow_hash: felt252) -> EscrowState;
 }
 
@@ -51,6 +53,8 @@ pub mod escrow_storage {
         TContractState, +HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
 
+        //Commits/saves the escrow to the on-chain storage with COMMITTED state, fails if 
+        // escrow is/was already initialized
         fn _commit(ref self: ComponentState<TContractState>, escrow: EscrowData) -> felt252 {
             //Check if already committed
             let escrow_hash = escrow.get_struct_hash();
@@ -67,12 +71,13 @@ pub mod escrow_storage {
             escrow_hash
         }
 
-        fn _uncommit(ref self: ComponentState<TContractState>, escrow: EscrowData, success: bool) -> felt252 {
+        //Finalizes the escrow state on-chain, fails if escrow is not initialized/committed
+        fn _finalize(ref self: ComponentState<TContractState>, escrow: EscrowData, success: bool) -> felt252 {
             //Check committed
             let escrow_hash = escrow.get_struct_hash();
             let escrow_ptr = self.escrow_state.entry(escrow_hash);
             let mut escrow_state = escrow_ptr.read();
-            assert(escrow_state.state==STATE_COMMITTED, '_uncommit: Not committed');
+            assert(escrow_state.state==STATE_COMMITTED, '_finalize: Not committed');
 
             //Set state to claimed
             escrow_state.finish_blockheight = get_block_number();

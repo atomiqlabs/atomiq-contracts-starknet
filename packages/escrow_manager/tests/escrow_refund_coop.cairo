@@ -149,7 +149,7 @@ fn invalid_coop_refund_uninitialized() {
         );
         assert_result_error(
             coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false),
-            '_uncommit: Not committed',
+            '_finalize: Not committed',
             escrow
         );
     }
@@ -172,7 +172,7 @@ fn invalid_refund_double() {
         assert_result(coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false), escrow);
         assert_result_error(
             coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false),
-            '_uncommit: Not committed',
+            '_finalize: Not committed',
             escrow
         );
     }

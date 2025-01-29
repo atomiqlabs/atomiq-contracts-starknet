@@ -1,9 +1,12 @@
 use core::starknet::storage_access::StorePacking;
 use core::num::traits::SaturatingAdd;
 
+//On-chain saved reputation state
 #[derive(Drop, Serde, PartialEq, Debug, Copy)]
 pub struct Reputation {
+    //Total amount of tokens processed
     pub amount: u256,
+    //Total count of swaps processed
     pub count: u128
 }
 
@@ -37,6 +40,7 @@ pub impl ReputationStorePacking of StorePacking<Reputation, [felt252; 2]> {
 
 #[generate_trait]
 pub impl ReputationUpdate of ReputationUpdateTrait {
+    //Updates a reputation with the specified token amount and increment count by 1
     fn update(ref self: Reputation, amount: u256) {
         self.amount = self.amount.saturating_add(amount);
         self.count = self.count.saturating_add(1);
@@ -47,6 +51,7 @@ pub impl ReputationUpdate of ReputationUpdateTrait {
 mod tests {
     use super::*;
 
+    //Test consistency of the packing/unpacking functions
     #[test]
     fn test_packing() {
         let reputation = Reputation {amount: 0, count: 0};
@@ -65,6 +70,7 @@ mod tests {
         assert_eq!(ReputationStorePacking::unpack(ReputationStorePacking::pack(reputation)), reputation);
     }
 
+    //Test updates reputation updates
     #[test]
     fn test_updates() {
         let mut reputation = Reputation {amount: 0, count: 0};
@@ -90,7 +96,11 @@ mod tests {
             ReputationStorePacking::unpack(ReputationStorePacking::pack(reputation)),
             Reputation {amount: 845132+1221000+411100+984431, count: 4}
         );
-
+    }
+    
+    //Test handling of overflows during reputation updates
+    #[test]
+    fn test_updates_overflowing() {
         let mut reputation = Reputation {amount: 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, count: 0xffffffffffffffffffffffffffffffff};
         reputation.update(3912387842);
         assert_eq!(

@@ -5,10 +5,14 @@ pub const STATE_COMMITTED: u8 = 1;
 pub const STATE_CLAIMED: u8 = 2;
 pub const STATE_REFUNDED: u8 = 3;
 
+//On-chain saved state of the escrow
 #[derive(Drop, Serde, Debug, PartialEq, Copy)]
 pub struct EscrowState {
+    //Escrow was initialized at this blockheight
     pub init_blockheight: u64,
+    //Escrow was finalized (claim/refund) at this blockheight
     pub finish_blockheight: u64,
+    //Current state of the escrow
     pub state: u8
 }
 
@@ -41,33 +45,34 @@ pub impl EscrowStateStorePacking of StorePacking<EscrowState, felt252> {
 mod tests {
     use super::*;
 
+    //Test consistency of the packing/unpacking functions
     #[test]
     fn test_packing() {
-        let reputation = EscrowState {init_blockheight: 0, finish_blockheight: 0, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0, state: 0};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0, state: 0};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0, finish_blockheight: 0xffffffffffffffff, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0xffffffffffffffff, state: 0};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0xffffffffffffffff, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0xffffffffffffffff, state: 0};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0, finish_blockheight: 0, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0, state: 0xff};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0, state: 0xff};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0, finish_blockheight: 0xffffffffffffffff, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0xffffffffffffffff, state: 0xff};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0xffffffffffffffff, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0xffffffffffffffff, state: 0xff};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
 
-        let reputation = EscrowState {init_blockheight: 0x0102040506070809, finish_blockheight: 0x1112131415161718, state: 0x21};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(reputation)), reputation);
+        let escrow_state = EscrowState {init_blockheight: 0x0102040506070809, finish_blockheight: 0x1112131415161718, state: 0x21};
+        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
     }
 }

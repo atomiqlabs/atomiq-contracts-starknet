@@ -9,9 +9,13 @@ use crate::structs::escrow::EscrowData;
 
 #[starknet::interface]
 pub trait IEscrowManager<TContractState> {
-    fn initialize(ref self: TContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: ByteArray);
+    //Initializes the escrow
+    fn initialize(ref self: TContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>);
+    //Claims the escrow by providing a witness to the claim handler
     fn claim(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>);
+    //Refunds the escrow by providing a witness to the refund handler
     fn refund(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>);
+    //Cooperatively refunds the escrow with a valid signature from claimer
     fn cooperative_refund(ref self: TContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64);
 }
 
@@ -20,6 +24,7 @@ pub mod EscrowManager {
     use core::num::traits::SaturatingSub;
     use starknet::event::EventEmitter;
     use core::starknet::{get_execution_info, get_caller_address};
+    use starknet::contract_address::ContractAddress;
     use crate::structs::escrow::{EscrowData, EscrowDataImpl};
     use crate::sighash;
     use crate::utils::snip6;
@@ -71,7 +76,7 @@ pub mod EscrowManager {
 
     #[abi(embed_v0)]
     impl EscrowManagerImpl of super::IEscrowManager<ContractState> {
-        fn initialize(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: ByteArray) {
+        fn initialize(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>) {
             //Check expiry
             let execution_info = get_execution_info();
             assert(execution_info.block_info.block_timestamp < timeout, 'init: Authorization expired');
@@ -97,7 +102,7 @@ pub mod EscrowManager {
             if deposit_amount!=0 { erc20::transfer_in(escrow.fee_token, caller, deposit_amount) };
 
             //Transfer funds
-            self.lp_vault._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
+            self._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Initialize {
@@ -110,7 +115,7 @@ pub mod EscrowManager {
 
         fn claim(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>) {
             //Check committed
-            let escrow_hash = self.escrow_storage._uncommit(escrow, true);
+            let escrow_hash = self.escrow_storage._finalize(escrow, true);
 
             //Check claim data
             let claim_dispatcher = IClaimHandlerDispatcher { contract_address: escrow.claim_handler };
@@ -132,7 +137,7 @@ pub mod EscrowManager {
             }
 
             //Pay out funds
-            self.lp_vault._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out());
+            self._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out());
 
             //Emit event
             self.emit(events::Claim {
@@ -146,7 +151,7 @@ pub mod EscrowManager {
 
         fn refund(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>) {
             //Check committed
-            let escrow_hash = self.escrow_storage._uncommit(escrow, false);
+            let escrow_hash = self.escrow_storage._finalize(escrow, false);
 
             //Check refund data
             let refund_dispatcher = IRefundHandlerDispatcher { contract_address: escrow.refund_handler };
@@ -167,7 +172,7 @@ pub mod EscrowManager {
             }
 
             //Refund funds
-            self.lp_vault._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
+            self._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Refund {
@@ -185,7 +190,7 @@ pub mod EscrowManager {
             assert(execution_info.block_info.block_timestamp < timeout, 'coop_refund: Auth expired');
             
             //Check committed
-            let escrow_hash = self.escrow_storage._uncommit(escrow, false);
+            let escrow_hash = self.escrow_storage._finalize(escrow, false);
 
             //Check refund signature
             let sighash = sighash::get_refund_sighash(escrow_hash, timeout, escrow.claimer);
@@ -201,7 +206,7 @@ pub mod EscrowManager {
             erc20::transfer_out(escrow.fee_token, escrow.claimer, deposit_amount);
 
             //Refund funds
-            self.lp_vault._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
+            self._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Refund {
@@ -213,4 +218,26 @@ pub mod EscrowManager {
             });
         }
     }
+
+    #[generate_trait]
+    impl EscrowManagerPrivate of EscrowManagerPrivateTrait {
+        //Pays the funds out either to an external account, or to the LP vault depending on the pay_out param
+        fn _pay_out(ref self: ContractState, dst: ContractAddress, token: ContractAddress, amount: u256, pay_out: bool) {
+            if pay_out {
+                erc20::transfer_out(token, dst, amount);
+            } else {
+                self.lp_vault._transfer_out(token, dst, amount);
+            }
+        }
+
+        //Takes the funds from from an external account, or from the LP vault depending on the pay_in param
+        fn _pay_in(ref self: ContractState, src: ContractAddress, token: ContractAddress, amount: u256, pay_in: bool) {
+            if pay_in {
+                erc20::transfer_in(token, src, amount);
+            } else {
+                self.lp_vault._transfer_in(token, src, amount);
+            }
+        }
+    }
+
 }

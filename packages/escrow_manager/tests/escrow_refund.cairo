@@ -114,6 +114,7 @@ fn refund_escrow(
     Result::Ok(())
 }
 
+//Valid claim security_deposit < claimer_bounty
 #[test]
 fn valid_refund() {
     let context = get_context();
@@ -132,6 +133,7 @@ fn valid_refund() {
     }
 }
 
+//Valid claim security_deposit > claimer_bounty
 #[test]
 fn valid_refund_invert_deposits() {
     let context = get_context();
@@ -150,6 +152,7 @@ fn valid_refund_invert_deposits() {
     }
 }
 
+//Invalid claim due to negative response from IRefundHandler
 #[test]
 fn invalid_refund_handler() {
     let context = get_context();
@@ -168,6 +171,7 @@ fn invalid_refund_handler() {
     }
 }
 
+//Try to refund uninitialized escrow
 #[test]
 fn invalid_refund_uninitialized() {
     let context = get_context();
@@ -182,10 +186,11 @@ fn invalid_refund_uninitialized() {
             false,
             false
         );
-        assert_result_error(refund_escrow(context, escrow, array![]), '_uncommit: Not committed', escrow);
+        assert_result_error(refund_escrow(context, escrow, array![]), '_finalize: Not committed', escrow);
     }
 }
 
+//Try to refund an escrow twice
 #[test]
 fn invalid_refund_double() {
     let context = get_context();
@@ -201,7 +206,7 @@ fn invalid_refund_double() {
             true
         );
         assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
-        assert_result_error(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), '_uncommit: Not committed', escrow);
+        assert_result_error(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), '_finalize: Not committed', escrow);
     }
 }
 

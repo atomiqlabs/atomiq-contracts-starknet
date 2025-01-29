@@ -16,6 +16,7 @@ use crate::utils::escrow::{
 
 use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
+//Valid initialization of the escrow
 #[test]
 fn valid_initialize() {
     let context = get_context();
@@ -35,6 +36,7 @@ fn valid_initialize() {
     }
 }
 
+//Invalid initialization of the escrow due to offerer not having enough balance
 #[test]
 fn invalid_initialize_not_enough_balance() {
     let context = get_context();
@@ -52,12 +54,13 @@ fn invalid_initialize_not_enough_balance() {
         );
         assert_result_error(
             init_escrow_and_assert(context, sender, escrow, signer, 100, 0),
-            if escrow.is_pay_in() { 'ERC20: insufficient balance' } else { '_pay_in: not enough balance' },
+            if escrow.is_pay_in() { 'ERC20: insufficient balance' } else { '_xfer_in: not enough balance' },
             escrow
         );
     }
 }
 
+//Invalid initialization of the escrow due to offerer not having enough erc20 allowance (only pay_in = true)
 #[test]
 fn invalid_initialize_not_enough_allowance() {
     let context = get_context();
@@ -86,6 +89,7 @@ fn invalid_initialize_not_enough_allowance() {
     }
 }
 
+//Invalid initialization of the escrow due to sender not having enough gas token erc20 balance
 #[test]
 fn invalid_initialize_not_enough_gas_balance() {
     let context = get_context();
@@ -110,6 +114,7 @@ fn invalid_initialize_not_enough_gas_balance() {
     }
 }
 
+//Invalid initialization of the escrow due to sender not having enough gas token erc20 allowance
 #[test]
 fn invalid_initialize_not_enough_gas_allowance() {
     let context = get_context();
@@ -138,6 +143,7 @@ fn invalid_initialize_not_enough_gas_allowance() {
     }
 }
 
+//Invalid initialization of the escrow due to the init message being signed by a different signer
 #[test]
 fn invalid_initialize_wrong_signer() {
     let context = get_context();
@@ -161,6 +167,7 @@ fn invalid_initialize_wrong_signer() {
     }
 }
 
+//Invalid initialization of the escrow due to random message being signed, instead of a valid init msg 
 #[test]
 fn invalid_initialize_wrong_sign_message() {
     let context = get_context();
@@ -184,6 +191,7 @@ fn invalid_initialize_wrong_sign_message() {
     }
 }
 
+//Initialize transaction sent by a third party sender
 #[test]
 fn invalid_initialize_wrong_sender() {
     let context = get_context();
@@ -207,6 +215,7 @@ fn invalid_initialize_wrong_sender() {
     }
 }
 
+//Initialize with already expired signed init message
 #[test]
 fn invalid_initialize_expired() {
     let context = get_context();
@@ -230,6 +239,7 @@ fn invalid_initialize_expired() {
     }
 }
 
+//Try to malleate timeout, without changing the signature
 #[test]
 fn invalid_initialize_sign_different_timeout() {
     let context = get_context();
@@ -253,6 +263,7 @@ fn invalid_initialize_sign_different_timeout() {
     }
 }
 
+//Try to commit the same escrow twice
 #[test]
 fn invalid_initialize_commit_twice() {
     let context = get_context();

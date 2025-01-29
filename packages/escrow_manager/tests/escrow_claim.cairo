@@ -113,6 +113,7 @@ fn claim_escrow(
     Result::Ok(())
 }
 
+//Valid claim security_deposit < claimer_bounty
 #[test]
 fn valid_claim() {
     let context = get_context();
@@ -131,6 +132,7 @@ fn valid_claim() {
     }
 }
 
+//Valid claim with security_deposit > claimer_bounty
 #[test]
 fn valid_claim_invert_deposits() {
     let context = get_context();
@@ -149,6 +151,7 @@ fn valid_claim_invert_deposits() {
     }
 }
 
+//Invalid claim due to negative response from IClaimHandler
 #[test]
 fn invalid_claim_handler() {
     let context = get_context();
@@ -167,6 +170,7 @@ fn invalid_claim_handler() {
     }
 }
 
+//Try to claim uninitialized escrow
 #[test]
 fn invalid_claim_uninitialized() {
     let context = get_context();
@@ -181,10 +185,11 @@ fn invalid_claim_uninitialized() {
             false,
             false
         );
-        assert_result_error(claim_escrow(context, escrow, array![]), '_uncommit: Not committed', escrow);
+        assert_result_error(claim_escrow(context, escrow, array![]), '_finalize: Not committed', escrow);
     }
 }
 
+//Try to claim the same escrow twice
 #[test]
 fn invalid_claim_double() {
     let context = get_context();
@@ -200,7 +205,7 @@ fn invalid_claim_double() {
             true
         );
         assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
-        assert_result_error(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), '_uncommit: Not committed', escrow);
+        assert_result_error(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), '_finalize: Not committed', escrow);
     }
 }
 

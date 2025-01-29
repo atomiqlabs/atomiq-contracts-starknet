@@ -130,7 +130,7 @@ pub fn _init_escrow_and_assert(
     cheat_caller_address(context.contract_address, sender, CheatSpan::TargetCalls(1));
     cheat_block_timestamp(context.contract_address, current_time, CheatSpan::TargetCalls(1));
     cheat_block_number(context.contract_address, INIT_BLOCK_NUMBER, CheatSpan::TargetCalls(1));
-    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.initialize(escrow, array![r, s], timeout, "");
+    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.initialize(escrow, array![r, s], timeout, array![].span());
     if result.is_err() {
         return Result::Err(*result.unwrap_err().span()[0]);
     }

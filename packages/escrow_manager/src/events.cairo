@@ -23,6 +23,7 @@ pub struct Claim {
     #[key]
     pub escrow_hash: felt252,
 
+    //Witness result as returned by the claim handler
     pub witness_result: Span<felt252>
 }
 
@@ -37,5 +38,6 @@ pub struct Refund {
     #[key]
     pub escrow_hash: felt252,
 
+    //Witness result as returned by the refund handler
     pub witness_result: Span<felt252>
 }

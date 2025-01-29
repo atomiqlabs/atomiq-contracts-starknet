@@ -36,12 +36,14 @@ fn deposit_and_assert(user: ContractAddress, contract_address: ContractAddress, 
     assert_eq!(erc20_dispatcher.balance_of(contract_address), balance_erc20_contract+amount);
 }
 
+//Valid deposit to the LP vault
 #[test]
 fn valid_deposit() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
     deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
 }
 
+//Deposit to LP vault without sufficient erc20 allowance
 #[test]
 #[should_panic(expected: 'ERC20: insufficient allowance')]
 fn invalid_deposit_no_allowance() {
@@ -52,6 +54,7 @@ fn invalid_deposit_no_allowance() {
     deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
 }
 
+//Deposit to LP vault without sufficient erc20 balance
 #[test]
 #[should_panic(expected: 'ERC20: insufficient balance')]
 fn invalid_deposit_no_balance() {
@@ -59,6 +62,7 @@ fn invalid_deposit_no_balance() {
     deposit_and_assert(user, contract_address, erc20_dispatcher, 200);
 }
 
+//Valid partial withdrawal from the LP vault (leaves funds in the LP vault)
 #[test]
 fn valid_withdraw_partial() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
@@ -69,6 +73,7 @@ fn valid_withdraw_partial() {
     assert_eq!(ILPVaultDispatcher{contract_address}.get_balance(array![(user, erc20_dispatcher.contract_address)].span()), array![25]);
 }
 
+//Valid full withdrawal from the LP vault (leaves no funds in the LP vault)
 #[test]
 fn valid_withdraw_full() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
@@ -79,6 +84,7 @@ fn valid_withdraw_full() {
     assert_eq!(ILPVaultDispatcher{contract_address}.get_balance(array![(user, erc20_dispatcher.contract_address)].span()), array![0]);
 }
 
+//Valid partial withdrawal from the LP vault (leaves funds in the LP vault) to the external 3rd party address
 #[test]
 fn valid_withdraw_partial_external() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
@@ -91,6 +97,7 @@ fn valid_withdraw_partial_external() {
     assert_eq!(ILPVaultDispatcher{contract_address}.get_balance(array![(user, erc20_dispatcher.contract_address)].span()), array![25]);
 }
 
+//Valid full withdrawal from the LP vault (leaves no funds in the LP vault) to the external 3rd party address
 #[test]
 fn valid_withdraw_full_external() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
@@ -103,6 +110,7 @@ fn valid_withdraw_full_external() {
     assert_eq!(ILPVaultDispatcher{contract_address}.get_balance(array![(user, erc20_dispatcher.contract_address)].span()), array![0]);
 }
 
+//Try to withdraw more than balance in the LP vault
 #[test]
 #[should_panic(expected: 'withdraw: not enough balance')]
 fn invalid_withdraw_no_balance() {

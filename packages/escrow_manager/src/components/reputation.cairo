@@ -3,6 +3,7 @@ use crate::state::reputation::{Reputation, ReputationStorePacking};
 
 #[starknet::interface]
 pub trait IReputationTracker<TContractState> {
+    //Returns the LP reputations, data is in format (owner, token, claim_handler)
     fn get_reputation(self: @TContractState, data: Span<(ContractAddress, ContractAddress, ContractAddress)>) -> Array<[Reputation; 3]>;
 }
 
@@ -47,6 +48,7 @@ pub mod reputation {
     pub impl InternalImpl<
         TContractState, +HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
+        //Updates reputation of the specific claimer
         fn _update_reputation(
             ref self: ComponentState<TContractState>, 
             reputation_type: felt252, 

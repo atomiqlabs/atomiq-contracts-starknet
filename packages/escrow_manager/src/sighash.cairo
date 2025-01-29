@@ -25,6 +25,7 @@ impl InitializeStructHashImpl of StructHash<InitializeStruct> {
     }
 }
 
+//Computes the init message sighash
 pub fn get_init_sighash(escrow_hash: felt252, timeout: u64, signer: ContractAddress) -> felt252 {
     InitializeStruct {
         escrow_hash: escrow_hash,
@@ -48,6 +49,7 @@ impl RefundStructHashImpl of StructHash<RefundStruct> {
     }
 }
 
+//Computes the refund message sighash
 pub fn get_refund_sighash(escrow_hash: felt252, timeout: u64, signer: ContractAddress) -> felt252 {
     RefundStruct {
         escrow_hash: escrow_hash,
