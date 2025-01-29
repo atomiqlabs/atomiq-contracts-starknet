@@ -223,6 +223,7 @@ mod tests {
         assert!(target.to_nbits().rev_endianness() == 0x20123456);
     }
 
+    //invalid vectors from https://github.com/bitcoin/bitcoin/blob/master/src/test/arith_uint256_tests.cpp#L409
     #[test]
     #[should_panic(expected: 'nbits: negative')]
     fn bitcoin_core_negative_nbits_test_vector_1() {

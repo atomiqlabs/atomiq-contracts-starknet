@@ -10,11 +10,18 @@ use crate::utils::difficulty;
 
 #[starknet::interface]
 pub trait IBtcRelay<TContractState> {
+    //Submits blockheaders to the main/canonical chain, stored_header must be the current tip
     fn submit_main_blockheaders(ref self: TContractState, block_headers: Span<BlockHeader>, stored_header: StoredBlockHeader);
+    //Submits a short fork, all the block_headers need to fit in a single transaction
     fn submit_short_fork_blockheaders(ref self: TContractState, block_headers: Span<BlockHeader>, stored_header: StoredBlockHeader);
+    //Starts/continues submitting a long fork (in case all the fork headers don't fit a in a single starknet transaction),
+    // the fork becomes canonical as soon as it accumulates more chainwork than main chain
     fn submit_fork_blockheaders(ref self: TContractState, fork_id: felt252, block_headers: Span<BlockHeader>, stored_header: StoredBlockHeader);
+    //Returns the current chainwork of the main/canonical chain
     fn get_chainwork(self: @TContractState) -> u256;
+    //Return the main chain tip blockheight
     fn get_blockheight(self: @TContractState) -> u32;
+    //Verifies if a provided stored header is part of the main chain
     fn verify_blockheader(self: @TContractState, stored_header: StoredBlockHeader) -> u32;
 }
 
@@ -33,8 +40,11 @@ pub mod BtcRelay {
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
+        //Main header is submitted
         StoreHeader: events::StoreHeader,
+        //Fork header is submitted
         StoreForkHeader: events::StoreForkHeader,
+        //Chain reorganization has occurred
         ChainReorg: events::ChainReorg
     }
 
@@ -47,10 +57,12 @@ pub mod BtcRelay {
         forks: Map<ContractAddress, Map<felt252, Fork>>
     }
 
+    //Initialize the btc relay with the provided stored_header
     #[constructor]
     fn constructor(ref self: ContractState, stored_header: StoredBlockHeader) {
         let commit_hash = stored_header.get_hash();
 
+        //Save the initial stored header
         self.main_chain.entry(stored_header.block_height.into()).write(commit_hash);
         self.main_chainwork.write(stored_header.chain_work.try_into().unwrap());
         self.main_blockheight.write(stored_header.block_height.into());
@@ -94,6 +106,7 @@ pub mod BtcRelay {
                 });
             };
 
+            //Update globals
             self.main_chainwork.write(_stored_header.chain_work.try_into().unwrap());
             self.main_blockheight.write(_stored_header.block_height.into());
         }
