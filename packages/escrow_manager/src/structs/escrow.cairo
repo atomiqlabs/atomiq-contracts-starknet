@@ -81,6 +81,88 @@ pub impl EscrowDataImpl of EscrowDataImplTrait {
     }
 }
 
-//TODO: Add unit tests for flag reads
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use starknet::contract_address::{contract_address_const};
 
-//TODO: Add unit tests for total deposit function
+    fn get_escrow_data(flags: u8, security_deposit: u256, claimer_bounty: u256) -> EscrowData {
+        EscrowData {
+            offerer: contract_address_const::<'offerer'>(),
+            claimer: contract_address_const::<'claimer'>(),
+            token: contract_address_const::<'token'>(),
+            refund_handler: contract_address_const::<'refund_handler'>(),
+            claim_handler: contract_address_const::<'claim_handler'>(),
+
+            flags,
+
+            claim_data: 0,
+            refund_data: 0,
+
+            amount: 0,
+
+            fee_token: contract_address_const::<'fee_token'>(),
+            security_deposit,
+            claimer_bounty
+        }
+    }
+
+    #[test]
+    fn parse_flags() {
+        let escrow_data = get_escrow_data(0b000, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), false);
+        assert_eq!(escrow_data.is_pay_in(), false);
+        assert_eq!(escrow_data.is_tracking_reputation(), false);
+        
+        let escrow_data = get_escrow_data(0b001, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), true);
+        assert_eq!(escrow_data.is_pay_in(), false);
+        assert_eq!(escrow_data.is_tracking_reputation(), false);
+        
+        let escrow_data = get_escrow_data(0b010, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), false);
+        assert_eq!(escrow_data.is_pay_in(), true);
+        assert_eq!(escrow_data.is_tracking_reputation(), false);
+        
+        let escrow_data = get_escrow_data(0b011, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), true);
+        assert_eq!(escrow_data.is_pay_in(), true);
+        assert_eq!(escrow_data.is_tracking_reputation(), false);
+        
+        let escrow_data = get_escrow_data(0b100, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), false);
+        assert_eq!(escrow_data.is_pay_in(), false);
+        assert_eq!(escrow_data.is_tracking_reputation(), true);
+        
+        let escrow_data = get_escrow_data(0b101, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), true);
+        assert_eq!(escrow_data.is_pay_in(), false);
+        assert_eq!(escrow_data.is_tracking_reputation(), true);
+        
+        let escrow_data = get_escrow_data(0b110, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), false);
+        assert_eq!(escrow_data.is_pay_in(), true);
+        assert_eq!(escrow_data.is_tracking_reputation(), true);
+        
+        let escrow_data = get_escrow_data(0b111, 0 ,0);
+        assert_eq!(escrow_data.is_pay_out(), true);
+        assert_eq!(escrow_data.is_pay_in(), true);
+        assert_eq!(escrow_data.is_tracking_reputation(), true);
+    }
+
+    #[test]
+    fn total_deposit() {
+        let escrow_data = get_escrow_data(0, 0 ,0);
+        assert_eq!(escrow_data.get_total_deposit(), 0);
+
+        let escrow_data = get_escrow_data(0, 100, 100);
+        assert_eq!(escrow_data.get_total_deposit(), 100);
+
+        let escrow_data = get_escrow_data(0, 150, 100);
+        assert_eq!(escrow_data.get_total_deposit(), 150);
+
+        let escrow_data = get_escrow_data(0, 100, 150);
+        assert_eq!(escrow_data.get_total_deposit(), 150);
+    }
+
+}

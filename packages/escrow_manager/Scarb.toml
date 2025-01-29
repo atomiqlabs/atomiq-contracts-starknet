@@ -11,6 +11,9 @@ documentation.workspace = true
 repository.workspace = true
 license-file.workspace = true
 
+[scripts]
+test = "snforge test"
+
 [dependencies]
 starknet.workspace = true
 openzeppelin_account = "0.20.0"
