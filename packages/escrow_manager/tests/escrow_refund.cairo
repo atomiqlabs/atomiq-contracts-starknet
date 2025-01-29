@@ -66,11 +66,14 @@ fn refund_escrow(
     );
 
     //Assert escrow state saved
-    if (IEscrowStorageDispatcher{contract_address: context.contract_address}.get_state(escrow) != state::escrow::EscrowState {
+    let expected_escrow_state = state::escrow::EscrowState {
         init_blockheight,
         finish_blockheight: REFUND_BLOCK_NUMBER,
         state: state::escrow::STATE_REFUNDED
-    }) { return Result::Err('test: state'); };
+    };
+    if (IEscrowStorageDispatcher{contract_address: context.contract_address}.get_state(escrow) != expected_escrow_state) { return Result::Err('test: state'); };
+    if (IEscrowStorageDispatcher{contract_address: context.contract_address}.get_hash_state(escrow_hash) != expected_escrow_state) { return Result::Err('test: state hash'); };
+    if (*(IEscrowStorageDispatcher{contract_address: context.contract_address}.get_hash_state_multiple(array![escrow_hash].span())[0]) != expected_escrow_state) { return Result::Err('test: state hash multiple'); };
 
     if escrow.is_tracking_reputation() {
         let [_, _, refund_reputation] = IReputationTrackerDispatcher{contract_address: context.contract_address}.get_reputation(array![(escrow.claimer, escrow.token, escrow.claim_handler)].span()).span()[0];

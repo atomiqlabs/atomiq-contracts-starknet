@@ -7,6 +7,8 @@ pub trait IEscrowStorage<TContractState> {
     fn get_state(self: @TContractState, escrow: EscrowData) -> EscrowState;
     //Read the current state of the escrow, based on its hash
     fn get_hash_state(self: @TContractState, escrow_hash: felt252) -> EscrowState;
+    //Read the current state of multiple escrows, based on teir hash
+    fn get_hash_state_multiple(self: @TContractState, escrow_hashes: Span<felt252>) -> Span<EscrowState>;
 }
 
 #[starknet::component]
@@ -44,6 +46,14 @@ pub mod escrow_storage {
         fn get_hash_state(self: @ComponentState<TContractState>, escrow_hash: felt252) -> EscrowState {
             let escrow_state = self.escrow_state.entry(escrow_hash).read();
             escrow_state
+        }
+
+        fn get_hash_state_multiple(self: @ComponentState<TContractState>, escrow_hashes: Span<felt252>) -> Span<EscrowState> {
+            let mut result: Array<EscrowState> = array![];
+            for escrow_hash in escrow_hashes {
+                result.append(self.get_hash_state(*escrow_hash));
+            };
+            result.span()
         }
 
     }

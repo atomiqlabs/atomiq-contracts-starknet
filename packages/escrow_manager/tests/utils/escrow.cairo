@@ -146,11 +146,15 @@ pub fn _init_escrow_and_assert(
     );
 
     //Assert escrow state saved
-    if (IEscrowStorageDispatcher{contract_address: context.contract_address}.get_state(escrow) != state::escrow::EscrowState {
+    let expected_escrow_state = state::escrow::EscrowState {
         init_blockheight: INIT_BLOCK_NUMBER,
         finish_blockheight: 0,
         state: state::escrow::STATE_COMMITTED
-    }) { return Result::Err('test: state'); };
+    };
+    if (IEscrowStorageDispatcher{contract_address: context.contract_address}.get_state(escrow) != expected_escrow_state) { return Result::Err('test: state'); };
+    if (IEscrowStorageDispatcher{contract_address: context.contract_address}.get_hash_state(escrow_hash) != expected_escrow_state) { return Result::Err('test: state hash'); };
+    if (*(IEscrowStorageDispatcher{contract_address: context.contract_address}.get_hash_state_multiple(array![escrow_hash].span())[0]) != expected_escrow_state) { return Result::Err('test: state hash multiple'); };
+
 
     if escrow.is_pay_in() {
         if (context.token.balance_of(escrow.offerer) != balance_erc20-escrow.amount) ||
