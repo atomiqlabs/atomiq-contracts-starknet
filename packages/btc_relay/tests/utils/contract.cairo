@@ -106,10 +106,15 @@ fn long_fork_assert_start_height(
     let loaded_start_height = load(
         contract_address,
         map_entry_address(
-            selector!("forks_start_height"),
+            map_entry_address(
+                selector!("forks"),
+                array![
+                    fork_submitter.into(),
+                    fork_id
+                ].span(),
+            ),
             array![
-                fork_submitter.into(),
-                fork_id
+                selector!("start_height")
             ].span(),
         ),
         1
@@ -142,10 +147,15 @@ fn load_fork_chain_commitment(
     *load(
         contract_address,
         map_entry_address(
-            selector!("forks"),
+            map_entry_address(
+                selector!("forks"),
+                array![
+                    fork_submitter.into(),
+                    fork_id
+                ].span(),
+            ),
             array![
-                fork_submitter.into(),
-                fork_id,
+                selector!("chain"),
                 block_height.into()
             ].span(),
         ),

@@ -2,6 +2,7 @@ pub mod structs;
 pub mod utils;
 pub mod constants;
 pub mod events;
+pub mod state;
 
 use crate::structs::blockheader::{BlockHeader, BlockHeaderSha256Hash};
 use crate::structs::stored_blockheader::StoredBlockHeader;
@@ -26,6 +27,7 @@ pub mod BtcRelay {
     };
     use crate::structs::blockheader::{BlockHeader, BlockHeaderSha256Hash};
     use crate::structs::stored_blockheader::{StoredBlockHeader, StoredBlockHeaderPoseidonHashTrait, StoredBlockHeaderUpdate, StoredBlockHeaderUpdateTrait};
+    use crate::state::fork::Fork;
     use super::*;
 
     #[event]
@@ -42,8 +44,7 @@ pub mod BtcRelay {
         main_chainwork: felt252,
         main_blockheight: felt252,
 
-        forks: Map<ContractAddress, Map<felt252, Map<felt252, felt252>>>,
-        forks_start_height: Map<ContractAddress, Map<felt252, felt252>>
+        forks: Map<ContractAddress, Map<felt252, Fork>>
     }
 
     #[constructor]
@@ -148,18 +149,18 @@ pub mod BtcRelay {
             let starknet_timestamp: u32 = get_block_timestamp().try_into().unwrap();
 
             let caller = get_caller_address();
-            let mut fork_start_blockheight = self.forks_start_height.entry(caller).entry(fork_id).read();
-
             let fork_ptr = self.forks.entry(caller).entry(fork_id);
+
+            let mut fork_start_blockheight = fork_ptr.start_height.read();
 
             if fork_start_blockheight == 0 {
                 //Verify stored header is committed in the main chain
                 self.verify_blockheader(stored_header);
                 fork_start_blockheight = stored_header.block_height.into() + 1;
-                self.forks_start_height.entry(caller).entry(fork_id).write(fork_start_blockheight);
+                fork_ptr.start_height.write(fork_start_blockheight);
             } else {
                 //Verify stored header is committed in the fork chain
-                assert(fork_ptr.entry(stored_header.block_height.into()).read() == stored_header.get_hash(), 'fork: fork block commitment');
+                assert(fork_ptr.chain.entry(stored_header.block_height.into()).read() == stored_header.get_hash(), 'fork: fork block commitment');
             }
 
             //Proccess new block headers
@@ -170,7 +171,7 @@ pub mod BtcRelay {
 
                 //Write header commitment
                 let commit_hash =_stored_header.get_hash();
-                fork_ptr.entry(_stored_header.block_height.into()).write(commit_hash);
+                fork_ptr.chain.entry(_stored_header.block_height.into()).write(commit_hash);
 
                 //Emit fork blockheader event
                 self.emit(events::StoreForkHeader {
@@ -188,7 +189,7 @@ pub mod BtcRelay {
                 let mut block_height = fork_start_blockheight;
 
                 while block_height != _stored_header.block_height.into()+1 {
-                    self.main_chain.entry(block_height).write(fork_ptr.entry(block_height).read());
+                    self.main_chain.entry(block_height).write(fork_ptr.chain.entry(block_height).read());
                     block_height += 1;
                 };
                 
