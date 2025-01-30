@@ -5,7 +5,10 @@ version = 1
 name = "atomiq_contracts"
 version = "0.1.0"
 dependencies = [
+ "btc_nonced_output_claim_handler",
+ "btc_output_claim_handler",
  "btc_relay",
+ "btc_txid_claim_handler",
  "btc_utils",
  "common",
  "escrow_manager",
@@ -15,9 +18,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "btc_nonced_output_claim_handler"
+version = "0.1.0"
+dependencies = [
+ "btc_relay",
+ "btc_utils",
+ "common",
+ "snforge_std",
+]
+
+[[package]]
+name = "btc_output_claim_handler"
+version = "0.1.0"
+dependencies = [
+ "btc_relay",
+ "btc_utils",
+ "common",
+ "snforge_std",
+]
+
+[[package]]
 name = "btc_relay"
 version = "0.1.0"
 dependencies = [
+ "snforge_std",
+]
+
+[[package]]
+name = "btc_txid_claim_handler"
+version = "0.1.0"
+dependencies = [
+ "btc_relay",
+ "btc_utils",
+ "common",
  "snforge_std",
 ]
 
@@ -40,7 +73,9 @@ name = "escrow_manager"
 version = "0.1.0"
 dependencies = [
  "common",
+ "openzeppelin_access",
  "openzeppelin_account",
+ "openzeppelin_introspection",
  "openzeppelin_token",
  "openzeppelin_utils",
  "snforge_std",

@@ -5,7 +5,10 @@ members = [
     "packages/btc_relay",
     "packages/escrow_manager",
     "packages/timelock_refund_handler",
-    "packages/hashlock_claim_handler"
+    "packages/hashlock_claim_handler",
+    "packages/btc_txid_claim_handler",
+    "packages/btc_output_claim_handler",
+    "packages/btc_nonced_output_claim_handler"
 ]
 
 [package]
@@ -34,6 +37,9 @@ btc_relay = { path = "packages/btc_relay" }
 escrow_manager = { path = "packages/escrow_manager" }
 hashlock_claim_handler = { path = "packages/hashlock_claim_handler" }
 timelock_refund_handler = { path = "packages/timelock_refund_handler" }
+btc_txid_claim_handler = { path = "packages/btc_txid_claim_handler" }
+btc_output_claim_handler = { path = "packages/btc_output_claim_handler" }
+btc_nonced_output_claim_handler = { path = "packages/btc_nonced_output_claim_handler" }
 
 [workspace.dependencies]
 starknet = "2.9.2"
