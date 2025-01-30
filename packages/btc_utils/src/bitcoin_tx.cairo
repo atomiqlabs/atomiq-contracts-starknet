@@ -4,10 +4,10 @@ use crate::compact_size::{ByteArrayCompactSizeReader, ByteArrayCompactSizeReader
 //Struct representing the position of the output in the data
 #[derive(Drop)]
 pub struct BitcoinTxOutput {
-    pub data: @ByteArray,
-    pub value_offset: usize,
-    pub script_offset: usize,
-    pub script_length: usize
+    data: @ByteArray,
+    value_offset: usize,
+    script_offset: usize,
+    script_length: usize
 }
 
 #[generate_trait]
@@ -49,10 +49,10 @@ pub impl BitcoinTxOutputImpl of BitcoinTxOutputTrait {
 //Struct representing the position of the input in the data
 #[derive(Drop)]
 pub struct BitcoinTxInput {
-    pub data: @ByteArray,
-    pub initial_offset: usize,
-    pub script_offset: usize,
-    pub script_length: usize
+    data: @ByteArray,
+    initial_offset: usize,
+    script_offset: usize,
+    script_length: usize
 }
 
 #[generate_trait]

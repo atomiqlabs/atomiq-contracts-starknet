@@ -1,0 +1,29 @@
+[package]
+name = "btc_nonced_output_claim_handler"
+version.workspace = true
+edition.workspace = true
+cairo-version.workspace = true
+scarb-version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license-file.workspace = true
+
+[dependencies]
+starknet.workspace = true
+common = { path = "../common" }
+btc_relay = { path = "../btc_relay" }
+btc_utils = { path = "../btc_utils" }
+
+[dev-dependencies]
+assert_macros.workspace = true
+snforge_std.workspace = true
+
+[scripts]
+test = "snforge test"
+
+[lib]
+
+[[target.starknet-contract]]
+sierra = true
