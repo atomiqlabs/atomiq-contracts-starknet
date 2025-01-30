@@ -1,8 +1,8 @@
 use crate::constants;
 
-#[cfg(feature: 'test')]
+#[cfg(target: 'test')]
 use core::integer::{u512_safe_div_rem_by_u256};
-#[cfg(feature: 'test')]
+#[cfg(target: 'test')]
 use core::num::traits::WideMul;
 
 //Pre-calculated multiples for target timespan
@@ -17,7 +17,7 @@ pub const TARGET_TIMESPAN_MUL_4: u32 = constants::TARGET_TIMESPAN_u32 * 4;
 // new_difficulty_target = prev_difficulty_target * (timespan / target_timespan)
 //This is adjusted to skip verification of the MAX_TARGET, to allow for testing with higher target (lower difficulties)
 //Also u512 multiplication is implemented, because the u256 multiplication overflows on high targets
-#[cfg(feature: 'test')]
+#[cfg(target: 'test')]
 #[inline(always)]
 pub fn compute_new_target_test(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
     let mut time_span = prev_time - start_time;
@@ -63,11 +63,15 @@ pub fn compute_new_target_release(prev_time: u32, start_time: u32, prev_target: 
 
 //We use different implementation for this function for testing purposes, to allow
 // us to use higher PoW targets and generate test blockheaders with lower difficulty
-#[cfg(feature: 'test')]
+#[cfg(target: 'test')]
 pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
     compute_new_target_test(prev_time, start_time, prev_target)
 }
-#[cfg(feature: 'release')]
+#[cfg(target: 'lib')]
+pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
+    compute_new_target_release(prev_time, start_time, prev_target)
+}
+#[cfg(target: 'starknet-contract')]
 pub fn compute_new_target(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
     compute_new_target_release(prev_time, start_time, prev_target)
 }

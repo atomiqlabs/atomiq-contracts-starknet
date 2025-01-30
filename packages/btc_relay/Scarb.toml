@@ -12,7 +12,7 @@ repository.workspace = true
 license-file.workspace = true
 
 [scripts]
-test = "node scripts/generate_test_data.js; snforge test -F test --no-default-features"
+test = "node scripts/generate_test_data.js; snforge test"
 
 [dependencies]
 starknet.workspace = true
@@ -20,11 +20,6 @@ starknet.workspace = true
 [dev-dependencies]
 assert_macros.workspace = true
 snforge_std.workspace = true
-
-[features]
-default = ["release"]
-release = []
-test = []
 
 [lib]
 
