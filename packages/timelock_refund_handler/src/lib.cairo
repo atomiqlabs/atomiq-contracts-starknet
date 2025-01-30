@@ -1,4 +1,6 @@
-
+//Refund handler for timestamp based timelocks
+//Claim data: C = u64 expiry timestamp encoded as felt252
+//Witness: W = empty
 #[starknet::contract]
 mod TimelockRefundHandler {
     use common::handlers::refund::IRefundHandler;

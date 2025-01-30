@@ -1,4 +1,6 @@
-
+//Claim handler for hashlocks
+//Claim data: C = Poseidon hash of [u32; 8] representation of the sha256 hash
+//Witness: W = [u32, 8] representation of the preimage to the sha256 hash, such that poseidon(sha256(W))==C
 #[starknet::contract]
 mod HashlockClaimHandler {
     use common::handlers::claim::IClaimHandler;
