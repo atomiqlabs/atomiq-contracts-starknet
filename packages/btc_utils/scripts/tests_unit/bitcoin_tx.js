@@ -33,7 +33,9 @@ function getTransactionTest(bitcoinjsTx) {
     const assertions = [
         ["get_version()", bitcoinjsTx.version],
         ["get_locktime()", bitcoinjsTx.locktime],
-        ["get_hash()", buffer256bitToU32Arr(Buffer.from(txId, "hex").reverse())]
+        ["get_hash()", buffer256bitToU32Arr(Buffer.from(txId, "hex").reverse())],
+        ["count_ins()", bitcoinjsTx.ins.length],
+        ["count_outs()", bitcoinjsTx.outs.length]
     ];
 
     for(let i=0;i<bitcoinjsTx.ins.length;i++) {
@@ -88,7 +90,9 @@ async function getRealTransactionTest(txId, noStripWitness) {
     const assertions = [
         ["get_version()", tx.version],
         ["get_locktime()", tx.locktime],
-        ["get_hash()", buffer256bitToU32Arr(Buffer.from(txId, "hex").reverse())]
+        ["get_hash()", buffer256bitToU32Arr(Buffer.from(txId, "hex").reverse())],
+        ["count_ins()", tx.vin.length],
+        ["count_outs()", tx.vout.length]
     ];
 
     for(let i=0;i<tx.vin.length;i++) {

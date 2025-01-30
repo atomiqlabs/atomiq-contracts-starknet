@@ -2,7 +2,7 @@ const {toCairoSerializedByteArray} = require("../utils/cairo_structs");
 const BN = require("bn.js");
 const crypto = require("crypto");
 
-function toVarInt(value) {
+function toCompactSize(value) {
     if(value.lte(new BN(0xFC))) {
         return value.toBuffer("le", 1);
     } else if(value.lte(new BN(0xFFFF))) {
@@ -15,22 +15,22 @@ function toVarInt(value) {
     throw new Error("Value too large");
 }
 
-function getVarIntTest(value, position = 0, bufferSize) {
-    const varintBuffer = toVarInt(value);
+function getCompactSizeTest(value, position = 0, bufferSize) {
+    const compactBuffer = toCompactSize(value);
     const buffer = crypto.randomBytes(bufferSize ?? position+varintBuffer.length);
-    varintBuffer.copy(buffer, position);
+    compactBuffer.copy(buffer, position);
     return "let mut serialized_byte_array = "+toCairoSerializedByteArray(buffer)+".span();\n"+
-        "assert_eq!(Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap().read_varint("+position+"), (0x"+value.toString("hex")+", "+varintBuffer.length+"));\n";
+        "assert_eq!(Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap().read_compact("+position+"), (0x"+value.toString("hex")+", "+compactBuffer.length+"));\n";
 }
 
-function getRandomAccessVarIntTest() {
+function getRandomAccessCompactSizeTest() {
     const value = new BN(crypto.randomBytes(8)).shrn(Math.floor(Math.random() * 64));
     const bufferSize = 9 + Math.floor(Math.random() * 128);
     const position = Math.floor(Math.random() * (bufferSize-9));
-    return getVarIntTest(value, position, bufferSize);
+    return getCompactSizeTest(value, position, bufferSize);
 }
 
 const numTests = 20;
 for(let i=0;i<numTests;i++) {
-    console.log(getRandomAccessVarIntTest());
+    console.log(getRandomAccessCompactSizeTest());
 }
