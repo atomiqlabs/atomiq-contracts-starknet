@@ -7,7 +7,8 @@ use snforge_std::{
 use starknet::contract_address::{ContractAddress, contract_address_const};
 
 use btc_relay::{
-    IBtcRelayDispatcher, IBtcRelayDispatcherTrait, BtcRelay
+    IBtcRelayDispatcher, IBtcRelayDispatcherTrait, BtcRelay,
+    IBtcRelayReadOnlyDispatcher, IBtcRelayReadOnlyDispatcherTrait
 };
 use btc_relay::structs::blockheader::BlockHeader;
 use btc_relay::structs::stored_blockheader::{StoredBlockHeader, StoredBlockHeaderPoseidonHashTrait};
@@ -50,12 +51,13 @@ pub fn submit_main_and_assert(
         @stored_blockheaders.to_events(contract_address, 1, stored_blockheaders.len())
     );
 
+    let read_dispatcher = IBtcRelayReadOnlyDispatcher{contract_address: dispatcher.contract_address};
     for stored_blockheader in stored_blockheaders {
-        dispatcher.verify_blockheader(*stored_blockheader);
+        read_dispatcher.verify_blockheader(*stored_blockheader);
     };
 
-    assert!(dispatcher.get_chainwork() == (*stored_blockheaders[stored_blockheaders.len() - 1]).chain_work);
-    assert!(dispatcher.get_blockheight() == (*stored_blockheaders[stored_blockheaders.len() - 1]).block_height);
+    assert!(read_dispatcher.get_chainwork() == (*stored_blockheaders[stored_blockheaders.len() - 1]).chain_work);
+    assert!(read_dispatcher.get_blockheight() == (*stored_blockheaders[stored_blockheaders.len() - 1]).block_height);
 }
 
 pub fn submit_short_fork_and_assert(
@@ -89,12 +91,13 @@ pub fn submit_short_fork_and_assert(
         )]
     );
 
+    let read_dispatcher = IBtcRelayReadOnlyDispatcher{contract_address: dispatcher.contract_address};
     for stored_blockheader in fork_stored_blockheaders {
-        dispatcher.verify_blockheader(*stored_blockheader);
+        read_dispatcher.verify_blockheader(*stored_blockheader);
     };
 
-    assert!(dispatcher.get_chainwork() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).chain_work);
-    assert!(dispatcher.get_blockheight() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).block_height);
+    assert!(read_dispatcher.get_chainwork() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).chain_work);
+    assert!(read_dispatcher.get_blockheight() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).block_height);
 }
 
 fn long_fork_assert_start_height(
@@ -240,8 +243,9 @@ pub fn submit_long_fork_and_assert(
 
         assert_fork_copied_to_main_chain(contract_address, fork_submitter, fork_id, fork_start_height, last_stored_blockheader.block_height);
 
-        assert!(dispatcher.get_chainwork() == last_stored_blockheader.chain_work);
-        assert!(dispatcher.get_blockheight() == last_stored_blockheader.block_height);
+        let read_dispatcher = IBtcRelayReadOnlyDispatcher{contract_address: dispatcher.contract_address};
+        assert!(read_dispatcher.get_chainwork() == last_stored_blockheader.chain_work);
+        assert!(read_dispatcher.get_blockheight() == last_stored_blockheader.block_height);
     } else {
         spy.assert_not_emitted(
             @array![(

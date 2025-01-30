@@ -17,6 +17,10 @@ pub trait IBtcRelay<TContractState> {
     //Starts/continues submitting a long fork (in case all the fork headers don't fit a in a single starknet transaction),
     // the fork becomes canonical as soon as it accumulates more chainwork than main chain
     fn submit_fork_blockheaders(ref self: TContractState, fork_id: felt252, block_headers: Span<BlockHeader>, stored_header: StoredBlockHeader);
+}
+
+#[starknet::interface]
+pub trait IBtcRelayReadOnly<TContractState> {
     //Returns the current chainwork of the main/canonical chain
     fn get_chainwork(self: @TContractState) -> u256;
     //Return the main chain tip blockheight
@@ -27,7 +31,6 @@ pub trait IBtcRelay<TContractState> {
 
 #[starknet::contract]
 pub mod BtcRelay {
-    use super::IBtcRelay;
     use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
@@ -221,7 +224,10 @@ pub mod BtcRelay {
             }
 
         }
+    }
 
+    #[abi(embed_v0)]
+    impl BtcRelayReadOnlyImpl of super::IBtcRelayReadOnly<ContractState> {
         fn get_chainwork(self: @ContractState) -> u256 {
             self.main_chainwork.read().into()
         }
@@ -241,6 +247,5 @@ pub mod BtcRelay {
             assert(stored_header.block_height <= main_blockheight, 'verify: future block');
             main_blockheight - stored_header.block_height + 1
         }
-
     }
 }

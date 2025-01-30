@@ -25,7 +25,7 @@ mod BitcoinTxIdClaimHandler {
     use core::hash::{HashStateTrait, HashStateExTrait};
     use core::poseidon::PoseidonTrait;
     use btc_utils::bitcoin_merkle_tree;
-    use btc_relay::{IBtcRelayDispatcher, IBtcRelayDispatcherTrait};
+    use btc_relay::{IBtcRelayReadOnlyDispatcher, IBtcRelayReadOnlyDispatcherTrait};
 
     #[storage]
     struct Storage {}
@@ -52,7 +52,7 @@ mod BitcoinTxIdClaimHandler {
             );
 
             //Verify blockheader against the light client
-            let block_confirmations = IBtcRelayDispatcher{contract_address: btc_relay_contract}.verify_blockheader(witness_struct.blockheader);
+            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: btc_relay_contract}.verify_blockheader(witness_struct.blockheader);
             assert(block_confirmations>=confirmations, 'txidlock: Confirmations');
 
             let mut witness_result = array![];
