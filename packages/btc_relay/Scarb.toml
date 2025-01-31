@@ -12,7 +12,7 @@ repository.workspace = true
 license-file.workspace = true
 
 [scripts]
-test = "node scripts/generate_test_data.js; snforge test"
+test = "snforge test"
 
 [dependencies]
 starknet.workspace = true

@@ -1,0 +1,17 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "main": "generate_test_data.js",
+  "scripts": {
+    "integration": "node ./generate_test_data.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bitcoinjs-lib": "^6.1.7",
+    "bn.js": "^5.2.1",
+    "micro-starknet": "^0.2.3",
+    "starknet": "^6.11.0"
+  }
+}

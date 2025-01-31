@@ -1,0 +1,12 @@
+require("./main_chain");
+require("./main_chain_diff_adjustment");
+require("./block_invalid_future_timestamp");
+require("./block_invalid_median_timestamp");
+require("./block_invalid_nbits_diff_adjustment");
+require("./block_invalid_nbits");
+require("./block_invalid_pow");
+require("./block_invalid_prev_block");
+require("./fork_chain_chainwork");
+require("./fork_chain_not_enough_chainwork");
+require("./fork_chain_not_enough_length");
+require("./fork_chain");
