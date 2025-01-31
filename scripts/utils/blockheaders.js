@@ -19,7 +19,7 @@ function toCairoBlockheader(header, spaces = 0) {
 
 function toCairoStoredBlockheader(header, epochStartTimestamp, prevBlockTimestamps, blockheaderVar, spaces = 0) {
     return toCairoStruct("StoredBlockHeader", {
-        blockheader: blockheaderVar ?? toCairoBlockheader(header),
+        blockheader: blockheaderVar ?? toCairoBlockheader(header, spaces+4),
         block_hash: toU32Array(Buffer.from(header.hash, "hex").reverse()),
         chain_work: "0x"+header.chainwork,
         block_height: header.height,

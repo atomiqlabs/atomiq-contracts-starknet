@@ -3,19 +3,19 @@ use btc_relay::structs::stored_blockheader::StoredBlockHeader;
 
 //Claim handler for bitcoin chain txId locks based on light client verification
 
-#[derive(Drop, Hash, Serde)]
-struct Commitment {
-    reversed_tx_id: [u32; 8],
-    confirmations: u32,
-    btc_relay_contract: ContractAddress
+#[derive(Copy, Drop, Hash, Serde)]
+pub struct Commitment {
+    pub reversed_tx_id: [u32; 8],
+    pub confirmations: u32,
+    pub btc_relay_contract: ContractAddress
 }
 
-#[derive(Drop, Serde)]
-struct Witness {
-    commitment: Commitment,
-    blockheader: StoredBlockHeader,
-    merkle_proof: Span<[u32; 8]>,
-    position: u32
+#[derive(Copy, Drop, Serde)]
+pub struct Witness {
+    pub commitment: Commitment,
+    pub blockheader: StoredBlockHeader,
+    pub merkle_proof: Span<[u32; 8]>,
+    pub position: u32
 }
 
 #[starknet::contract]
@@ -43,6 +43,10 @@ mod BitcoinTxIdClaimHandler {
             //Verify claim data commitment
             assert(PoseidonTrait::new().update_with(witness_struct.commitment).finalize() == claim_data, 'txidlock: Invalid commitment');
 
+            //Verify blockheader against the light client
+            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: btc_relay_contract}.verify_blockheader(witness_struct.blockheader);
+            assert(block_confirmations>=confirmations, 'txidlock: Confirmations');
+
             //Verify merkle proof
             bitcoin_merkle_tree::verify(
                 witness_struct.blockheader.blockheader.merkle_root,
@@ -50,10 +54,6 @@ mod BitcoinTxIdClaimHandler {
                 witness_struct.merkle_proof,
                 witness_struct.position
             );
-
-            //Verify blockheader against the light client
-            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: btc_relay_contract}.verify_blockheader(witness_struct.blockheader);
-            assert(block_confirmations>=confirmations, 'txidlock: Confirmations');
 
             let mut witness_result = array![];
             reversed_tx_id.serialize(ref witness_result);

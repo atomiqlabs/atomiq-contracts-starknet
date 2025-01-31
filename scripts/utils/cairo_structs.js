@@ -40,11 +40,15 @@ function toCairoArray(arr, spaces = 0, useNewline = false) {
     return prefix+"["+newline+arr.map(e => toCairoElement(e, useNewline ? spaces+4 : 0)).join(", "+newline)+newline+subPrefix+"]";
 }
 
-function toCairoSpan(arr, spaces = 0, useNewline = false) {
+function toCairoDynamicArray(arr, spaces = 0, useNewline = false) {
     const newline = useNewline ? "\n" : "";
     const prefix = " ".repeat(spaces);
     const subPrefix = useNewline ? prefix : "";
-    return prefix+"array!["+newline+arr.map(e => toCairoElement(e, useNewline ? spaces+4 : 0)).join(", "+newline)+newline+subPrefix+"].span()";
+    return prefix+"array!["+newline+arr.map(e => toCairoElement(e, useNewline ? spaces+4 : 0)).join(", "+newline)+newline+subPrefix+"]";
+}
+
+function toCairoSpan(arr, spaces = 0, useNewline = false) {
+    return toCairoDynamicArray(arr, spaces, useNewline)+".span()";
 }
 
 function toCairoTuple(arr, spaces = 0, useNewline = false) {
@@ -80,6 +84,7 @@ module.exports = {
     exportToCairoFile,
     toCairoSerializedByteArray,
     toCairoTuple,
+    toCairoDynamicArray,
     toCairoArray,
     toCairoElement,
     toCairoStruct,

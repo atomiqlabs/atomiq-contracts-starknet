@@ -54,7 +54,7 @@ function getDifficulty(target) {
     return target.notn(256).div(target.add(new BN(1))).add(new BN(1));
 }
 
-function mine(previousBlockhash, timestampNumber, nbits, previousChainwork = "0", previousBlockheight = -1, epochStartTimestamp, targetnBits = nbits, merkleRoot = crypto.randomBytes(32)) {
+function mine(previousBlockhash, timestampNumber, nbits, previousChainwork = "0", previousBlockheight = -1, epochStartTimestamp, targetnBits = nbits, merkleRoot = crypto.randomBytes(32).toString("hex")) {
     const timestamp = new BN(timestampNumber);
     const nbitsBuffer = Buffer.from(nbits, "hex");
     const realTarget = nbitsToTarget(nbitsBuffer);
@@ -65,7 +65,7 @@ function mine(previousBlockhash, timestampNumber, nbits, previousChainwork = "0"
     const blockheaderBuffer = Buffer.concat([
         Buffer.alloc(4),
         Buffer.from(previousBlockhash, "hex").reverse(),
-        merkleRoot,
+        Buffer.from(merkleRoot, "hex").reverse(),
         timestamp.toBuffer("le", 4),
         Buffer.from(nbitsBuffer).reverse(),
         Buffer.alloc(4)
