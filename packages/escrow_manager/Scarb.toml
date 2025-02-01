@@ -27,11 +27,6 @@ openzeppelin_access = "0.20.0"
 openzeppelin_introspection = "0.20.0"
 snforge_std.workspace = true
 
-[profile.dev.cairo]
-unstable-add-statements-code-locations-debug-info = true
-unstable-add-statements-functions-debug-info = true
-inlining-strategy = "avoid"
-
 [features]
 fuzzing = []
 

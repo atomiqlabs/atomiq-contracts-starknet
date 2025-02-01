@@ -1,1 +1,3 @@
 tests/data/*
+snfoundry_trace/
+coverage/
