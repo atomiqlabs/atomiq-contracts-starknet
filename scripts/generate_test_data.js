@@ -1,3 +1,12 @@
+require("./tests/btc_txid_claim_handler");
+console.log("Generated test data for: btc_txid_claim_handler");
+require("./tests/btc_output_claim_handler");
+console.log("Generated test data for: btc_output_claim_handler");
+require("./tests/btc_nonced_output_claim_handler");
+console.log("Generated test data for: btc_nonced_output_claim_handler");
 require("./tests/timelock_refund_handler");
+console.log("Generated test data for: timelock_refund_handler");
 require("./tests/hashlock_claim_handler");
+console.log("Generated test data for: hashlock_claim_handler");
 require("./tests/btc_relay");
+console.log("Generated test data for: btc_relay");

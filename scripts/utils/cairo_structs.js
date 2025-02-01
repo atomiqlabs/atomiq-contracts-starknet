@@ -11,7 +11,17 @@ function toCairoElement(e, spaces = 0) {
         return prefix+e;
     }
     if(Array.isArray(e)) return toCairoArray(e, spaces);
-    throw new Error("Unrecognized type");
+    throw new Error("Unrecognized type: "+e);
+}
+
+function serializeByteArray(buffer) {
+    const data = [];
+    for(let i=31;i<buffer.length;i+=31) {
+        data.push(buffer.slice(i-31, i));
+    }
+    const pendingWordLength = buffer.length - (data.length*31);
+    const pendingWord = pendingWordLength==0 ? Buffer.alloc(1) : buffer.slice(data.length*31);
+    return ["0x"+data.length.toString(16), ...data.map(e => "0x"+e.toString("hex")), "0x"+pendingWord.toString("hex"), "0x"+pendingWordLength.toString(16)];
 }
 
 function toU32Array(buffer) {
@@ -23,14 +33,7 @@ function toU32Array(buffer) {
 }
 
 function toCairoSerializedByteArray(buffer, spaces = 0) {
-    const data = [];
-    for(let i=31;i<buffer.length;i+=31) {
-        data.push(buffer.slice(i-31, i));
-    }
-    const pendingWordLength = buffer.length - (data.length*31);
-    const pendingWord = pendingWordLength==0 ? Buffer.alloc(1) : buffer.slice(data.length*31);
-    const arr = ["0x"+data.length.toString(16), ...data.map(e => "0x"+e.toString("hex")), "0x"+pendingWord.toString("hex"), "0x"+pendingWordLength.toString(16)];
-    return toCairoSpan(arr, spaces);
+    return toCairoSpan(serializeByteArray(buffer), spaces);
 }
 
 function toCairoArray(arr, spaces = 0, useNewline = false) {
@@ -81,6 +84,7 @@ function exportToCairoFile(variables, outputFile, imports = []) {
 }
 
 module.exports = {
+    serializeByteArray,
     exportToCairoFile,
     toCairoSerializedByteArray,
     toCairoTuple,

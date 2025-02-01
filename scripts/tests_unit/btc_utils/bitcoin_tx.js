@@ -1,11 +1,10 @@
 const {getBlockWithTransactions, getTransaction} = require("../../utils/bitcoind_rpc_utils");
 const {toCairoSerializedByteArray, toU32Array, toCairoArray} = require("../../utils/cairo_structs");
 const {poseidonHashRange} = require("../../utils/poseidon");
+const {getRandomTransaction} = require("../../utils/bitcoin_tx");
 const bitcoin = require("bitcoinjs-lib");
 const crypto = require("crypto");
 
-const randomU32 = () => Math.floor(Math.random() * 0x100000000);
-const randomU31 = () => Math.floor(Math.random() * 0x80000000);
 const getRandomBlockheight = () => Math.floor(Math.random() * 840000);
 
 function getDefineTransaction(txId, txBuffer) {
@@ -57,21 +56,6 @@ function getTransactionTest(bitcoinjsTx) {
     const assertionsStr = assertions.map(([method, value]) => "assert_eq!(result."+method+", "+value.toString()+");").join("\n")
 
     return getDefineTransaction(txId, txBuffer)+assertionsStr+"\n";
-}
-
-function getRandomTransaction() {
-    const tx = new bitcoin.Transaction();
-    tx.locktime = randomU32();
-    tx.version = randomU31();
-    const inputs = 1+Math.floor(Math.random() * 5);
-    for(let i=0;i<inputs;i++) {
-        tx.addInput(crypto.randomBytes(32), randomU32(), randomU32(), crypto.randomBytes(Math.floor(Math.random() * 512)));
-    }
-    const outputs = 1+Math.floor(Math.random() * 5);
-    for(let i=0;i<outputs;i++) {
-        tx.addOutput(crypto.randomBytes(Math.floor(Math.random() * 64)), Math.floor(Math.random() * 2100_000_000_000_000));
-    }
-    return tx;
 }
 
 function getRandomTransactionTest() {

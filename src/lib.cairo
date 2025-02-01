@@ -1,5 +1,8 @@
 pub use btc_relay::*;
 pub use escrow_manager::*;
+pub use btc_txid_claim_handler::*;
+pub use btc_output_claim_handler::*;
+pub use btc_nonced_output_claim_handler::*;
 pub use hashlock_claim_handler::*;
 pub use timelock_refund_handler::*;
 pub use common::*;

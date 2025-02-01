@@ -8,26 +8,27 @@ use btc_relay::structs::stored_blockheader::StoredBlockHeader;
 //The last 3 bytes of the nSequence need to be the same for every input
 //First 4 bits of the nSequence need to be set for every input (ensuring nSequence has no consensus meaning)
 
-#[derive(Drop, Hash, Serde)]
-struct Commitment {
-    txo_hash: felt252, //Hash of poseidon([nonce, output_amount, poseidon(to_bytes31_array(output_script))])
-    confirmations: u32,
-    btc_relay_contract: ContractAddress
+#[derive(Copy, Drop, Hash, Serde)]
+pub struct Commitment {
+    pub txo_hash: felt252, //Hash of poseidon([nonce, output_amount, poseidon(to_bytes31_array(output_script))])
+    pub confirmations: u32,
+    pub btc_relay_contract: ContractAddress
 }
 
 #[derive(Drop, Serde)]
-struct Witness {
-    commitment: Commitment,
-    blockheader: StoredBlockHeader,
-    transaction: ByteArray,
-    vout: u32,
-    merkle_proof: Span<[u32; 8]>,
-    position: u32
+pub struct Witness {
+    pub commitment: Commitment,
+    pub blockheader: StoredBlockHeader,
+    pub transaction: ByteArray,
+    pub vout: u32,
+    pub merkle_proof: Span<[u32; 8]>,
+    pub position: u32
 }
 
 #[starknet::contract]
 mod BitcoinNoncedOutputClaimHandler {
     use super::*;
+    use core::num::traits::CheckedSub;
     use common::handlers::claim::IClaimHandler;
     use core::hash::{HashStateTrait, HashStateExTrait};
     use core::poseidon::PoseidonTrait;
@@ -42,7 +43,7 @@ mod BitcoinNoncedOutputClaimHandler {
     impl BitcoinNoncedOutputClaimHandlerImpl of IClaimHandler<ContractState> {
         fn claim(self: @ContractState, claim_data: felt252, witness: Array<felt252>) -> Span<felt252> {
             let mut witness_span = witness.span();
-            let witness_struct = Serde::<Witness>::deserialize(ref witness_span).expect('btcoutlock: Deserialize witness');
+            let witness_struct = Serde::<Witness>::deserialize(ref witness_span).expect('btcnoutlock: Deserialize witnes');
             
             let expected_txo_hash = witness_struct.commitment.txo_hash;
             let confirmations = witness_struct.commitment.confirmations;
@@ -54,7 +55,13 @@ mod BitcoinNoncedOutputClaimHandler {
             //Parse transaction
             let transaction = BitcoinTransactionImpl::from_byte_array(@witness_struct.transaction);
 
-            //Check the nonce is correct
+            //Check output is valid
+            let txo = transaction.get_out(witness_struct.vout).expect('btcnoutlock: Invalid vout').unbox();
+
+            //Get the tx locktime
+            let locktimeSub500M = transaction.get_locktime().checked_sub(500_000_000).expect('btcnoutlock: Locktime too low');
+
+            //Check the nSequence is correct
             //First input
             let first_n_sequence = transaction.get_in(0).expect('btcnoutlock: Empty ins').unbox().get_n_sequence();
             assert(first_n_sequence & 0xF0000000 == 0xF0000000, 'btcnoutlock: nSequence bits'); //Ensure first 4 bits are set, such that the nSequence has no consensus meaning
@@ -68,11 +75,14 @@ mod BitcoinNoncedOutputClaimHandler {
                 index += 1;
             };
 
-            //Check output is valid
-            let txo = transaction.get_out(witness_struct.vout).expect('btcnoutlock: Invalid vout').unbox();
+            let nonce: felt252 = (locktimeSub500M.into() * 0x1000000) + n_sequence.into();
 
-            let txo_hash = PoseidonTrait::new().update(n_sequence.into()).update(txo.get_value().into()).update(txo.get_script_hash()).finalize();
+            let txo_hash = PoseidonTrait::new().update(nonce).update(txo.get_value().into()).update(txo.get_script_hash()).finalize();
             assert(txo_hash == expected_txo_hash, 'btcnoutlock: Invalid output');
+
+            //Verify blockheader against the light client
+            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: btc_relay_contract}.verify_blockheader(witness_struct.blockheader);
+            assert(block_confirmations>=confirmations, 'btcnoutlock: Confirmations');
 
             let transaction_hash = transaction.get_hash();
 
@@ -83,10 +93,6 @@ mod BitcoinNoncedOutputClaimHandler {
                 witness_struct.merkle_proof,
                 witness_struct.position
             );
-
-            //Verify blockheader against the light client
-            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: btc_relay_contract}.verify_blockheader(witness_struct.blockheader);
-            assert(block_confirmations>=confirmations, 'txidlock: Confirmations');
 
             let mut witness_result = array![];
             transaction_hash.serialize(ref witness_result);
