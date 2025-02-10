@@ -36,15 +36,30 @@ pub mod MockBtcRelay {
         }
 
         fn verify_blockheader(self: @ContractState, stored_header: StoredBlockHeader) -> u32 {
-            assert(
-                self.main_chain.entry(stored_header.block_height.into()).read() == stored_header.get_hash(),
-                'verify: block commitment'
-            );
             let main_blockheight: u32 = self.main_blockheight.read().try_into().unwrap();
             //Check that the block height isn't past the tip, this can happen if there is a reorg, where a shorter
             // chain becomes the cannonical one, this can happen due to the heaviest work rule (and not lonest chain rule)
             assert(stored_header.block_height <= main_blockheight, 'verify: future block');
+
+            assert(
+                self.get_commit_hash(stored_header.block_height) == stored_header.get_hash(),
+                'verify: block commitment'
+            );
+
             main_blockheight - stored_header.block_height + 1
+        }
+
+        fn get_commit_hash(self: @ContractState, height: u32) -> felt252 {
+            //Check that the block height isn't past the tip, this can happen if there is a reorg, where a shorter
+            // chain becomes the cannonical one, this can happen due to the heaviest work rule (and not lonest chain rule)
+            let main_blockheight: u32 = self.main_blockheight.read().try_into().unwrap();
+            assert(height <= main_blockheight, 'verify: future block');
+
+            self.main_chain.entry(height.into()).read()
+        }
+
+        fn get_tip_commit_hash(self: @ContractState) -> felt252 {
+            self.main_chain.entry(self.main_blockheight.read()).read()
         }
     }
 }

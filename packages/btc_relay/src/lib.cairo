@@ -27,11 +27,16 @@ pub trait IBtcRelayReadOnly<TContractState> {
     fn get_blockheight(self: @TContractState) -> u32;
     //Verifies if a provided stored header is part of the main chain
     fn verify_blockheader(self: @TContractState, stored_header: StoredBlockHeader) -> u32;
+    //Returns the main/canonical chain commitment hash at a given blockheight
+    fn get_commit_hash(self: @TContractState, height: u32) -> felt252;
+    //Returns the main/canonical chain commitment hash at the blockchain tip
+    fn get_tip_commit_hash(self: @TContractState) -> felt252;
 }
 
 #[starknet::contract]
 pub mod BtcRelay {
-    use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
+    use super::IBtcRelayReadOnly;
+use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
@@ -237,15 +242,30 @@ pub mod BtcRelay {
         }
 
         fn verify_blockheader(self: @ContractState, stored_header: StoredBlockHeader) -> u32 {
-            assert(
-                self.main_chain.entry(stored_header.block_height.into()).read() == stored_header.get_hash(),
-                'verify: block commitment'
-            );
             let main_blockheight: u32 = self.main_blockheight.read().try_into().unwrap();
             //Check that the block height isn't past the tip, this can happen if there is a reorg, where a shorter
             // chain becomes the cannonical one, this can happen due to the heaviest work rule (and not lonest chain rule)
             assert(stored_header.block_height <= main_blockheight, 'verify: future block');
+
+            assert(
+                self.get_commit_hash(stored_header.block_height) == stored_header.get_hash(),
+                'verify: block commitment'
+            );
+
             main_blockheight - stored_header.block_height + 1
+        }
+
+        fn get_commit_hash(self: @ContractState, height: u32) -> felt252 {
+            //Check that the block height isn't past the tip, this can happen if there is a reorg, where a shorter
+            // chain becomes the cannonical one, this can happen due to the heaviest work rule (and not lonest chain rule)
+            let main_blockheight: u32 = self.main_blockheight.read().try_into().unwrap();
+            assert(height <= main_blockheight, 'verify: future block');
+
+            self.main_chain.entry(height.into()).read()
+        }
+
+        fn get_tip_commit_hash(self: @ContractState) -> felt252 {
+            self.main_chain.entry(self.main_blockheight.read()).read()
         }
     }
 }

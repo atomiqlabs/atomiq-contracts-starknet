@@ -54,10 +54,14 @@ pub fn submit_main_and_assert(
     let read_dispatcher = IBtcRelayReadOnlyDispatcher{contract_address: dispatcher.contract_address};
     for stored_blockheader in stored_blockheaders {
         read_dispatcher.verify_blockheader(*stored_blockheader);
+        let block_commitment = (*stored_blockheader).get_hash();
+        assert_eq!(load_main_chain_commitment(contract_address, *stored_blockheader.block_height), block_commitment);
+        assert_eq!(read_dispatcher.get_commit_hash(*stored_blockheader.block_height), block_commitment);
     };
 
     assert!(read_dispatcher.get_chainwork() == (*stored_blockheaders[stored_blockheaders.len() - 1]).chain_work);
     assert!(read_dispatcher.get_blockheight() == (*stored_blockheaders[stored_blockheaders.len() - 1]).block_height);
+    assert!(read_dispatcher.get_tip_commit_hash() == (*stored_blockheaders[stored_blockheaders.len() - 1]).get_hash());
 }
 
 pub fn submit_short_fork_and_assert(
@@ -94,10 +98,14 @@ pub fn submit_short_fork_and_assert(
     let read_dispatcher = IBtcRelayReadOnlyDispatcher{contract_address: dispatcher.contract_address};
     for stored_blockheader in fork_stored_blockheaders {
         read_dispatcher.verify_blockheader(*stored_blockheader);
+        let block_commitment = (*stored_blockheader).get_hash();
+        assert_eq!(load_main_chain_commitment(contract_address, *stored_blockheader.block_height), block_commitment);
+        assert_eq!(read_dispatcher.get_commit_hash(*stored_blockheader.block_height), block_commitment);
     };
 
     assert!(read_dispatcher.get_chainwork() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).chain_work);
     assert!(read_dispatcher.get_blockheight() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).block_height);
+    assert!(read_dispatcher.get_tip_commit_hash() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).get_hash());
 }
 
 fn long_fork_assert_start_height(
@@ -246,6 +254,7 @@ pub fn submit_long_fork_and_assert(
         let read_dispatcher = IBtcRelayReadOnlyDispatcher{contract_address: dispatcher.contract_address};
         assert!(read_dispatcher.get_chainwork() == last_stored_blockheader.chain_work);
         assert!(read_dispatcher.get_blockheight() == last_stored_blockheader.block_height);
+        assert!(read_dispatcher.get_tip_commit_hash() == (*fork_stored_blockheaders[fork_stored_blockheaders.len() - 1]).get_hash());
     } else {
         spy.assert_not_emitted(
             @array![(

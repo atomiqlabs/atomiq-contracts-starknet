@@ -15,10 +15,10 @@ pub struct Commitment {
 pub struct Witness {
     pub commitment: Commitment,
     pub blockheader: StoredBlockHeader,
-    pub transaction: ByteArray,
-    pub vout: u32,
     pub merkle_proof: Span<[u32; 8]>,
-    pub position: u32
+    pub position: u32,
+    pub transaction: ByteArray,
+    pub vout: u32
 }
 
 #[starknet::contract]

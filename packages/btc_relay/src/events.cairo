@@ -14,11 +14,11 @@ pub struct StoreHeader {
 #[derive(Drop, starknet::Event)]
 pub struct StoreForkHeader {
     #[key]
-    pub fork_id: felt252,
-    #[key]
     pub commit_hash: felt252,
     #[key]
     pub block_hash_poseidon: felt252, //Blockhash hashed with Poseidon
+    #[key]
+    pub fork_id: felt252,
 
     pub header: StoredBlockHeader
 }

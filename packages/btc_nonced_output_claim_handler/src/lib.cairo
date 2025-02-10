@@ -19,10 +19,10 @@ pub struct Commitment {
 pub struct Witness {
     pub commitment: Commitment,
     pub blockheader: StoredBlockHeader,
+    pub merkle_proof: Span<[u32; 8]>,
+    pub position: u32,
     pub transaction: ByteArray,
     pub vout: u32,
-    pub merkle_proof: Span<[u32; 8]>,
-    pub position: u32
 }
 
 #[starknet::contract]
@@ -59,7 +59,7 @@ mod BitcoinNoncedOutputClaimHandler {
             let txo = transaction.get_out(witness_struct.vout).expect('btcnoutlock: Invalid vout').unbox();
 
             //Get the tx locktime
-            let locktimeSub500M = transaction.get_locktime().checked_sub(500_000_000).expect('btcnoutlock: Locktime too low');
+            let locktime_sub_500m = transaction.get_locktime().checked_sub(500_000_000).expect('btcnoutlock: Locktime too low');
 
             //Check the nSequence is correct
             //First input
@@ -75,7 +75,7 @@ mod BitcoinNoncedOutputClaimHandler {
                 index += 1;
             };
 
-            let nonce: felt252 = (locktimeSub500M.into() * 0x1000000) + n_sequence.into();
+            let nonce: felt252 = (locktime_sub_500m.into() * 0x1000000) + n_sequence.into();
 
             let txo_hash = PoseidonTrait::new().update(nonce).update(txo.get_value().into()).update(txo.get_script_hash()).finalize();
             assert(txo_hash == expected_txo_hash, 'btcnoutlock: Invalid output');
