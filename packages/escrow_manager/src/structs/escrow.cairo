@@ -32,9 +32,9 @@ use core::poseidon::PoseidonTrait;
 //     pub calldata: Span<felt252>
 // }
 
-pub const FLAG_PAY_OUT: u8 = 0x01;
-pub const FLAG_PAY_IN: u8 = 0x02;
-pub const FLAG_REPUTATION: u8 = 0x04;
+pub const FLAG_PAY_OUT: u128 = 0x01;
+pub const FLAG_PAY_IN: u128 = 0x02;
+pub const FLAG_REPUTATION: u128 = 0x04;
 
 //Escrow data, this is hashed and used as a storage key for the escrow state mapping
 #[derive(Drop, Hash, Copy, Serde, Debug)]
@@ -51,7 +51,7 @@ pub struct EscrowData {
     pub claim_handler: ContractAddress,
 
     //Misc escrow data flags, currently defined: payIn, payOut, reputation
-    pub flags: u8,
+    pub flags: u128,
 
     //Data provided to the claim handler along with the witness to check claimability
     pub claim_data: felt252,
@@ -107,7 +107,7 @@ mod tests {
     use super::*;
     use starknet::contract_address::{contract_address_const};
 
-    fn get_escrow_data(flags: u8, security_deposit: u256, claimer_bounty: u256) -> EscrowData {
+    fn get_escrow_data(flags: u128, security_deposit: u256, claimer_bounty: u256) -> EscrowData {
         EscrowData {
             offerer: contract_address_const::<'offerer'>(),
             claimer: contract_address_const::<'claimer'>(),

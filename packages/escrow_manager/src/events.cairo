@@ -9,7 +9,10 @@ pub struct Initialize {
     #[key]
     pub claim_data: felt252,
     #[key]
-    pub escrow_hash: felt252
+    pub escrow_hash: felt252,
+
+    pub claim_handler: ContractAddress,
+    pub refund_handler: ContractAddress
 }
 
 #[derive(Drop, starknet::Event)]
@@ -24,7 +27,8 @@ pub struct Claim {
     pub escrow_hash: felt252,
 
     //Witness result as returned by the claim handler
-    pub witness_result: Span<felt252>
+    pub witness_result: Span<felt252>,
+    pub claim_handler: ContractAddress
 }
 
 #[derive(Drop, starknet::Event)]
@@ -39,5 +43,6 @@ pub struct Refund {
     pub escrow_hash: felt252,
 
     //Witness result as returned by the refund handler
-    pub witness_result: Span<felt252>
+    pub witness_result: Span<felt252>,
+    pub refund_handler: ContractAddress
 }

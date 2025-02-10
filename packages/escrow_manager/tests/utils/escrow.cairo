@@ -56,7 +56,7 @@ pub fn create_escrow_data(
         erc20::mint(context.gas_token, sender, gas_mint_amount);
     }
 
-    let flags: u8 = if pay_in { structs::escrow::FLAG_PAY_IN } else { 0 } +
+    let flags: u128 = if pay_in { structs::escrow::FLAG_PAY_IN } else { 0 } +
         if pay_out { structs::escrow::FLAG_PAY_OUT } else { 0 } +
         if reputation { structs::escrow::FLAG_REPUTATION } else { 0 };
 
@@ -141,7 +141,9 @@ pub fn _init_escrow_and_assert(
             offerer: escrow.offerer,
             claimer: escrow.claimer,
             claim_data: escrow.claim_data,
-            escrow_hash
+            escrow_hash,
+            claim_handler: escrow.claim_handler,
+            refund_handler: escrow.refund_handler
         }))]
     );
 

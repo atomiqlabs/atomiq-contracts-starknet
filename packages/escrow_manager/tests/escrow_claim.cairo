@@ -60,7 +60,8 @@ fn claim_escrow(
             claimer: escrow.claimer,
             claim_data: escrow.claim_data,
             escrow_hash,
-            witness_result: expected_witness
+            witness_result: expected_witness,
+            claim_handler: escrow.claim_handler
         }))]
     );
 

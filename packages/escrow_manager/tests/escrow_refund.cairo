@@ -61,7 +61,8 @@ fn refund_escrow(
             claimer: escrow.claimer,
             claim_data: escrow.claim_data,
             escrow_hash,
-            witness_result: expected_witness
+            witness_result: expected_witness,
+            refund_handler: escrow.refund_handler
         }))]
     );
 

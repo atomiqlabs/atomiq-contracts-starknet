@@ -109,7 +109,10 @@ pub mod EscrowManager {
                 offerer: escrow.offerer,
                 claimer: escrow.claimer,
                 claim_data: escrow.claim_data,
-                escrow_hash: escrow_hash
+                escrow_hash: escrow_hash,
+
+                claim_handler: escrow.claim_handler,
+                refund_handler: escrow.refund_handler
             });
         }
 
@@ -145,7 +148,8 @@ pub mod EscrowManager {
                 claimer: escrow.claimer,
                 claim_data: escrow.claim_data,
                 escrow_hash: escrow_hash,
-                witness_result: claim_result
+                witness_result: claim_result,
+                claim_handler: escrow.claim_handler
             });
         }
 
@@ -180,7 +184,8 @@ pub mod EscrowManager {
                 claimer: escrow.claimer,
                 claim_data: escrow.claim_data,
                 escrow_hash: escrow_hash,
-                witness_result: refund_result
+                witness_result: refund_result,
+                refund_handler: escrow.refund_handler
             });
         }
 
@@ -214,7 +219,8 @@ pub mod EscrowManager {
                 claimer: escrow.claimer,
                 claim_data: escrow.claim_data,
                 escrow_hash: escrow_hash,
-                witness_result: array![].span()
+                witness_result: array![].span(),
+                refund_handler: 0.try_into().unwrap()
             });
         }
     }
