@@ -11,6 +11,10 @@ documentation.workspace = true
 repository.workspace = true
 license-file.workspace = true
 
+[features]
+mainnet = []
+testnet = []
+
 [scripts]
 test = "snforge test"
 

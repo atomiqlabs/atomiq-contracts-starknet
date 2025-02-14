@@ -12,9 +12,9 @@ license-file.workspace = true
 
 [dependencies]
 starknet.workspace = true
-common = { path = "../common" }
-btc_relay = { path = "../btc_relay" }
-btc_utils = { path = "../btc_utils" }
+common.workspace = true
+btc_relay.workspace = true
+btc_utils.workspace = true
 
 [dev-dependencies]
 assert_macros.workspace = true

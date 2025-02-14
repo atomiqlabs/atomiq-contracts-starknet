@@ -2,10 +2,10 @@ use core::hash::{HashStateExTrait, HashStateTrait};
 use core::poseidon::{PoseidonTrait};
 use crate::structs::blockheader::{BlockHeader, BlockHeaderSha256HashTrait};
 use crate::utils::nbits::nBitsConvertorTrait;
-use crate::utils::u256_utils::U32LEArrayToU256ParserTrait;
 use crate::utils::endianness::ReverseEndiannessTrait;
 use crate::difficulty;
 use crate::constants;
+use crate::utils::u256_utils::U32LEArrayToU256ParserTrait;
 
 //Representing the blockchain state at a specific blockheight,
 // the hash of this acts as a commitment that is saved in the main_chain map
@@ -66,7 +66,7 @@ pub impl StoredBlockHeaderUpdate of StoredBlockHeaderUpdateTrait {
         //Check PoW
         let target: u256 = block_header.nbits.to_target();
         let block_hash: [u32; 8] = block_header.dbl_sha256_hash();
-        assert(block_hash.from_le_to_u256() < target, 'update_chain: invalid PoW');
+        assert(block_hash.from_le_to_u256() < target, 'update_chain: invalid PoW'); //Comment this line for testnet deployment
 
         //Verify timestamp is larger than median of last 11 block timestamps
         let mut count: u8 = 0;

@@ -19,7 +19,7 @@ starknet.workspace = true
 openzeppelin_account = "0.20.0"
 openzeppelin_token = "0.20.0"
 openzeppelin_utils = "0.20.0"
-common = { path = "../common" }
+common.workspace = true
 
 [dev-dependencies]
 assert_macros.workspace = true
