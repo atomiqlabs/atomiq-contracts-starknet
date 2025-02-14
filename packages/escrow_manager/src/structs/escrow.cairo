@@ -1,36 +1,7 @@
 use starknet::ContractAddress;
 use core::hash::{HashStateTrait, HashStateExTrait};
 use core::poseidon::PoseidonTrait;
-
-//////////////////////////////////////////////////////////////////
-/// To be used when ISafeDispatcher starts working on starknet ///
-//////////////////////////////////////////////////////////////////
-// impl Felt252SpanImpl<HashState, +HashStateTrait<HashState>, +Drop<HashState>> of Hash<Span<felt252>, HashState> {
-//     fn update_state(state: HashState, value: Span<felt252>) -> HashState {
-//         let mut result = state;
-//         for element in value {
-//             result = result.update(*element);
-//         };
-//         result
-//     }
-// }
-
-// impl ContractCallSpanImpl<HashState, +HashStateTrait<HashState>, +Drop<HashState>> of Hash<Span<ContractCall>, HashState> {
-//     fn update_state(state: HashState, value: Span<ContractCall>) -> HashState {
-//         let mut result = state;
-//         for element in value {
-//             result = result.update_with(*element);
-//         };
-//         result
-//     }
-// }
-
-// #[derive(Drop, Hash, Copy, Serde)]
-// pub struct ContractCall {
-//     pub address: ContractAddress,
-//     pub selector: felt252,
-//     pub calldata: Span<felt252>
-// }
+use crate::structs::contract_call::{ContractCall, ContractCallSpanHashImpl};
 
 pub const FLAG_PAY_OUT: u128 = 0x01;
 pub const FLAG_PAY_IN: u128 = 0x02;
@@ -68,9 +39,9 @@ pub struct EscrowData {
     //Claimer bounty that can be claimed by a 3rd party claimer if he were to claim this swap on behalf of claimer
     pub claimer_bounty: u256,
 
-    //TO BE ADDED: Misc contract calls to be executed during claim instead of just paying out the funds to the claimer
+    //Misc contract calls to be executed during claim instead of just paying out the funds to the claimer
     // can support automatic staking/swapping/depositing on claim 
-    // pub success_action: Span<ContractCall>
+    pub success_action: Span<ContractCall>
 }
 
 #[generate_trait]
@@ -124,7 +95,9 @@ mod tests {
 
             fee_token: contract_address_const::<'fee_token'>(),
             security_deposit,
-            claimer_bounty
+            claimer_bounty,
+
+            success_action: array![].span()
         }
     }
 

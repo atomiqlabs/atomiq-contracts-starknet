@@ -46,3 +46,9 @@ pub struct Refund {
     pub witness_result: Span<felt252>,
     pub refund_handler: ContractAddress
 }
+
+
+#[derive(Drop, starknet::Event)]
+pub struct SuccessActionExecuteError {
+    pub error: Span<felt252>
+}

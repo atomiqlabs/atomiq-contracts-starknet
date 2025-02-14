@@ -12,3 +12,9 @@ pub fn transfer_out(token: ContractAddress, dst: ContractAddress, amount: u256) 
     let erc20_dispatcher = IERC20Dispatcher { contract_address: token };
     assert(erc20_dispatcher.transfer(dst, amount), 'transfer_out: transfer');
 }
+
+//Sends out ERC20 token from the current contract
+pub fn balance_of(token: ContractAddress, owner: ContractAddress) -> u256 {
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token };
+    erc20_dispatcher.balance_of(owner)
+}
