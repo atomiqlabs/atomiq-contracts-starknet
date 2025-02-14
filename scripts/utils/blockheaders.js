@@ -73,5 +73,6 @@ function exportChainToCairoFile(headers, startBlock, endBlock, currTimestamp, ou
 module.exports = {
     toCairoBlockheader,
     toCairoStoredBlockheader,
-    exportChainToCairoFile
+    exportChainToCairoFile,
+    u32ToReversedHex
 };
