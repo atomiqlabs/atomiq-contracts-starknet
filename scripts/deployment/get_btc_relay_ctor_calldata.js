@@ -4,7 +4,7 @@ const {toU32Array} = require("../utils/cairo_structs");
 const {cairo, CallData} = require("starknet");
 
 async function main() {
-    const height = 883158;
+    const height = 883853;
     const blockheader = await getBlockheader(height);
     const epochStartBlockheader = await getBlockheader(Math.floor(height/2016)*2016);
     const prevBlockTimestamps = [];

@@ -51,8 +51,8 @@ pub impl StoredBlockHeaderUpdate of StoredBlockHeaderUpdateTrait {
                 prev_block_timestamp,
                 self.last_diff_adjustment,
                 self.blockheader.nbits.to_target()
-            ).to_nbits();
-            assert(block_header.nbits == computed_nbits, 'update_chain: new nbits');
+            ).to_nbits(); //Comment this line for testnet deployment
+            assert(block_header.nbits == computed_nbits, 'update_chain: new nbits'); //Comment this line for testnet deployment
             //Even though timestamp of the last block in epoch is used to re-target PoW difficulty, the first
             // block in a new epoch is used as last_diff_adjustment, the time it takes to mine the first block
             // in every epoch is therefore not taken into consideration when retargetting PoW - one of many
@@ -60,13 +60,13 @@ pub impl StoredBlockHeaderUpdate of StoredBlockHeaderUpdateTrait {
             self.last_diff_adjustment = curr_block_timestamp;
         } else {
             //nbits must be same as last block
-            assert(block_header.nbits == self.blockheader.nbits, 'update_chain: nbits');
+            assert(block_header.nbits == self.blockheader.nbits, 'update_chain: nbits'); //Comment this line for testnet deployment
         }
 
         //Check PoW
         let target: u256 = block_header.nbits.to_target();
         let block_hash: [u32; 8] = block_header.dbl_sha256_hash();
-        assert(block_hash.from_le_to_u256() < target, 'update_chain: invalid PoW'); //Comment this line for testnet deployment
+        assert(block_hash.from_le_to_u256() < target, 'update_chain: invalid PoW');
 
         //Verify timestamp is larger than median of last 11 block timestamps
         let mut count: u8 = 0;
