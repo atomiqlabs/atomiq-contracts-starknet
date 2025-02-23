@@ -1,6 +1,11 @@
 const {toCairoSerializedByteArray, toU32Array, toCairoArray} = require("../../utils/cairo_structs");
 const {poseidonHashRange} = require("../../utils/poseidon");
 const crypto = require("crypto");
+const BN = require("bn.js");
+
+const STARK_PRIME = new BN(2).pow(new BN(251)).add(new BN(17).mul(new BN(2).pow(new BN(192)))).add(new BN(1));
+
+console.log("Stark prime P: "+STARK_PRIME.toString("hex"));
 
 const assertionTable = [
     [2, (buffer, index_le, noValue) => [ "buffer.read_u16_le("+index_le+")", noValue ? null : "0x"+buffer.readUInt16LE(index_le).toString(16) ], "u16_le"],
@@ -13,10 +18,10 @@ const assertionTable = [
     // [16, (buffer, index_be, noValue) => [ "buffer.read_u128_be("+index_be+")", noValue ? null : "0x"+buffer.subarray(index_be, index_be+16).toString("hex") ], "u128_be"],
     // [32, (buffer, index_le, noValue) => [ "buffer.read_u256_le("+index_le+")", noValue ? null : "0x"+Buffer.from([...buffer.subarray(index_le, index_le+32)]).reverse().toString("hex") ], "u256_le"],
     [32, (buffer, index_be, noValue) => [ "buffer.read_u256("+index_be+")", noValue ? null : "0x"+buffer.subarray(index_be, index_be+32).toString("hex") ], "u256"],
-    [31, (buffer, index, noValue) => [ "buffer.read_felt252("+index+")", noValue ? null : "0x"+buffer.subarray(index, index+31).toString("hex") ], "felt252"],
+    [31, (buffer, index, noValue) => [ "buffer.read_bytes31("+index+")", noValue ? null : "0x"+buffer.subarray(index, index+31).toString("hex") ], "felt252"],
 ];
-for(let i=1;i<=31;i++) {
-    assertionTable.push([i, (buffer, index, noValue) => ["buffer.read_partial_felt252("+index+", "+i+")", noValue ? null : "0x"+buffer.subarray(index, index+i).toString("hex")], "felt252_"+i+"b"]);
+for(let i=1;i<=32;i++) {
+    assertionTable.push([i, (buffer, index, noValue) => ["buffer.read_partial_felt252("+index+", "+i+")", noValue ? null : "0x"+new BN(buffer.subarray(index, index+i)).mod(STARK_PRIME).toString("hex")], "felt252_"+i+"b"]);
 }
 
 function assertRandomAccess(buffer, type) {
