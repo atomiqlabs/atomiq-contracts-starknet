@@ -30,7 +30,6 @@ pub mod EscrowManager {
     use crate::structs::escrow::{EscrowData, EscrowDataImpl};
     use crate::sighash;
     use crate::utils::snip6;
-    use crate::utils::erc20;
     use crate::events;
     use common::handlers::claim::{IClaimHandlerDispatcher, IClaimHandlerDispatcherTrait};
     use common::handlers::refund::{IRefundHandlerDispatcher, IRefundHandlerDispatcherTrait};
@@ -119,7 +118,7 @@ pub mod EscrowManager {
 
             //Transfer deposit
             let deposit_amount = escrow.get_total_deposit();
-            if deposit_amount!=0 { erc20::transfer_in(escrow.fee_token, caller, deposit_amount) };
+            if deposit_amount!=0 { erc20_utils::transfer_in(escrow.fee_token, caller, deposit_amount) };
 
             //Transfer funds
             self._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
@@ -152,11 +151,11 @@ pub mod EscrowManager {
             //Pay out claimer bounty
             if escrow.claimer_bounty != 0 {
                 let caller = get_caller_address();
-                erc20::transfer_out(escrow.fee_token, caller, escrow.claimer_bounty);
+                erc20_utils::transfer_out(escrow.fee_token, caller, escrow.claimer_bounty);
             }
             let security_deposit = escrow.security_deposit.saturating_sub(escrow.claimer_bounty);
             if security_deposit != 0 {
-                erc20::transfer_out(escrow.fee_token, escrow.claimer, security_deposit);
+                erc20_utils::transfer_out(escrow.fee_token, escrow.claimer, security_deposit);
             }
 
             if escrow.success_action.len()==0 {
@@ -193,11 +192,11 @@ pub mod EscrowManager {
 
             //Pay out security deposit
             if escrow.security_deposit != 0 {
-                erc20::transfer_out(escrow.fee_token, escrow.offerer, escrow.security_deposit);
+                erc20_utils::transfer_out(escrow.fee_token, escrow.offerer, escrow.security_deposit);
             }
             let claimer_bounty = escrow.claimer_bounty.saturating_sub(escrow.security_deposit);
             if claimer_bounty != 0 {
-                erc20::transfer_out(escrow.fee_token, escrow.claimer, claimer_bounty);
+                erc20_utils::transfer_out(escrow.fee_token, escrow.claimer, claimer_bounty);
             }
 
             //Refund funds
@@ -233,7 +232,7 @@ pub mod EscrowManager {
 
             //Pay out the whole deposit
             let deposit_amount = if escrow.security_deposit > escrow.claimer_bounty { escrow.security_deposit } else { escrow.claimer_bounty };
-            erc20::transfer_out(escrow.fee_token, escrow.claimer, deposit_amount);
+            erc20_utils::transfer_out(escrow.fee_token, escrow.claimer, deposit_amount);
 
             //Refund funds
             self._pay_out(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
@@ -255,7 +254,7 @@ pub mod EscrowManager {
         //Pays the funds out either to an external account, or to the LP vault depending on the pay_out param
         fn _pay_out(ref self: ContractState, dst: ContractAddress, token: ContractAddress, amount: u256, pay_out: bool) {
             if pay_out {
-                erc20::transfer_out(token, dst, amount);
+                erc20_utils::transfer_out(token, dst, amount);
             } else {
                 self.lp_vault._transfer_out(token, dst, amount);
             }
@@ -264,7 +263,7 @@ pub mod EscrowManager {
         //Takes the funds from from an external account, or from the LP vault depending on the pay_in param
         fn _pay_in(ref self: ContractState, src: ContractAddress, token: ContractAddress, amount: u256, pay_in: bool) {
             if pay_in {
-                erc20::transfer_in(token, src, amount);
+                erc20_utils::transfer_in(token, src, amount);
             } else {
                 self.lp_vault._transfer_in(token, src, amount);
             }
@@ -273,7 +272,7 @@ pub mod EscrowManager {
         fn _execute_and_pay_out(ref self: ContractState, dst: ContractAddress, token: ContractAddress, amount: u256, success_action: Span<ContractCall>, pay_out: bool) {
             let execution_proxy_address = self.execution_proxy.read();
             //Transfer funds to execution proxy
-            erc20::transfer_out(token, execution_proxy_address, amount);
+            erc20_utils::transfer_out(token, execution_proxy_address, amount);
             
             //Try to execute actions
             let execution_proxy = IExecutionProxySafeDispatcher{contract_address: execution_proxy_address};
@@ -287,7 +286,7 @@ pub mod EscrowManager {
 
             //Make sure the execution proxy is left with 0 balance, if not withdraw the balance back to us and pay it out regularly,
             // this also handles the case when the execution fails
-            let leaves_balance = erc20::balance_of(token, execution_proxy_address);
+            let leaves_balance = erc20_utils::balance_of(token, execution_proxy_address);
             if leaves_balance!=0 {
                 //Reclaim funds from execution proxy
                 execution_proxy.reclaim_erc20(token, leaves_balance).unwrap();

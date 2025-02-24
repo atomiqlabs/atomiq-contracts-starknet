@@ -8,7 +8,8 @@ members = [
     "packages/hashlock_claim_handler",
     "packages/btc_txid_claim_handler",
     "packages/btc_output_claim_handler",
-    "packages/btc_nonced_output_claim_handler"
+    "packages/btc_nonced_output_claim_handler",
+    "packages/erc20_utils"
 ]
 
 [package]
@@ -32,6 +33,7 @@ license-file = "LICENSE"
 [dependencies]
 starknet.workspace = true
 common.workspace = true
+erc20_utils.workspace = true
 btc_utils.workspace = true
 btc_relay.workspace = true
 escrow_manager = { path = "packages/escrow_manager" }
@@ -46,6 +48,7 @@ starknet = "2.9.2"
 snforge_std = "0.37.0"
 assert_macros = "2.9.2"
 common = { path = "packages/common" }
+erc20_utils = { path = "packages/erc20_utils" }
 btc_utils = { path = "packages/btc_utils" }
 btc_relay = { path = "packages/btc_relay" }
 

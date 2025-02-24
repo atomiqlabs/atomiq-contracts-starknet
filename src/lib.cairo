@@ -7,3 +7,4 @@ pub use hashlock_claim_handler::*;
 pub use timelock_refund_handler::*;
 pub use common::*;
 pub use btc_utils::*;
+pub use erc20_utils::*;

@@ -12,13 +12,15 @@ const assertionTable = [
     // [2, (buffer, index_be, noValue) => [ "buffer.read_u16_be("+index_be+")", noValue ? null : "0x"+buffer.readUInt16BE(index_be).toString(16) ], "u16_be"],
     [4, (buffer, index_le, noValue) => [ "buffer.read_u32_le("+index_le+")", noValue ? null : "0x"+buffer.readUInt32LE(index_le).toString(16) ], "u32_le"],
     // [4, (buffer, index_be, noValue) => [ "buffer.read_u32_be("+index_be+")", noValue ? null : "0x"+buffer.readUInt32BE(index_be).toString(16) ], "u32_be"],
+    [7, (buffer, index_le, noValue) => [ "buffer.read_u56_le("+index_le+")", noValue ? null : "0x"+Buffer.from([...buffer.subarray(index_le, index_le+7)]).reverse().toString("hex") ], "u56_le"],
     [8, (buffer, index_le, noValue) => [ "buffer.read_u64_le("+index_le+")", noValue ? null : "0x"+buffer.readBigUInt64LE(index_le).toString(16) ], "u64_le"],
     // [8, (buffer, index_be, noValue) => [ "buffer.read_u64_be("+index_be+")", noValue ? null : "0x"+buffer.readBigUInt64BE(index_be).toString(16) ], "u64_be"],
     // [16, (buffer, index_le, noValue) => [ "buffer.read_u128_le("+index_le+")", noValue ? null : "0x"+Buffer.from([...buffer.subarray(index_le, index_le+16)]).reverse().toString("hex") ], "u128_le"],
     // [16, (buffer, index_be, noValue) => [ "buffer.read_u128_be("+index_be+")", noValue ? null : "0x"+buffer.subarray(index_be, index_be+16).toString("hex") ], "u128_be"],
     // [32, (buffer, index_le, noValue) => [ "buffer.read_u256_le("+index_le+")", noValue ? null : "0x"+Buffer.from([...buffer.subarray(index_le, index_le+32)]).reverse().toString("hex") ], "u256_le"],
     [32, (buffer, index_be, noValue) => [ "buffer.read_u256("+index_be+")", noValue ? null : "0x"+buffer.subarray(index_be, index_be+32).toString("hex") ], "u256"],
-    [31, (buffer, index, noValue) => [ "buffer.read_bytes31("+index+")", noValue ? null : "0x"+buffer.subarray(index, index+31).toString("hex") ], "felt252"],
+    [31, (buffer, index, noValue) => [ "buffer.read_bytes31("+index+")", noValue ? null : "0x"+buffer.subarray(index, index+31).toString("hex") ], "bytes31"],
+    [32, (buffer, index, noValue) => [ "buffer.read_felt252("+index+")", noValue ? null : "0x"+new BN(buffer.subarray(index, index+32)).mod(STARK_PRIME).toString("hex") ], "felt252"],
 ];
 for(let i=1;i<=32;i++) {
     assertionTable.push([i, (buffer, index, noValue) => ["buffer.read_partial_felt252("+index+", "+i+")", noValue ? null : "0x"+new BN(buffer.subarray(index, index+i)).mod(STARK_PRIME).toString("hex")], "felt252_"+i+"b"]);

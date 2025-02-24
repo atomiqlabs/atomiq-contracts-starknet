@@ -16,7 +16,6 @@ pub mod lp_vault {
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use core::starknet::{get_caller_address, ContractAddress};
-    use crate::utils::erc20;
 
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -36,7 +35,7 @@ pub mod lp_vault {
             let current_balance = self.lp_vault.entry(caller).entry(token).read();
             self.lp_vault.entry(caller).entry(token).write(current_balance + amount);
             
-            erc20::transfer_in(token, caller, amount);
+            erc20_utils::transfer_in(token, caller, amount);
         }
 
         fn withdraw(ref self: ComponentState<TContractState>, token: ContractAddress, amount: u256, destination: ContractAddress) {
@@ -45,7 +44,7 @@ pub mod lp_vault {
             assert(current_balance >= amount, 'withdraw: not enough balance');
             self.lp_vault.entry(caller).entry(token).write(current_balance - amount);
 
-            erc20::transfer_out(token, destination, amount);
+            erc20_utils::transfer_out(token, destination, amount);
         }
 
         fn get_balance(self: @ComponentState<TContractState>, data: Span<(ContractAddress, ContractAddress)>) -> Array<u256> {

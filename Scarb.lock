@@ -11,6 +11,7 @@ dependencies = [
  "btc_txid_claim_handler",
  "btc_utils",
  "common",
+ "erc20_utils",
  "escrow_manager",
  "hashlock_claim_handler",
  "snforge_std",
@@ -69,10 +70,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "erc20_utils"
+version = "0.1.0"
+dependencies = [
+ "openzeppelin_token",
+ "snforge_std",
+]
+
+[[package]]
 name = "escrow_manager"
 version = "0.1.0"
 dependencies = [
  "common",
+ "erc20_utils",
  "openzeppelin_access",
  "openzeppelin_account",
  "openzeppelin_introspection",

@@ -14,7 +14,6 @@ pub mod ExecutionProxy {
     use core::starknet::get_caller_address;
     use starknet::contract_address::ContractAddress;
     use crate::structs::contract_call::ContractCall;
-    use crate::utils::erc20;
     use starknet::syscalls::call_contract_syscall;
     
     #[storage]
@@ -29,7 +28,7 @@ pub mod ExecutionProxy {
         }
 
         fn reclaim_erc20(ref self: ContractState, token: ContractAddress, amount: u256) {
-            erc20::transfer_out(token, get_caller_address(), amount);
+            erc20_utils::transfer_out(token, get_caller_address(), amount);
         }
     }
 
