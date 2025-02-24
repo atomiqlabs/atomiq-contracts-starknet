@@ -15,6 +15,7 @@ dependencies = [
  "escrow_manager",
  "hashlock_claim_handler",
  "snforge_std",
+ "spv_swap_vault",
  "timelock_refund_handler",
 ]
 
@@ -155,6 +156,16 @@ source = "registry+https://scarbs.xyz/"
 checksum = "sha256:f5702c4a6d54e3563b4aa78c834de6ddcf18ef8ca8fd35dc1bceb7ece58e9571"
 dependencies = [
  "snforge_scarb_plugin",
+]
+
+[[package]]
+name = "spv_swap_vault"
+version = "0.1.0"
+dependencies = [
+ "btc_relay",
+ "btc_utils",
+ "erc20_utils",
+ "snforge_std",
 ]
 
 [[package]]

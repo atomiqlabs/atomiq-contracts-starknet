@@ -1,0 +1,30 @@
+[package]
+name = "spv_swap_vault"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+cairo-version.workspace = true
+scarb-version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license-file.workspace = true
+
+[scripts]
+test = "snforge test"
+
+[dependencies]
+starknet.workspace = true
+erc20_utils.workspace = true
+
+[dev-dependencies]
+assert_macros.workspace = true
+snforge_std.workspace = true
+btc_relay.workspace = true
+btc_utils.workspace = true
+
+[lib]
+
+[[target.starknet-contract]]
+sierra = true

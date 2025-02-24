@@ -9,7 +9,8 @@ members = [
     "packages/btc_txid_claim_handler",
     "packages/btc_output_claim_handler",
     "packages/btc_nonced_output_claim_handler",
-    "packages/erc20_utils"
+    "packages/erc20_utils",
+    "packages/spv_swap_vault"
 ]
 
 [package]
@@ -42,6 +43,7 @@ timelock_refund_handler = { path = "packages/timelock_refund_handler" }
 btc_txid_claim_handler = { path = "packages/btc_txid_claim_handler" }
 btc_output_claim_handler = { path = "packages/btc_output_claim_handler" }
 btc_nonced_output_claim_handler = { path = "packages/btc_nonced_output_claim_handler" }
+spv_swap_vault = { path = "packages/spv_swap_vault" }
 
 [workspace.dependencies]
 starknet = "2.9.2"
