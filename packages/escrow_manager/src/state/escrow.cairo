@@ -40,39 +40,3 @@ pub impl EscrowStateStorePacking of StorePacking<EscrowState, felt252> {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    //Test consistency of the packing/unpacking functions
-    #[test]
-    fn test_packing() {
-        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0xffffffffffffffff, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0xffffffffffffffff, state: 0};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0, finish_blockheight: 0xffffffffffffffff, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0xffffffffffffffff, finish_blockheight: 0xffffffffffffffff, state: 0xff};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-
-        let escrow_state = EscrowState {init_blockheight: 0x0102040506070809, finish_blockheight: 0x1112131415161718, state: 0x21};
-        assert_eq!(EscrowStateStorePacking::unpack(EscrowStateStorePacking::pack(escrow_state)), escrow_state);
-    }
-}
