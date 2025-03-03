@@ -12,7 +12,7 @@ license-file.workspace = true
 
 [dependencies]
 starknet.workspace = true
-openzeppelin_token = "0.20.0"
+openzeppelin_token = "1.0.0"
 
 [dev-dependencies]
 assert_macros.workspace = true
