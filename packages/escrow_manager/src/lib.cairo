@@ -85,7 +85,7 @@ pub mod EscrowManager {
     #[constructor]
     fn constructor(ref self: ContractState) {
         let (execution_proxy_address, _) = deploy_syscall(
-            0x6a0346eb010f4db93ebd29a62b82bab22176e457d55efb9d449fb1d3655b30f.try_into().unwrap(),
+            0x05e1d8f1c05a2bbdda9469e96b1b31fa84e4ea08c52b5d266b099559b33792b9.try_into().unwrap(),
             0,
             array![].span(),
             false
