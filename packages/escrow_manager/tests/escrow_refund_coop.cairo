@@ -131,7 +131,6 @@ fn valid_coop_refund() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result(coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false), escrow);
@@ -150,7 +149,6 @@ fn invalid_coop_refund_uninitialized() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             false
         );
         assert_result_error(
@@ -173,7 +171,6 @@ fn invalid_refund_double() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result(coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false), escrow);
@@ -197,7 +194,6 @@ fn invalid_coop_refund_timed_out() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result_error(
@@ -220,7 +216,6 @@ fn invalid_coop_refund_sign_diff_timeout() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result_error(
@@ -243,7 +238,6 @@ fn invalid_coop_refund_sign_random_msg() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result_error(
@@ -266,7 +260,6 @@ fn invalid_coop_refund_wrong_signer() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result_error(

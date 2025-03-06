@@ -13,6 +13,12 @@ pub fn transfer_out(token: ContractAddress, dst: ContractAddress, amount: u256) 
     assert(erc20_dispatcher.transfer(dst, amount), 'transfer_out: transfer');
 }
 
+//Approves the spender to spend up to <amount> from this contract
+pub fn approve(token: ContractAddress, spender: ContractAddress, amount: u256) {
+    let erc20_dispatcher = IERC20Dispatcher { contract_address: token };
+    assert(erc20_dispatcher.approve(spender, amount), 'approve: approve');
+}
+
 //Gets the balance of the specific owner
 pub fn balance_of(token: ContractAddress, owner: ContractAddress) -> u256 {
     let erc20_dispatcher = IERC20Dispatcher { contract_address: token };

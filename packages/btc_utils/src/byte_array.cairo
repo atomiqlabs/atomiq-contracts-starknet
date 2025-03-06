@@ -57,18 +57,6 @@ pub impl ByteArrayReader of ByteArrayReaderTrait {
         result.try_into().unwrap()
     }
 
-
-    fn read_u56_le(self: @ByteArray, index: usize) -> u64 {
-        let result: felt252 = self.at(index+6).expect('Array index out of bounds').into() * 0x1000000000000
-            + self.at(index+5).expect('Array index out of bounds').into() * 0x10000000000
-            + self.at(index+4).expect('Array index out of bounds').into() * 0x100000000
-            + self.at(index+3).expect('Array index out of bounds').into() * 0x1000000
-            + self.at(index+2).expect('Array index out of bounds').into() * 0x10000
-            + self.at(index+1).expect('Array index out of bounds').into() * 0x100
-            + self.at(index+0).expect('Array index out of bounds').into();
-        result.try_into().unwrap()
-    }
-
     fn read_u64_le(self: @ByteArray, index: usize) -> u64 {
         let result: felt252 = self.at(index+7).expect('Array index out of bounds').into() * 0x100000000000000
             + self.at(index+6).expect('Array index out of bounds').into() * 0x1000000000000
@@ -251,7 +239,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(5), 0x6d3c);
         assert_eq!(buffer.read_u32_le(8), 0xec025029);
-        assert_eq!(buffer.read_u56_le(4), 0x025029b56d3c4e);
         assert_eq!(buffer.read_u64_le(5), 0x28ec025029b56d3c);
         assert_eq!(buffer.read_partial_felt252(25, 1), 0xf4);
         assert_eq!(buffer.read_partial_felt252(4, 2), 0x4e3c);
@@ -292,7 +279,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(36), 0x2668);
         assert_eq!(buffer.read_u32_le(86), 0xd4a3921);
-        assert_eq!(buffer.read_u56_le(64), 0x9ba78ad0e8c2ce);
         assert_eq!(buffer.read_u64_le(17), 0x57072ddc3dc74d92);
         assert_eq!(buffer.read_u256(27), 0x686fa046266c9aa22f6826888a005acd5eb6f2acb223b7810cbc6ec2f5885820);
         assert_eq!(buffer.read_bytes31(41), 0x5acd5eb6f2acb223b7810cbc6ec2f58858205f1732be0fcec2e8d08aa79b62);
@@ -341,7 +327,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(80), 0x11c0);
         assert_eq!(buffer.read_u32_le(6), 0xe63e2d3d);
-        assert_eq!(buffer.read_u56_le(84), 0xa90c8158744b09);
         assert_eq!(buffer.read_u64_le(85), 0x5282a90c8158744b);
         assert_eq!(buffer.read_u256(47), 0xb48ca26f989138a4044f241f8eafec8d3b7fc4299d784c94579f8bd3fabe2180);
         assert_eq!(buffer.read_bytes31(11), 0xfc9d8dbb61cda257eacb408aff395eb3d37f7fb7707580eba38772c5d756c9);
@@ -390,7 +375,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(45), 0x8a3);
         assert_eq!(buffer.read_u32_le(13), 0xe42adfcc);
-        assert_eq!(buffer.read_u56_le(15), 0xdcd3772d61e42a);
         assert_eq!(buffer.read_u64_le(33), 0x19e5329eedb14b1d);
         assert_eq!(buffer.read_u256(47), 0x855b063d1d46a6db7b7c25e8c76f512c253fef3b9566b954fe57dc585f89b6c5);
         assert_eq!(buffer.read_bytes31(22), 0x5425f5ea7de9deff08782c1d4bb1ed9e32e51952639470a308855b063d1d46);
@@ -439,7 +423,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(40), 0xa06f);
         assert_eq!(buffer.read_u32_le(13), 0x1a6f7b2e);
-        assert_eq!(buffer.read_u56_le(18), 0x430d628f3cd57d);
         assert_eq!(buffer.read_u64_le(11), 0x7d501a6f7b2e2858);
         assert_eq!(buffer.read_u256(14), 0x7b6f1a507dd53c8f620d43e1cc43bb25fdc81f189ea487b70d0d6fa0ec4a5bd3);
         assert_eq!(buffer.read_bytes31(34), 0x9ea487b70d0d6fa0ec4a5bd367797042145afc8feb05f922a246904e1f4d58);
@@ -488,7 +471,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(11), 0x3bb6);
         assert_eq!(buffer.read_u32_le(4), 0x16dbdbf6);
-        assert_eq!(buffer.read_u56_le(13), 0x1c1b69244e1caa);
         assert_eq!(buffer.read_u64_le(7), 0x1caa3bb6a3db4916);
         assert_eq!(buffer.read_partial_felt252(9, 1), 0xdb);
         assert_eq!(buffer.read_partial_felt252(10, 2), 0xa3b6);
@@ -532,7 +514,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(6), 0xac45);
         assert_eq!(buffer.read_u32_le(4), 0xac45e0c4);
-        assert_eq!(buffer.read_u56_le(7), 0xbc30fe0060b4ac);
         assert_eq!(buffer.read_u64_le(11), 0x3fd80be80fbc30fe);
         assert_eq!(buffer.read_u256(29), 0xcc0efaa417f88ee9c3f4f3c4b6f3ab693af3ccc42b24ce0b618702ecfc15dd47);
         assert_eq!(buffer.read_bytes31(5), 0xe045acb46000fe30bc0fe80bd83fc949b6c8f6af94237080cc0efaa417f88e);
@@ -581,7 +562,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(44), 0x95f8);
         assert_eq!(buffer.read_u32_le(54), 0xae696b9b);
-        assert_eq!(buffer.read_u56_le(10), 0xce71999179dc5c);
         assert_eq!(buffer.read_u64_le(17), 0xbb46e15e51f845a8);
         assert_eq!(buffer.read_u256(41), 0x5b7f43f895c729fb06663b00419b6b69ae114c1f6f83ddd24888586ea85cdd9b);
         assert_eq!(buffer.read_bytes31(22), 0xe146bb3a5b33bbace0f5b128a5516ea4de2d235b7f43f895c729fb06663b00);
@@ -630,7 +610,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(16), 0x825c);
         assert_eq!(buffer.read_u32_le(120), 0xf6ffeed);
-        assert_eq!(buffer.read_u56_le(44), 0x60ec1aa54f4107);
         assert_eq!(buffer.read_u64_le(82), 0xca6efbaf6b63ae71);
         assert_eq!(buffer.read_u256(80), 0x5f1371ae636baffb6eca5d6986446e8bf23f93df43b655d26e89d297df29d107);
         assert_eq!(buffer.read_bytes31(63), 0x2eb3c1859781e72d2b722d7e00bf0ca9d15f1371ae636baffb6eca5d698644);
@@ -679,7 +658,6 @@ mod tests {
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_u16_le(14), 0xf4b0);
         assert_eq!(buffer.read_u32_le(68), 0xe0713133);
-        assert_eq!(buffer.read_u56_le(96), 0x4d3e355abf381c);
         assert_eq!(buffer.read_u64_le(58), 0xbb0ed132269811a);
         assert_eq!(buffer.read_u256(61), 0x2213edb00b612a333171e08220833786e96aca942dd44344b8b57b468c6391b3);
         assert_eq!(buffer.read_bytes31(67), 0x2a333171e08220833786e96aca942dd44344b8b57b468c6391b3b2ce481c38);
@@ -771,7 +749,6 @@ mod tests {
         let mut serialized_byte_array = array![0x2, 0x17a80f2408afcc5a5d34143e870c106deb6227e11531b60c92f584407b4644, 0x22f2236764e51ad0dba8bf6e5be6938abbfa43e42ab34f921135f77ba16064, 0xd5, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         assert_eq!(buffer.read_partial_felt252(14, 22), 0x106deb6227e11531b60c92f584407b464422f2236764);
-        assert_eq!(buffer.read_u56_le(8), 0x100c873e14345d);
         assert_eq!(buffer.read_partial_felt252(1, 24), 0xa80f2408afcc5a5d34143e870c106deb6227e11531b60c92);
         assert_eq!(buffer.read_partial_felt252(0, 30), 0x17a80f2408afcc5a5d34143e870c106deb6227e11531b60c92f584407b46);
         assert_eq!(buffer.read_partial_felt252(12, 27), 0x870c106deb6227e11531b60c92f584407b464422f2236764e51ad0);
@@ -787,7 +764,6 @@ mod tests {
         assert_eq!(buffer.read_u64_le(2), 0x92f955060fb04598);
         assert_eq!(buffer.read_felt252(6), 0x655f99297218c8937c50df55935fbd0dc5f0b299d209d9903152db40faf6d67);
         assert_eq!(buffer.read_partial_felt252(12, 23), 0x8c8937c50df55935fbd0dc5f0b299d209d9903152db40f);
-        assert_eq!(buffer.read_u56_le(40), 0x0d04e181d86ea8);
         assert_eq!(buffer.read_u64_le(2), 0x92f955060fb04598);
         assert_eq!(buffer.read_partial_felt252(22, 13), 0xdc5f0b299d209d9903152db40f);
         assert_eq!(buffer.read_u64_le(24), 0x1503999d209d290b);
@@ -855,7 +831,6 @@ mod tests {
         assert_eq!(buffer.read_partial_felt252(30, 12), 0xfb83d158aa275db9a261d0fa);
         assert_eq!(buffer.read_partial_felt252(22, 1), 0xfb);
         assert_eq!(buffer.read_bytes31(40), 0xd0fa5186b143be5ff35f1cca53ca41d2b0f190ab049bdc3f810b277db9aca6);
-        assert_eq!(buffer.read_u56_le(15), 0x878e31bf8775cb);
         assert_eq!(buffer.read_partial_felt252(42, 31), 0x5186b143be5ff35f1cca53ca41d2b0f190ab049bdc3f810b277db9aca6e2f8);
     }
     
@@ -875,14 +850,6 @@ mod tests {
         let mut serialized_byte_array = array![0x0, 0x4a641e6a02719182d5198d1b476d8ba364bb, 0x12].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
         buffer.read_u32_le(15);
-    }
-
-    #[test]
-    #[should_panic(expected: 'Array index out of bounds')]
-    fn test_invalid_u56_le() {
-        let mut serialized_byte_array = array![0x0, 0x9b3d9f0062b8eeccfc92b767c3e81b8a0bac6bbdb860, 0x16].span();
-        let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_u56_le(16);
     }
 
     #[test]

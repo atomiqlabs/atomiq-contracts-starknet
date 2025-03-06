@@ -20,8 +20,8 @@ edition.workspace = true
 [workspace.package]
 version = "0.1.0"
 edition = "2024_07"
-cairo-version = "2.9.2"
-scarb-version = "2.9.2"
+cairo-version = "2.10.1"
+scarb-version = "2.10.1"
 authors = ["Adam Borcany <adam@atomiqlabs.com>"]
 description = "atomiq labs contracts for Starknet"
 documentation = "https://github.com/atomiqlabs/atomiq-contracts-starknet"
@@ -44,9 +44,9 @@ btc_output_claim_handler = { path = "packages/btc_output_claim_handler" }
 btc_nonced_output_claim_handler = { path = "packages/btc_nonced_output_claim_handler" }
 
 [workspace.dependencies]
-starknet = "2.9.2"
-snforge_std = "0.37.0"
-assert_macros = "2.9.2"
+starknet = "2.10.1"
+snforge_std = "0.38.0"
+assert_macros = "2.10.1"
 common = { path = "packages/common" }
 erc20_utils = { path = "packages/erc20_utils" }
 btc_utils = { path = "packages/btc_utils" }

@@ -9,7 +9,6 @@ use snforge_std::signature::KeyPair;
 use crate::utils::erc20;
 
 pub fn deploy() -> ContractAddress {
-    println!("{:x}", *declare("ExecutionProxy").unwrap().contract_class().class_hash);
     // First declare and deploy a contract
     let contract = declare("EscrowManager").unwrap().contract_class();
 

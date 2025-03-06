@@ -1,7 +1,6 @@
 use starknet::ContractAddress;
 use core::hash::{HashStateTrait, HashStateExTrait};
 use core::poseidon::PoseidonTrait;
-use crate::structs::contract_call::{ContractCall, ContractCallSpanHashImpl};
 
 pub const FLAG_PAY_OUT: u128 = 0x01;
 pub const FLAG_PAY_IN: u128 = 0x02;
@@ -37,11 +36,7 @@ pub struct EscrowData {
     //Security deposit taken by the offerer if swap expires without claimer claiming (i.e. options premium)
     pub security_deposit: u256,
     //Claimer bounty that can be claimed by a 3rd party claimer if he were to claim this swap on behalf of claimer
-    pub claimer_bounty: u256,
-
-    //Misc contract calls to be executed during claim instead of just paying out the funds to the claimer
-    // can support automatic staking/swapping/depositing on claim 
-    pub success_action: Span<ContractCall>
+    pub claimer_bounty: u256
 }
 
 #[generate_trait]
@@ -95,9 +90,7 @@ mod tests {
 
             fee_token: contract_address_const::<'fee_token'>(),
             security_deposit,
-            claimer_bounty,
-
-            success_action: array![].span()
+            claimer_bounty
         }
     }
 
