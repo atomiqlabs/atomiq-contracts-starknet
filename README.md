@@ -25,6 +25,7 @@ Set the conditions that need to be satisfied by the __offerer__ before they are 
 
 - [`/packages/common`](/packages/common) - common (claim & refund handler interfaces)
 - [`/packages/btc_utils`](/packages/btc_utils) - bitcoin utilities (bitcoin SPV merkle tree verification & transaction parsing)
+- [`/packages/erc20_utils`](/packages/erc20_utils) - erc20 utilities (transfer from, transfer & balance)
 
 ### Smart contracts
 

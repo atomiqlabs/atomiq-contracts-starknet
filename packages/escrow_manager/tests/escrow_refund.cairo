@@ -131,7 +131,6 @@ fn valid_refund() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
@@ -151,7 +150,6 @@ fn valid_refund_invert_deposits() {
             true,
             true,
             true,
-            array![].span(),
             true
         );
         assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
@@ -171,7 +169,6 @@ fn invalid_refund_handler() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result_error(refund_escrow(context, escrow, array![]), 'mock_refund: witness len==0', escrow);
@@ -191,7 +188,6 @@ fn invalid_refund_uninitialized() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             false
         );
         assert_result_error(refund_escrow(context, escrow, array![]), '_finalize: Not committed', escrow);
@@ -211,7 +207,6 @@ fn invalid_refund_double() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
         assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);

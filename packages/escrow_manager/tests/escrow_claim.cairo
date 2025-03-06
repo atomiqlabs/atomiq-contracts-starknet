@@ -4,14 +4,13 @@ use snforge_std::{
 use snforge_std::signature::stark_curve::{StarkCurveKeyPairImpl, StarkCurveSignerImpl};
 use core::num::traits::SaturatingAdd;
 
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::{ContractAddress};
 
 use escrow_manager::{EscrowManager, IEscrowManagerSafeDispatcher, IEscrowManagerSafeDispatcherTrait};
 use escrow_manager::components::lp_vault::{ILPVaultDispatcher, ILPVaultDispatcherTrait};
 use escrow_manager::components::escrow_storage::{IEscrowStorageDispatcher, IEscrowStorageDispatcherTrait};
 use escrow_manager::components::reputation::{IReputationTrackerDispatcher, IReputationTrackerDispatcherTrait};
 use escrow_manager::structs::escrow::{EscrowDataImpl, EscrowDataImplTrait};
-use escrow_manager::structs::contract_call::ContractCall;
 use escrow_manager::structs;
 use escrow_manager::state;
 use escrow_manager::events;
@@ -27,17 +26,11 @@ const CLAIM_BLOCK_NUMBER: u64 = 92348243;
 fn claim_escrow(
     context: Context,
     escrow: structs::escrow::EscrowData,
-    witness: Array<felt252>,
-    success_action_transfers: Span<(ContractAddress, u256)>,
-    success_action_claim_error: Span<felt252>
+    witness: Array<felt252>
 ) -> Result<(), felt252> {
     let balance_erc20 = context.token.balance_of(escrow.claimer);
     let balance_contract = *ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.claimer, context.token.contract_address)].span()).span()[0];
     let balance_erc20_contract = context.token.balance_of(context.contract_address);
-    let mut success_action_dst_balances_erc20: Array<u256> = array![];
-    for (dst, _) in success_action_transfers {
-        success_action_dst_balances_erc20.append(context.token.balance_of(*dst));
-    };
 
     let external_claimer: ContractAddress = generate_random_felt().try_into().unwrap();
     let balance_gas_erc20_claimer = context.gas_token.balance_of(escrow.claimer);
@@ -73,30 +66,6 @@ fn claim_escrow(
     );
 
     let mut leaves_escrow_amount = escrow.amount;
-
-    if success_action_claim_error.len()>0 {
-        spy.assert_emitted(
-            @array![(context.contract_address, EscrowManager::Event::SuccessActionExecuteError(events::SuccessActionExecuteError {
-                error: success_action_claim_error
-            }))]
-        );
-    } else {
-        //Assert success action transfers executed
-        let mut success_action_dst_balances_erc20 = success_action_dst_balances_erc20.span();
-        let mut fail = false;
-        for (dst, amount) in success_action_transfers {
-            let current_balance = context.token.balance_of(*dst);
-            let previous_balance = *success_action_dst_balances_erc20.pop_front().unwrap();
-            if previous_balance+(*amount) != current_balance  {
-                fail = true;
-                break;
-            }
-            leaves_escrow_amount -= *amount;
-        };
-        if fail {
-            return Result::Err('test: action transfers');
-        }
-    }
 
     //Assert escrow state saved
     let expected_escrow_state = state::escrow::EscrowState {
@@ -150,21 +119,6 @@ fn claim_escrow(
     Result::Ok(())
 }
 
-fn to_success_actions(token: ContractAddress, transfers: Span<(ContractAddress, u256)>) -> Span<ContractCall> {
-    let mut result: Array<ContractCall> = array![];
-    for (dst, amount) in transfers {
-        let mut calldata: Array<felt252> = array![];
-        dst.serialize(ref calldata);
-        amount.serialize(ref calldata);
-        result.append(ContractCall {
-            address: token,
-            entrypoint: selector!("transfer"),
-            calldata: calldata.span()
-        })
-    };
-    result.span()
-}
-
 //Valid claim security_deposit < claimer_bounty
 #[test]
 fn valid_claim() {
@@ -178,10 +132,9 @@ fn valid_claim() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
-        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871], array![].span(), array![].span()), escrow);
+        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
 }
 
@@ -190,9 +143,6 @@ fn valid_claim() {
 fn valid_claim_success_action() {
     let context = get_context();
     for i in 0..64_u8 {
-        let transfers = array![
-            (contract_address_const::<'success_action0'>(), 250)
-        ].span();
         let (escrow, _, _) = get_initialized_escrow(context, 
             i & 0x1 == 0x1, 
             i & 0x2 == 0x2,
@@ -201,38 +151,11 @@ fn valid_claim_success_action() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            to_success_actions(context.token.contract_address, transfers),
             true
         );
-        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871], transfers, array![].span()), escrow);
+        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
 }
-
-//TODO: This test doesn't work yet, because of lacking support for safe dispatchers!
-// #[test]
-// fn valid_claim_success_action_error() {
-//     let context = get_context();
-//     for i in 0..64_u8 {
-//         //Pay out more than escrow amount
-//         let transfers = array![
-//             (contract_address_const::<'success_action0'>(), 250),
-//             (contract_address_const::<'success_action1'>(), 250),
-//             (contract_address_const::<'success_action2'>(), 250)
-//         ].span();
-//         let (escrow, _, _) = get_initialized_escrow(context, 
-//             i & 0x1 == 0x1, 
-//             i & 0x2 == 0x2,
-//             i & 0x4 == 0x4,
-//             i & 0x8 == 0x8,
-//             i & 0x10 == 0x10,
-//             i & 0x20 == 0x20,
-//             false,
-//             to_success_actions(context.token.contract_address, transfers),
-//             true
-//         );
-//         assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871], transfers, array!['ERC20: insufficient balance'].span()), escrow);
-//     }
-// }
 
 //Valid claim with security_deposit > claimer_bounty
 #[test]
@@ -247,10 +170,9 @@ fn valid_claim_invert_deposits() {
             true,
             true,
             true,
-            array![].span(),
             true
         );
-        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871], array![].span(), array![].span()), escrow);
+        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
 }
 
@@ -267,10 +189,9 @@ fn invalid_claim_handler() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
-        assert_result_error(claim_escrow(context, escrow, array![], array![].span(), array![].span()), 'mock_claim: witness len==0', escrow);
+        assert_result_error(claim_escrow(context, escrow, array![]), 'mock_claim: witness len==0', escrow);
     }
 }
 
@@ -287,10 +208,9 @@ fn invalid_claim_uninitialized() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             false
         );
-        assert_result_error(claim_escrow(context, escrow, array![], array![].span(), array![].span()), '_finalize: Not committed', escrow);
+        assert_result_error(claim_escrow(context, escrow, array![]), '_finalize: Not committed', escrow);
     }
 }
 
@@ -307,11 +227,10 @@ fn invalid_claim_double() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            array![].span(),
             true
         );
-        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871], array![].span(), array![].span()), escrow);
-        assert_result_error(claim_escrow(context, escrow, array![0xcbad72bc73bce871], array![].span(), array![].span()), '_finalize: Not committed', escrow);
+        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
+        assert_result_error(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), '_finalize: Not committed', escrow);
     }
 }
 
