@@ -1,12 +1,14 @@
 pub mod events;
 pub mod state;
 pub mod utils;
+pub mod structs;
 
-use starknet::ContractAddress;
+use starknet::{ContractAddress};
 use btc_utils::byte_array::ByteArrayReader;
 use btc_relay::structs::stored_blockheader::StoredBlockHeader;
 
 use crate::state::{SpvVaultStateStorePacking, SpvVaultState, SpvVaultImplTrait};
+use crate::structs::{BitcoinVaultTransactionData};
 
 
 #[starknet::interface]
@@ -21,7 +23,13 @@ pub trait ISpvVaultManager<TContractState> {
     //Deposits funds into the specific vault
     fn deposit(
         ref self: TContractState, owner: ContractAddress, vault_id: felt252, 
-        token_0_amount: u256, token_1_amount: u256
+        raw_token_0_amount: u64, raw_token_1_amount: u64
+    );
+
+    //Fronts the liquidity for a specific bitcoin transaction
+    fn front(
+        ref self: TContractState, owner: ContractAddress, vault_id: felt252,
+        withdraw_sequence: u32, btc_tx: u256, data: BitcoinVaultTransactionData
     );
 
     //Claim funds from the vault, given a proper bitcoin transaction as verified through the relay contract
@@ -39,8 +47,8 @@ pub trait ISpvVaultManagerReadOnly<TContractState> {
 
 #[starknet::contract]
 pub mod SpvVaultManager {
-    use core::integer::{u512_safe_div_rem_by_u256};
-    use core::num::traits::WideMul;
+    use super::SpvVaultImplTrait;
+    use core::num::traits::Zero;
 
     use core::starknet::{get_caller_address, ContractAddress};
     use core::starknet::storage::{
@@ -52,6 +60,8 @@ pub mod SpvVaultManager {
     use btc_utils::bitcoin_tx::{BitcoinTransactionImpl, BitcoinTransactionTrait, BitcoinTxInputTrait};
 
     use crate::utils;
+    use crate::utils::{U32ArrayToU256ParserTrait};
+    use crate::structs::{BitcoinVaultTransactionDataImpl};
     use super::*;
 
     #[event]
@@ -62,7 +72,8 @@ pub mod SpvVaultManager {
 
     #[storage]
     struct Storage {
-        vaults: Map<ContractAddress, Map<felt252, SpvVaultState>>
+        vaults: Map<ContractAddress, Map<felt252, SpvVaultState>>,
+        liquidity_fronts: Map<ContractAddress, Map<felt252, Map<felt252, ContractAddress>>>
     }
 
     #[abi(embed_v0)]
@@ -73,10 +84,12 @@ pub mod SpvVaultManager {
             relay_contract: ContractAddress, utxo: (u256, u32), confirmations: u8,
             token_0: ContractAddress, token_1: ContractAddress, token_0_multiplier: felt252, token_1_multiplier: felt252
         ) {
+            //Check vault is not opened
             let owner: ContractAddress = get_caller_address();
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
             assert(!storage_ptr.read().is_opened(), 'create: already opened');
 
+            //Initialize new vault
             storage_ptr.write(SpvVaultState {
                 relay_contract: relay_contract,
                 token_0: token_0,
@@ -84,6 +97,7 @@ pub mod SpvVaultManager {
             
                 utxo: utxo,
                 confirmations: confirmations,
+                withdraw_count: 0,
             
                 token_0_amount: 0,
                 token_1_amount: 0,
@@ -96,28 +110,75 @@ pub mod SpvVaultManager {
         //Deposits funds into the specific vault
         fn deposit(
             ref self: ContractState, owner: ContractAddress, vault_id: felt252, 
-            token_0_amount: u256, token_1_amount: u256
+            raw_token_0_amount: u64, raw_token_1_amount: u64
         ) {
             let caller = get_caller_address();
 
+            //Check vault is opened
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
             let mut current_state = storage_ptr.read();
             assert(current_state.is_opened(), 'claim: vault closed');
 
-            if token_0_amount != 0 {
-                current_state.token_0_amount += token_0_amount;
-            }
-            if token_1_amount != 0 {
-                current_state.token_1_amount += token_1_amount;
-            }
+            //Update the state with newly deposited tokens
+            let (token_0_amount, token_1_amount) = current_state.deposit(raw_token_0_amount, raw_token_1_amount);
 
+            //Save the state
             storage_ptr.write(current_state);
 
+            //Transfer funds
             if token_0_amount != 0 {
                 erc20_utils::transfer_in(current_state.token_0, caller, token_0_amount);
             }
             if token_1_amount != 0 {
                 erc20_utils::transfer_in(current_state.token_1, caller, token_1_amount);
+            }
+        }
+
+        //Fronts the liquidity for a specific withdrawal bitcoin transaction
+        fn front(
+            ref self: ContractState, owner: ContractAddress, vault_id: felt252,
+            withdraw_sequence: u32, btc_tx: u256, data: BitcoinVaultTransactionData
+        ) {
+            let caller = get_caller_address();
+
+            //Check vault is opened
+            let storage_ptr = self.vaults.entry(owner).entry(vault_id);
+            let current_state = storage_ptr.read();
+            assert(current_state.is_opened(), 'front: vault closed');
+
+            //This is to make sure that the caller doesn't front an already processed
+            // withdraw, this would essentially make him loose funds
+            assert(current_state.withdraw_count <= withdraw_sequence, 'front: already processed');
+
+            let fronting_id = data.get_hash(btc_tx);
+
+            //Check if this was already fronted
+            let front_storage_ptr = self.liquidity_fronts.entry(owner).entry(vault_id).entry(fronting_id);
+            assert(front_storage_ptr.read().is_zero(), 'front: already fronted');
+
+            //Mark as fronted
+            front_storage_ptr.write(caller);
+
+            //Transfer funds to contract - minus watchtower & fronting fee
+            let (amount_0, amount_1) = current_state.to_token_amounts(data.amount_0, data.amount_1);
+
+            if amount_0 != 0 {
+                let caller_fee = utils::fee_amount(amount_0, data.caller_fee);
+                let fronting_fee = utils::fee_amount(amount_0, data.fronting_fee);
+                let leaves_amount = amount_0 - caller_fee - fronting_fee;
+                erc20_utils::transfer_in(current_state.token_0, caller, leaves_amount);
+                if data.execution_hash == 0 {
+                    erc20_utils::transfer_out(current_state.token_0, data.recipient, leaves_amount);
+                } else {
+
+                }
+            }
+            if amount_1 != 0 {
+                let caller_fee = utils::fee_amount(amount_1, data.caller_fee);
+                let fronting_fee = utils::fee_amount(amount_1, data.fronting_fee);
+                let leaves_amount = amount_1 - caller_fee - fronting_fee;
+                erc20_utils::transfer_in(current_state.token_1, caller, leaves_amount);
+                erc20_utils::transfer_out(current_state.token_1, data.recipient, leaves_amount);
             }
         }
 
@@ -128,6 +189,7 @@ pub mod SpvVaultManager {
         ) {
             let caller = get_caller_address();
 
+            //Check vault is opened
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
             let mut current_state = storage_ptr.read();
             assert(current_state.is_opened(), 'claim: vault closed');
@@ -153,7 +215,7 @@ pub mod SpvVaultManager {
             );
 
             //Extract data from transaction
-            let tx_data_result = utils::extract_tx_data(result, current_state.token_0_multiplier, current_state.token_1_multiplier);
+            let tx_data_result = BitcoinVaultTransactionDataImpl::from_tx(result);
 
             //Make sure we send the funds to owner in the case when there is some issue with the transaction,
             // such that funds don't get frozen
@@ -174,40 +236,43 @@ pub mod SpvVaultManager {
                 return;
             }
 
-            let (recipient, raw_amount_0, raw_amount_1, caller_fee_u16) = tx_data_result.unwrap();
+            let tx_data = tx_data_result.unwrap();
 
-            //Clamp the amount to the maximum that's currently in the vault, to prevent
+            let tx_id_u256 = transaction_hash.to_u256();
+
+            //Returns clamped amount to the maximum that's currently in the vault, to prevent
             // funds from getting frozen
-            let amount_0 = if raw_amount_0 > current_state.token_0_amount {current_state.token_0_amount} else {raw_amount_0};
-            let amount_1 = if raw_amount_1 > current_state.token_1_amount {current_state.token_1_amount} else {raw_amount_1};
-
-            //Update the state
-            current_state.token_0_amount -= amount_0;
-            current_state.token_1_amount -= amount_1;
-            current_state.set_utxo(transaction_hash, 0);
+            let (amount_0, amount_1) = current_state.withdraw(tx_id_u256, 0, tx_data.amount_0, tx_data.amount_1);
 
             //Save state
             storage_ptr.write(current_state);
             
-            //Transfer out funds
-            if amount_0 != 0 {
-                let (quotient, _) = u512_safe_div_rem_by_u256(amount_0.wide_mul(caller_fee_u16.into()), 65535);
-                //Note that this is a safe cast, since we are passing u16 value to the multiplication & dividing by 2^16 - 1,
-                // such that the resulting value will always be at most 2^256 - 1
-                let caller_fee: u256 = quotient.try_into().unwrap();
-                let leaves_amount = amount_0 - caller_fee;
-                erc20_utils::transfer_out(current_state.token_0, caller, caller_fee);
-                erc20_utils::transfer_out(current_state.token_0, recipient, leaves_amount);
+            //Check if fronted
+            let fronting_id = tx_data.get_hash(tx_id_u256);
+
+            //Check if this was already fronted
+            let front_storage_ptr = self.liquidity_fronts.entry(owner).entry(vault_id).entry(fronting_id);
+            let fronting_address: ContractAddress = front_storage_ptr.read();
+
+            if !fronting_address.is_zero() {
+                //Pay the funds to the address that fronted
+                if amount_0 != 0 {
+                    let caller_fee = utils::fee_amount(amount_0, tx_data.caller_fee);
+                    let leaves_amount = amount_0 - caller_fee;
+                    erc20_utils::transfer_out(current_state.token_0, caller, caller_fee);
+                    erc20_utils::transfer_out(current_state.token_0, fronting_address, leaves_amount);
+                }
+                if amount_1 != 0 {
+                    let caller_fee = utils::fee_amount(amount_1, tx_data.caller_fee);
+                    let leaves_amount = amount_1 - caller_fee;
+                    erc20_utils::transfer_out(current_state.token_1, caller, caller_fee);
+                    erc20_utils::transfer_out(current_state.token_1, fronting_address, leaves_amount);
+                }
+                return;
             }
-            if amount_1 != 0 {
-                let (quotient, _) = u512_safe_div_rem_by_u256(amount_1.wide_mul(caller_fee_u16.into()), 65535);
-                //Note that this is a safe cast, since we are passing u16 value to the multiplication & dividing by 2^16 - 1,
-                // such that the resulting value will always be at most 2^256 - 1
-                let caller_fee: u256 = quotient.try_into().unwrap();
-                let leaves_amount = amount_1 - caller_fee;
-                erc20_utils::transfer_out(current_state.token_1, caller, caller_fee);
-                erc20_utils::transfer_out(current_state.token_1, recipient, leaves_amount);
-            }
+
+            //Transfer funds to recipient/execution contract
+            
         }
     }
 
@@ -217,4 +282,10 @@ pub mod SpvVaultManager {
             self.vaults.entry(owner).entry(vault_id).read()
         }
     }
+
+    #[generate_trait]
+    impl SpvVaultManagerPriv of SpvVaultManagerPrivTrait {
+
+    }
+
 }
