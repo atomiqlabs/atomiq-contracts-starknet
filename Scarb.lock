@@ -13,6 +13,7 @@ dependencies = [
  "common",
  "erc20_utils",
  "escrow_manager",
+ "execution_contract",
  "hashlock_claim_handler",
  "snforge_std",
  "spv_swap_vault",
@@ -89,6 +90,14 @@ dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_token",
  "openzeppelin_utils",
+ "snforge_std",
+]
+
+[[package]]
+name = "execution_contract"
+version = "0.1.0"
+dependencies = [
+ "erc20_utils",
  "snforge_std",
 ]
 
