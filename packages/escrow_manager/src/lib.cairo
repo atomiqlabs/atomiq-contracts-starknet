@@ -4,7 +4,6 @@ pub mod events;
 pub mod state;
 pub mod structs;
 pub mod components;
-pub mod execution_proxy;
 
 use crate::structs::escrow::EscrowData;
 
@@ -26,7 +25,6 @@ pub mod EscrowManager {
     use starknet::event::EventEmitter;
     use core::starknet::{get_execution_info, get_caller_address};
     use starknet::contract_address::ContractAddress;
-    use starknet::syscalls::deploy_syscall;
     use crate::structs::escrow::{EscrowData, EscrowDataImpl};
     use crate::sighash;
     use crate::utils::snip6;
@@ -36,9 +34,6 @@ pub mod EscrowManager {
     use crate::components::lp_vault::lp_vault;
     use crate::components::reputation::reputation;
     use crate::components::escrow_storage::escrow_storage;
-    use crate::execution_proxy::{IExecutionProxySafeDispatcher, IExecutionProxySafeDispatcherTrait};
-    use crate::structs::contract_call::ContractCall;
-    use core::starknet::storage::{StoragePointerWriteAccess, StoragePointerReadAccess};
     
     component!(path: lp_vault, storage: lp_vault, event: LPVaultEvent);
     component!(path: reputation, storage: reputation, event: ReputationTrackerEvent);
@@ -51,9 +46,7 @@ pub mod EscrowManager {
         #[substorage(v0)]
         reputation: reputation::Storage,
         #[substorage(v0)]
-        escrow_storage: escrow_storage::Storage,
-
-        execution_proxy: ContractAddress
+        escrow_storage: escrow_storage::Storage
     }
 
     #[abi(embed_v0)]
@@ -77,20 +70,7 @@ pub mod EscrowManager {
 
         Initialize: events::Initialize,
         Claim: events::Claim,
-        Refund: events::Refund,
-        SuccessActionExecuteError: events::SuccessActionExecuteError
-    }
-
-    //Initialize execution proxy
-    #[constructor]
-    fn constructor(ref self: ContractState) {
-        let (execution_proxy_address, _) = deploy_syscall(
-            0x05e1d8f1c05a2bbdda9469e96b1b31fa84e4ea08c52b5d266b099559b33792b9.try_into().unwrap(),
-            0,
-            array![].span(),
-            false
-        ).unwrap();
-        self.execution_proxy.write(execution_proxy_address);
+        Refund: events::Refund
     }
 
     #[abi(embed_v0)]
@@ -158,13 +138,7 @@ pub mod EscrowManager {
                 erc20_utils::transfer_out(escrow.fee_token, escrow.claimer, security_deposit);
             }
 
-            if escrow.success_action.len()==0 {
-                //Pay out funds
-                self._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out());
-            } else {
-                //Execute success action
-                self._execute_and_pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.success_action, escrow.is_pay_out())
-            }
+            self._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out());
 
             //Emit event
             self.emit(events::Claim {
@@ -266,32 +240,6 @@ pub mod EscrowManager {
                 erc20_utils::transfer_in(token, src, amount);
             } else {
                 self.lp_vault._transfer_in(token, src, amount);
-            }
-        }
-
-        fn _execute_and_pay_out(ref self: ContractState, dst: ContractAddress, token: ContractAddress, amount: u256, success_action: Span<ContractCall>, pay_out: bool) {
-            let execution_proxy_address = self.execution_proxy.read();
-            //Transfer funds to execution proxy
-            erc20_utils::transfer_out(token, execution_proxy_address, amount);
-            
-            //Try to execute actions
-            let execution_proxy = IExecutionProxySafeDispatcher{contract_address: execution_proxy_address};
-            let call_result = execution_proxy.execute(success_action);
-
-            //Emit event on failure
-            if call_result.is_err() {
-                let error = call_result.unwrap_err();
-                self.emit(events::SuccessActionExecuteError { error: error.span() });
-            }
-
-            //Make sure the execution proxy is left with 0 balance, if not withdraw the balance back to us and pay it out regularly,
-            // this also handles the case when the execution fails
-            let leaves_balance = erc20_utils::balance_of(token, execution_proxy_address);
-            if leaves_balance!=0 {
-                //Reclaim funds from execution proxy
-                execution_proxy.reclaim_erc20(token, leaves_balance).unwrap();
-                //Pay out as regular
-                self._pay_out(dst, token, leaves_balance, pay_out);
             }
         }
     }
