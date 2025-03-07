@@ -17,12 +17,13 @@ test = "snforge test"
 [dependencies]
 starknet.workspace = true
 erc20_utils.workspace = true
+execution_contract.workspace = true
+btc_relay.workspace = true
+btc_utils.workspace = true
 
 [dev-dependencies]
 assert_macros.workspace = true
 snforge_std.workspace = true
-btc_relay.workspace = true
-btc_utils.workspace = true
 
 [lib]
 

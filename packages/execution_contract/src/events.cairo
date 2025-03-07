@@ -11,8 +11,8 @@ pub struct ExecutionCreated {
 
     pub token: ContractAddress,
     pub amount: u256,
-    pub expiry: u64,
-    pub execution_fee_share: u16
+    pub execution_fee: u256,
+    pub expiry: u64
 }
 
 #[derive(Drop, starknet::Event)]

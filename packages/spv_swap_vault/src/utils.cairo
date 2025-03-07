@@ -1,5 +1,4 @@
-use core::integer::{u512_safe_div_rem_by_u256};
-use core::num::traits::WideMul;
+use core::traits::Add;
 
 #[generate_trait]
 pub impl U32ArrayToU256Parser of U32ArrayToU256ParserTrait {
@@ -24,9 +23,17 @@ pub impl U32ArrayToU256Parser of U32ArrayToU256ParserTrait {
     }
 }
 
-pub fn fee_amount(amount: u256, fee: u16) -> u256 {
-    let (quotient, _) = u512_safe_div_rem_by_u256(amount.wide_mul(fee.into()), 65535);
-    //Note that this is a safe cast, since we are passing u16 value to the multiplication & dividing by 2^16 - 1,
-    // such that the resulting value will always be at most 2^256 - 1
-    quotient.try_into().unwrap()
+pub impl U64TupleAdd of Add::<(u64, u64)> {
+
+    fn add(lhs: (u64, u64), rhs: (u64, u64)) -> (u64, u64) {
+        let (val00, val01) = lhs;
+        let (val10, val11) = rhs;
+        (val00 + val10, val01 + val11)
+    }
+
+}
+
+pub fn fee_amount(amount: u64, fee_u20: u32) -> Option<u64> {
+    let result: u128 = amount.into() * fee_u20.into() / 100000;
+    result.try_into()
 }

@@ -175,6 +175,7 @@ dependencies = [
  "btc_relay",
  "btc_utils",
  "erc20_utils",
+ "execution_contract",
  "snforge_std",
 ]
 

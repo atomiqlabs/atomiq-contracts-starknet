@@ -1,8 +1,6 @@
 use starknet::contract_address::ContractAddress;
 use core::starknet::storage_access::StorePacking;
 
-use crate::utils;
-
 //On-chain saved reputation state
 #[derive(Drop, Serde, PartialEq, Debug, Copy)]
 pub struct Execution {
@@ -14,11 +12,11 @@ pub struct Execution {
     //Total amount of tokens locked
     pub amount: u256,
 
-    //After the expiry anyone can refund and claim the execution fee
-    pub expiry: u64,
-
     //Execution fee paid to the caller
-    pub execution_fee_share: u16
+    pub execution_fee: u256,
+
+    //After the expiry anyone can refund and claim the execution fee
+    pub expiry: u64
 }
 
 #[generate_trait]
@@ -32,31 +30,28 @@ pub impl ExecutionImpl of ExecutionImplTrait {
             self.token = 0.try_into().unwrap();
             self.amount = 0;
             self.expiry = 0;
-            self.execution_fee_share = 0;
+            self.execution_fee = 0;
         }
-    }
-
-    fn get_execution_fee(self: Execution) -> u256 {
-        utils::fee_amount(self.amount, self.execution_fee_share)
     }
 }
 
 const TWO_POW_248: u256 = 0x100000000000000000000000000000000000000000000000000000000000000;
 const MASK_248: u256 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
-pub impl SpvVaultStateStorePacking of StorePacking<Execution, [felt252; 4]> {
-    fn pack(value: Execution) -> [felt252; 4] {
+pub impl SpvVaultStateStorePacking of StorePacking<Execution, [felt252; 5]> {
+    fn pack(value: Execution) -> [felt252; 5] {
         let val_0: felt252 = value.token.into();
         let val_1: felt252 = value.execution_hash;
         let val_2: felt252 = (value.amount & MASK_248).try_into().unwrap();
-        let val_3: felt252 = (value.amount / TWO_POW_248).try_into().unwrap() +
-            value.expiry.into() * 0x100 +
-            value.execution_fee_share.into() * 0x1000000000000000000;
+        let val_3: felt252 = (value.execution_fee & MASK_248).try_into().unwrap();
+        let val_4: felt252 = (value.amount / TWO_POW_248).try_into().unwrap() +
+            (value.execution_fee / TWO_POW_248).try_into().unwrap() * 0x100 +
+            value.expiry.into() * 0x1000;
         
-        [val_0, val_1, val_2, val_3]
+        [val_0, val_1, val_2, val_3, val_4]
     }
 
-    fn unpack(value: [felt252; 4]) -> Execution {
+    fn unpack(value: [felt252; 5]) -> Execution {
         let span = value.span();
 
         let token: ContractAddress = (*span[0]).try_into().unwrap();
@@ -65,16 +60,16 @@ pub impl SpvVaultStateStorePacking of StorePacking<Execution, [felt252; 4]> {
         let additional_data: u256 = (*span[3]).into();
         
         let amount: u256 = (*span[2]).into() + (additional_data & 0xFF) * 0x100000000000000000000000000000000000000000000000000000000000000;
+        let execution_fee: u256 = (*span[3]).into() + (additional_data & 0xFF00) * 0x1000000000000000000000000000000000000000000000000000000000000;
 
-        let expiry: u64 = ((additional_data.low / 0x100) & 0xFFFFFFFFFFFFFFFF).try_into().unwrap();
-        let execution_fee_share: u16 = ((additional_data.low / 0x1000000000000000000) & 0xFFFF).try_into().unwrap();
+        let expiry: u64 = ((additional_data.low / 0x10000) & 0xFFFFFFFFFFFFFFFF).try_into().unwrap();
 
         Execution {
             token: token,
             execution_hash: execution_hash,
             amount: amount,
-            expiry: expiry,
-            execution_fee_share: execution_fee_share
+            execution_fee: execution_fee,
+            expiry: expiry
         }
     }
 }

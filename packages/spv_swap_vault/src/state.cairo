@@ -1,5 +1,11 @@
+use core::num::traits::{CheckedMul, CheckedSub};
+
 use core::starknet::storage_access::StorePacking;
 use core::starknet::contract_address::ContractAddress;
+
+use btc_utils::bitcoin_tx::{BitcoinTransactionImpl, BitcoinTransaction};
+
+use crate::structs::{BitcoinVaultTransactionData, BitcoinVaultTransactionDataImpl};
 use crate::utils::U32ArrayToU256Parser;
 
 //State of the specific vault
@@ -30,17 +36,43 @@ pub struct SpvVaultState {
     pub token_1_amount: u64
 }
 
-const TWO_POW_248: u256 = 0x100000000000000000000000000000000000000000000000000000000000000;
-const MASK_248: u256 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+#[generate_trait]
+impl SpvVaultPrivateImpl of SpvVaultPrivateImplTrait {
+    //Updates the state with withdrawal
+    fn withdraw(ref self: SpvVaultState, btc_tx_hash_u256: u256, vout: u32, raw_amount_0: u64, raw_amount_1: u64) -> Result<(), felt252> {
+        //Make sure subtraction doesn't overflow
+        let new_token_0_amount = self.token_0_amount.checked_sub(raw_amount_0);
+        if new_token_0_amount.is_none() { return Result::Err('withdraw: amount 0'); }
+        let new_token_1_amount = self.token_1_amount.checked_sub(raw_amount_1);
+        if new_token_1_amount.is_none() { return Result::Err('withdraw: amount 1'); }
+        
+        //Update the state
+        self.token_0_amount = new_token_0_amount.unwrap();
+        self.token_1_amount = new_token_1_amount.unwrap();
+        self.utxo = (btc_tx_hash_u256, vout);
+        self.withdraw_count += 1;
+
+        Result::Ok(())
+    }
+}
 
 #[generate_trait]
 pub impl SpvVaultImpl of SpvVaultImplTrait {
-    //Calculates real token amounts, according to the multipliers set in the data
-    fn to_token_amounts(self: SpvVaultState, amount_0_u64: u64, amount_1_u64: u64) -> (u256, u256) {
-        let amount_0: u256 = amount_0_u64.into() * self.token_0_multiplier.into();
-        let amount_1: u256 = amount_1_u64.into() * self.token_1_multiplier.into();
+    fn from_raw_token0(self: SpvVaultState, amount_0_raw: u64) -> Option<u256> {
+        let amount_0_u256: u256 = amount_0_raw.into();
+        amount_0_u256.into().checked_mul(self.token_0_multiplier.into())
+    }
 
-        (amount_0, amount_1)
+    fn from_raw_token1(self: SpvVaultState, amount_1_raw: u64) -> Option<u256> {
+        let amount_1_u256: u256 = amount_1_raw.into();
+        amount_1_u256.into().checked_mul(self.token_1_multiplier.into())
+    }
+
+    //Calculates real token amounts, according to the multipliers set in the data
+    fn from_raw(self: SpvVaultState, amounts_raw: (u64, u64)) -> Option<(u256, u256)> {
+        let (amount_0_raw, amount_1_raw) = amounts_raw;
+
+        Option::Some((self.from_raw_token0(amount_0_raw)?, self.from_raw_token1(amount_1_raw)?))
     }
 
     //Returns whether an spv vault is opened or closed
@@ -49,7 +81,7 @@ pub impl SpvVaultImpl of SpvVaultImplTrait {
     }
 
     //Closes the spv vault, returning the amount of tokens left in the vault, before it was closed, returns scaled token amounts
-    fn close(ref self: SpvVaultState) -> (u256, u256) {
+    fn close(ref self: SpvVaultState) -> Option<(u256, u256)> {
         let token_0_amount = self.token_0_amount;
         let token_1_amount = self.token_1_amount;
 
@@ -57,34 +89,36 @@ pub impl SpvVaultImpl of SpvVaultImplTrait {
         self.token_0_amount = 0;
         self.token_1_amount = 0;
         
-        self.to_token_amounts(token_0_amount, token_1_amount)
+        self.from_raw((token_0_amount, token_1_amount))
     }
 
-    //Updates the state with withdrawal, returns scaled token amounts
-    fn withdraw(ref self: SpvVaultState, tx_id: u256, vout: u32, raw_amount_0: u64, raw_amount_1: u64) -> (u256, u256) {
-        //Clamp the amount to the maximum that's currently in the vault, to prevent
-        // funds from getting frozen
-        let amount_0 = if raw_amount_0 > self.token_0_amount {self.token_0_amount} else {raw_amount_0};
-        let amount_1 = if raw_amount_1 > self.token_1_amount {self.token_1_amount} else {raw_amount_1};
+    //Extracts the withdrawal bitcoin transaction data and updates the state with withdrawn token amounts
+    //NOTE: Also verifies that full amounts are in bounds of u256 integer
+    fn parse_and_withdraw(ref self: SpvVaultState, btc_tx_hash_u256: u256, btc_tx: BitcoinTransaction) -> Result<BitcoinVaultTransactionData, felt252> {
+        let tx_data = BitcoinVaultTransactionDataImpl::from_tx(btc_tx)?;
+        let (amount_0, amount_1) = tx_data.get_full_amounts()?;
+        self.withdraw(btc_tx_hash_u256, 0, amount_0, amount_1)?;
 
-        //Update the state
-        self.token_0_amount -= amount_0;
-        self.token_1_amount -= amount_1;
-        self.utxo = (tx_id, vout);
-        self.withdraw_count += 1;
+        //Make sure that the full amount is in the bounds of u256 integer
+        if self.from_raw((amount_0, amount_1)).is_none() {
+            return Result::Err('parse_and_wthdrw: u256 overflow');
+        }
 
-        self.to_token_amounts(amount_0, amount_1)
+        Result::Ok(tx_data)
     }
 
     //Updates the state with deposit, returns scaled token amounts
-    fn deposit(ref self: SpvVaultState, raw_amount_0: u64, raw_amount_1: u64) -> (u256, u256) {
+    fn deposit(ref self: SpvVaultState, raw_amount_0: u64, raw_amount_1: u64) -> Option<(u256, u256)> {
         //Update the state
         self.token_0_amount += raw_amount_0;
         self.token_1_amount += raw_amount_1;
 
-        self.to_token_amounts(raw_amount_0, raw_amount_1)
+        self.from_raw((raw_amount_0, raw_amount_1))
     }
 }
+
+const TWO_POW_248: u256 = 0x100000000000000000000000000000000000000000000000000000000000000;
+const MASK_248: u256 = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
 pub impl SpvVaultStateStorePacking of StorePacking<SpvVaultState, [felt252; 7]> {
     fn pack(value: SpvVaultState) -> [felt252; 7] {

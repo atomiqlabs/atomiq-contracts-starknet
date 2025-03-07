@@ -10,18 +10,28 @@ use starknet::contract_address::ContractAddress;
 #[starknet::interface]
 pub trait IExecutionContract<TContractState> {
     //Creates a new execution
-    fn create(ref self: TContractState, salt: felt252, owner: ContractAddress, token: ContractAddress, amount: u256, execution_hash: felt252, expiry: u64, execution_fee_share: u16);
+    fn create(
+        ref self: TContractState, 
+        owner: ContractAddress, salt: felt252, token: ContractAddress, 
+        amount: u256, execution_fee: u256,
+        execution_hash: felt252, expiry: u64
+    );
 
     //The reason for clear_all flag is to save on data storage gas, if the post & execute/refund_expired/refund is executed in a single
     // transaction clear_all should be set to true, such that all the data is cleared resulting in no state diff, when calling the
     // execute/refund_expired/refund later, clear_all should be set to false, such that the state diff is only a single felt
 
     //Execute calls on behalf of owner, draining all the drain_tokens to the owner
-    fn execute(ref self: TContractState, salt: felt252, owner: ContractAddress, calls: Span<ContractCall>, drain_tokens: Span<ContractAddress>, clear_all: bool);
+    fn execute(ref self: TContractState, owner: ContractAddress, salt: felt252, calls: Span<ContractCall>, drain_tokens: Span<ContractAddress>, clear_all: bool);
     //Reclaims the deposited tokens held by the execution contract, anyone can call after expiry
-    fn refund_expired(ref self: TContractState, salt: felt252, owner: ContractAddress, clear_all: bool);
+    fn refund_expired(ref self: TContractState, owner: ContractAddress, salt: felt252, clear_all: bool);
     //Reclaims the deposited tokens held by the execution contract, only callable by owner
     fn refund(ref self: TContractState, salt: felt252, clear_all: bool);
+}
+
+#[starknet::interface]
+pub trait IExecutionContractReadOnly<TContractState> {
+    fn get_execution(ref self: TContractState, owner: ContractAddress, salt: felt252);
 }
 
 #[starknet::contract]
@@ -70,7 +80,12 @@ pub mod ExecutionContract {
 
     #[abi(embed_v0)]
     impl ExecutionContractImpl of super::IExecutionContract<ContractState> {
-        fn create(ref self: ContractState, salt: felt252, owner: ContractAddress, token: ContractAddress, amount: u256, execution_hash: felt252, expiry: u64, execution_fee_share: u16) {
+        fn create(
+            ref self: ContractState, 
+            owner: ContractAddress, salt: felt252, token: ContractAddress, 
+            amount: u256, execution_fee: u256,
+            execution_hash: felt252, expiry: u64
+        ) {
             //Make sure the execution hash not 0, we use 0 to indicate that the saved execution is empty
             assert(execution_hash != 0, 'post: execution_hash=0');
 
@@ -80,15 +95,15 @@ pub mod ExecutionContract {
 
             let execution = Execution {
                 token: token,
-                amount: amount,
                 execution_hash: execution_hash,
-                expiry: expiry,
-                execution_fee_share: execution_fee_share
+                amount: amount,
+                execution_fee: execution_fee,
+                expiry: expiry
             };
             execution_ptr.write(execution);
             
             //Transfer amount to the contract
-            let total_amount = amount + execution.get_execution_fee();
+            let total_amount = amount + execution_fee;
             erc20_utils::transfer_in(token, get_caller_address(), total_amount);
 
             //Emit event
@@ -99,11 +114,11 @@ pub mod ExecutionContract {
                 token: token,
                 amount: amount,
                 expiry: expiry,
-                execution_fee_share: execution_fee_share
+                execution_fee: execution_fee
             });
         }
 
-        fn execute(ref self: ContractState, salt: felt252, owner: ContractAddress, calls: Span<ContractCall>, drain_tokens: Span<ContractAddress>, clear_all: bool) {
+        fn execute(ref self: ContractState, owner: ContractAddress, salt: felt252, calls: Span<ContractCall>, drain_tokens: Span<ContractAddress>, clear_all: bool) {
             let execution_ptr = self.executions.entry(owner).entry(salt);
             let mut execution = execution_ptr.read();
 
@@ -119,9 +134,9 @@ pub mod ExecutionContract {
 
             //Retrieve caller & the fee to be paid to caller
             let caller = get_caller_address();
-            let execution_fee = execution.get_execution_fee();
             let token = execution.token;
             let amount = execution.amount;
+            let execution_fee = execution.execution_fee;
 
             //Clear execution (set to processed)
             execution.clear(clear_all);
@@ -158,21 +173,21 @@ pub mod ExecutionContract {
         }
 
         //Reclaims the deposited tokens held by the execution contract, anyone can call after expiry
-        fn refund_expired(ref self: ContractState, salt: felt252, owner: ContractAddress, clear_all: bool) {
+        fn refund_expired(ref self: ContractState, owner: ContractAddress, salt: felt252, clear_all: bool) {
             let execution_ptr = self.executions.entry(owner).entry(salt);
             let mut execution = execution_ptr.read();
+
+            //Check if already expired
+            assert(execution.expiry <= get_block_timestamp(), 'refund_exp: Not expired yet');
 
             //Check if already processed
             let execution_hash = execution.execution_hash;
             assert(execution_hash != 0, 'refund_exp: Already processed');
 
-            //Check if already expired
-            assert(execution.expiry <= get_block_timestamp(), 'refund_exp: Not expired yet');
-
             //Retrieve caller & the fee to be paid to caller
             let caller = get_caller_address();
-            let execution_fee = execution.get_execution_fee();
             let token = execution.token;
+            let execution_fee = execution.execution_fee;
             let amount = execution.amount;
 
             //Clear execution (set to processed)
@@ -197,6 +212,7 @@ pub mod ExecutionContract {
 
         //Reclaims the deposited tokens held by the execution contract, only callable by owner
         fn refund(ref self: ContractState, salt: felt252, clear_all: bool) {
+            //Owner needs to be caller in this case!
             let owner = get_caller_address();
 
             let execution_ptr = self.executions.entry(owner).entry(salt);
@@ -207,8 +223,8 @@ pub mod ExecutionContract {
             assert(execution_hash != 0, 'refund_exp: Already processed');
 
             //Retrieve caller & the fee to be paid to caller
-            let execution_fee = execution.get_execution_fee();
             let token = execution.token;
+            let execution_fee = execution.execution_fee;
             let amount = execution.amount;
 
             //Clear execution (set to processed)
