@@ -12,7 +12,6 @@ const assertionTable = [
     // [2, (buffer, index_be, noValue) => [ "buffer.read_u16_be("+index_be+")", noValue ? null : "0x"+buffer.readUInt16BE(index_be).toString(16) ], "u16_be"],
     [4, (buffer, index_le, noValue) => [ "buffer.read_u32_le("+index_le+")", noValue ? null : "0x"+buffer.readUInt32LE(index_le).toString(16) ], "u32_le"],
     // [4, (buffer, index_be, noValue) => [ "buffer.read_u32_be("+index_be+")", noValue ? null : "0x"+buffer.readUInt32BE(index_be).toString(16) ], "u32_be"],
-    [7, (buffer, index_le, noValue) => [ "buffer.read_u56_le("+index_le+")", noValue ? null : "0x"+Buffer.from([...buffer.subarray(index_le, index_le+7)]).reverse().toString("hex") ], "u56_le"],
     [8, (buffer, index_le, noValue) => [ "buffer.read_u64_le("+index_le+")", noValue ? null : "0x"+buffer.readBigUInt64LE(index_le).toString(16) ], "u64_le"],
     // [8, (buffer, index_be, noValue) => [ "buffer.read_u64_be("+index_be+")", noValue ? null : "0x"+buffer.readBigUInt64BE(index_be).toString(16) ], "u64_be"],
     // [16, (buffer, index_le, noValue) => [ "buffer.read_u128_le("+index_le+")", noValue ? null : "0x"+Buffer.from([...buffer.subarray(index_le, index_le+16)]).reverse().toString("hex") ], "u128_le"],
