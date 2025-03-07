@@ -12,11 +12,11 @@ pub struct BitcoinVaultTransactionData {
     pub amount_0: u64,
     pub amount_1: u64,
 
-    pub caller_fee: u16,
-    pub fronting_fee: u16,
+    pub caller_fee_u20: u32,
+    pub fronting_fee_u20: u32,
 
     pub execution_hash: felt252,
-    pub execution_handler_fee: u16,
+    pub execution_handler_fee_u20: u32,
     pub execution_handler_timeout: u32
 }
 
@@ -56,9 +56,12 @@ pub impl BitcoinVaultTransactionDataImpl of BitcoinVaultTransactionDataTrait {
         }
         let input_1_nsequence = input_1_option.unwrap().unbox().get_n_sequence();
 
-        let caller_fee_u16: u16 = (input_0_nsequence & 0xFFFF).try_into().unwrap();
-        let execution_handler_fee_u16: u16 = (input_1_nsequence & 0xFFFF).try_into().unwrap();
-        let fronting_fee_u16: u16 = (((input_0_nsequence / 0x100) & 0xFF00) + ((input_1_nsequence / 0x10000) & 0xFF)).try_into().unwrap();
+        //
+        //nSequence0: 10xx xxxx xxxx yyyy yyyy yyyy yyyy yyyy
+        //nSequence1: 10xx xxxx xxxx zzzz zzzz zzzz zzzz zzzz
+        let caller_fee_u20: u32 = (input_0_nsequence & 0b1111_1111_1111_1111_1111).try_into().unwrap();
+        let execution_handler_fee_u20: u32 = (input_1_nsequence & 0b1111_1111_1111_1111_1111).try_into().unwrap();
+        let fronting_fee_u20: u32 = (((input_0_nsequence / 0b100_0000_0000) & 0b1111_1111_1100_0000_0000) + ((input_1_nsequence / 0b1_0000_0000_0000_0000_0000) & 0b11_1111_1111)).try_into().unwrap();
 
         //Use locktime to determine timeout of the execution handler
         let execution_handler_timeout = btc_tx.get_locktime() + 1_000_000_000;
@@ -108,11 +111,11 @@ pub impl BitcoinVaultTransactionDataImpl of BitcoinVaultTransactionDataTrait {
             amount_0: amount_0_u64,
             amount_1: amount_1_u64,
 
-            caller_fee: caller_fee_u16,
-            fronting_fee: fronting_fee_u16,
+            caller_fee_u20: caller_fee_u20,
+            fronting_fee_u20: fronting_fee_u20,
 
             execution_hash: execution_hash,
-            execution_handler_fee: execution_handler_fee_u16,
+            execution_handler_fee_u20: execution_handler_fee_u20,
             execution_handler_timeout: execution_handler_timeout
         });
     }

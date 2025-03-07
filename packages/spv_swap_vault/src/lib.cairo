@@ -163,22 +163,17 @@ pub mod SpvVaultManager {
             let (amount_0, amount_1) = current_state.to_token_amounts(data.amount_0, data.amount_1);
 
             if amount_0 != 0 {
-                let caller_fee = utils::fee_amount(amount_0, data.caller_fee);
-                let fronting_fee = utils::fee_amount(amount_0, data.fronting_fee);
-                let leaves_amount = amount_0 - caller_fee - fronting_fee;
-                erc20_utils::transfer_in(current_state.token_0, caller, leaves_amount);
+                let execution_fee = utils::fee_amount(amount_1, data.execution_handler_fee);
+                erc20_utils::transfer_in(current_state.token_0, caller, amount_0);
                 if data.execution_hash == 0 {
-                    erc20_utils::transfer_out(current_state.token_0, data.recipient, leaves_amount);
+                    erc20_utils::transfer_out(current_state.token_0, data.recipient, amount_0);
                 } else {
 
                 }
             }
             if amount_1 != 0 {
-                let caller_fee = utils::fee_amount(amount_1, data.caller_fee);
-                let fronting_fee = utils::fee_amount(amount_1, data.fronting_fee);
-                let leaves_amount = amount_1 - caller_fee - fronting_fee;
-                erc20_utils::transfer_in(current_state.token_1, caller, leaves_amount);
-                erc20_utils::transfer_out(current_state.token_1, data.recipient, leaves_amount);
+                erc20_utils::transfer_in(current_state.token_1, caller, amount_1);
+                erc20_utils::transfer_out(current_state.token_1, data.recipient, amount_1);
             }
         }
 
@@ -258,15 +253,16 @@ pub mod SpvVaultManager {
                 //Pay the funds to the address that fronted
                 if amount_0 != 0 {
                     let caller_fee = utils::fee_amount(amount_0, tx_data.caller_fee);
-                    let leaves_amount = amount_0 - caller_fee;
+                    let fronting_fee = utils::fee_amount(amount_0, tx_data.fronting_fee);
+                    let execution_fee = utils::fee_amount(amount_0, tx_data.execution_handler_fee);
                     erc20_utils::transfer_out(current_state.token_0, caller, caller_fee);
-                    erc20_utils::transfer_out(current_state.token_0, fronting_address, leaves_amount);
+                    erc20_utils::transfer_out(current_state.token_0, fronting_address, amount_0 + fronting_fee + execution_fee);
                 }
                 if amount_1 != 0 {
                     let caller_fee = utils::fee_amount(amount_1, tx_data.caller_fee);
-                    let leaves_amount = amount_1 - caller_fee;
+                    let fronting_fee = utils::fee_amount(amount_1, tx_data.fronting_fee);
                     erc20_utils::transfer_out(current_state.token_1, caller, caller_fee);
-                    erc20_utils::transfer_out(current_state.token_1, fronting_address, leaves_amount);
+                    erc20_utils::transfer_out(current_state.token_1, fronting_address, amount_1 + fronting_fee);
                 }
                 return;
             }
