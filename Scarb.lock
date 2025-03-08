@@ -98,6 +98,8 @@ name = "execution_contract"
 version = "0.1.0"
 dependencies = [
  "erc20_utils",
+ "openzeppelin_access",
+ "openzeppelin_token",
  "snforge_std",
 ]
 
@@ -176,6 +178,8 @@ dependencies = [
  "btc_utils",
  "erc20_utils",
  "execution_contract",
+ "openzeppelin_access",
+ "openzeppelin_token",
  "snforge_std",
 ]
 

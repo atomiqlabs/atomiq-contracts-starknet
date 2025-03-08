@@ -4,7 +4,7 @@
 #### Open:
 
 - (success) open (event emitted, state saved)
-- (success) open previously closed (event emitted, state saved)
+- TODO (success) open previously closed (event emitted, state saved)
 - (fail) open already opened
 
 #### Deposit:
@@ -21,6 +21,7 @@
 - (success) front with exec_hash != 0 (event emitted, state saved, erc20 transfered)
 - (fail) front vault not opened
 - (fail) front already fronted
+- TODO (fail) front already claimed
 - (fail) front not enough funds
 - (fail) front not enough allowance
 

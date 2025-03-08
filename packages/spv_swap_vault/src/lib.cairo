@@ -113,10 +113,12 @@ pub mod SpvVaultManager {
             relay_contract: ContractAddress, utxo: (u256, u32), confirmations: u8,
             token_0: ContractAddress, token_1: ContractAddress, token_0_multiplier: felt252, token_1_multiplier: felt252
         ) {
+            assert(utxo != (0, 0), 'utxo is zero');
+
             //Check vault is not opened
             let owner: ContractAddress = get_caller_address();
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
-            assert(!storage_ptr.read().is_opened(), 'create: already opened');
+            assert(!storage_ptr.read().is_opened(), 'open: already opened');
 
             //Initialize new vault
             storage_ptr.write(SpvVaultState {
@@ -152,7 +154,7 @@ pub mod SpvVaultManager {
             //Check vault is opened
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
             let mut current_state = storage_ptr.read();
-            assert(current_state.is_opened(), 'claim: vault closed');
+            assert(current_state.is_opened(), 'deposit: vault closed');
 
             //Update the state with newly deposited tokens
             let amounts = current_state.from_raw((raw_token_0_amount, raw_token_1_amount)).unwrap();
@@ -196,8 +198,10 @@ pub mod SpvVaultManager {
             //Mark as fronted
             front_storage_ptr.write(caller);
 
+            let raw_amount = data.amount + (data.execution_handler_fee_amount_0, 0);
+
             //Transfer funds from caller to contract
-            let amounts = current_state.from_raw(data.amount + (data.execution_handler_fee_amount_0, 0)).unwrap();
+            let amounts = current_state.from_raw(raw_amount).unwrap();
             self._transfer_in((current_state.token_0, current_state.token_1), amounts);
 
             //Transfer funds
@@ -219,7 +223,7 @@ pub mod SpvVaultManager {
                 execution_hash: data.execution_hash,
                 btc_tx_hash: btc_tx_hash,
                 caller: caller,
-                amounts: data.amount
+                amounts: raw_amount
             });
         }
 
@@ -268,7 +272,7 @@ pub mod SpvVaultManager {
             // such that funds don't get frozen
             //NOTE: Also verifies that full amounts are in bounds of u256 integer, such that we can use
             // .unwrap() on all .from_raw() calculations
-            let withdrawal_result = current_state.parse_and_withdraw(btc_tx_hash_u256, result);
+            let withdrawal_result = current_state.parse_and_withdraw(btc_tx_hash_u256, @result);
             if withdrawal_result.is_err() {
                 self._close(owner, vault_id, ref current_state, storage_ptr, withdrawal_result.unwrap_err());
                 return;
@@ -343,7 +347,7 @@ pub mod SpvVaultManager {
         //Utility sanity call to check if the given bitcoin transaction is parsable
         fn parse_bitcoin_tx(self: @ContractState, transaction: ByteArray) -> Option<BitcoinVaultTransactionData> {
             let parsed_tx = BitcoinTransactionImpl::from_byte_array(@transaction);
-            let tx_data = BitcoinVaultTransactionDataImpl::from_tx(parsed_tx);
+            let tx_data = BitcoinVaultTransactionDataImpl::from_tx(@parsed_tx);
             if tx_data.is_err() {
                 Option::None
             } else {

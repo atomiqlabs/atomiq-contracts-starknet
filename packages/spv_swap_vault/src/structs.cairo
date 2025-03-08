@@ -28,7 +28,7 @@ pub struct BitcoinVaultTransactionData {
 #[generate_trait]
 pub impl BitcoinVaultTransactionDataImpl of BitcoinVaultTransactionDataTrait {
 
-    fn from_tx(btc_tx: BitcoinTransaction) -> Result<BitcoinVaultTransactionData, felt252> {
+    fn from_tx(btc_tx: @BitcoinTransaction) -> Result<BitcoinVaultTransactionData, felt252> {
         //Extract data from the OP_RETURN, which should be output with index 1
         let output_1_option = btc_tx.get_out(1);
         if output_1_option.is_none() { return Result::Err('tx_data: output 1 not found'); }
@@ -240,7 +240,7 @@ mod tests {
         execution_expiry: u32
     ) {
         let btc_tx = get_valid_tx(recipient.into(), amount_0, amount_1, execution_hash, caller_fee, fronting_fee, execution_fee, execution_expiry);
-        let parsed = BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap();
+        let parsed = BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap();
 
         assert_eq!(parsed.recipient, recipient.try_into().unwrap());
         assert_eq!(parsed.amount, (amount_0, amount_1.unwrap_or(0)));
@@ -303,7 +303,7 @@ mod tests {
         let btc_tx = get_btc_tx(array![0xCCCCCCCC], array![""], 0x00000000);
 
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: output 1 not found'
         );
     }
@@ -313,7 +313,7 @@ mod tests {
         let btc_tx = get_btc_tx(array![0xCCCCCCCC], array!["", ""], 0x00000000);
 
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: output 1 empty script'
         );
     }
@@ -323,7 +323,7 @@ mod tests {
         let btc_tx = get_btc_tx(array![0xCCCCCCCC], array!["", "\x10"], 0x00000000);
 
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: output 1 not OP_RETURN'
         );
     }
@@ -333,7 +333,7 @@ mod tests {
         let btc_tx = get_btc_tx(array![], array!["", "\x6a"], 0x00000000);
 
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: input 0 not found'
         );
     }
@@ -343,7 +343,7 @@ mod tests {
         let btc_tx = get_btc_tx(array![0xCCCCCCCC], array!["", "\x6a"], 0x00000000);
 
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: input 1 not found'
         );
     }
@@ -353,7 +353,7 @@ mod tests {
         let btc_tx = get_btc_tx(array![0xCCCCCCCC, 0xCCCCCCCC], array!["", "\x6a"], 0x00000000);
 
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: output 1 invalid len'
         );
     }
@@ -362,25 +362,25 @@ mod tests {
     fn parse_invalid_recipient() {
         let btc_tx = get_valid_tx(0x0800000000000000000000000000000000000000000000000000000000000011, 0, Option::None, Option::None, 0, 0, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: invalid recipient'
         );
         
         let btc_tx = get_valid_tx(0x0800000000000000000000000000000000000000000000000000000000000011, 0, Option::Some(0), Option::None, 0, 0, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: invalid recipient'
         );
 
         let btc_tx = get_valid_tx(0x0800000000000000000000000000000000000000000000000000000000000011, 0, Option::None, Option::Some(0), 0, 0, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: invalid recipient'
         );
 
         let btc_tx = get_valid_tx(0x0800000000000000000000000000000000000000000000000000000000000011, 0, Option::Some(0), Option::Some(0), 0, 0, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: invalid recipient'
         );
     }
@@ -389,7 +389,7 @@ mod tests {
     fn parse_caller_fee_0_overflow() {
         let btc_tx = get_valid_tx(0x0700000000000000000000000000000000000000000000000000000000000011, 0xFFFFFFFFFFFFFFFF, Option::None, Option::None, 0xFFFFF, 0, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: caller fee 0'
         );
     }
@@ -398,7 +398,7 @@ mod tests {
     fn parse_fronting_fee_0_overflow() {
         let btc_tx = get_valid_tx(0x0700000000000000000000000000000000000000000000000000000000000011, 0xFFFFFFFFFFFFFFFF, Option::None, Option::None, 0, 0xFFFFF, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: fronting fee 0'
         );
     }
@@ -407,7 +407,7 @@ mod tests {
     fn parse_execution_fee_0_overflow() {
         let btc_tx = get_valid_tx(0x0700000000000000000000000000000000000000000000000000000000000011, 0xFFFFFFFFFFFFFFFF, Option::None, Option::None, 0, 0, 0xFFFFF, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: execution fee 0'
         );
     }
@@ -416,7 +416,7 @@ mod tests {
     fn parse_caller_fee_1_overflow() {
         let btc_tx = get_valid_tx(0x0700000000000000000000000000000000000000000000000000000000000011, 5451, Option::Some(0xFFFFFFFFFFFFFFFF), Option::None, 0xFFFFF, 0, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: caller fee 1'
         );
     }
@@ -425,7 +425,7 @@ mod tests {
     fn parse_fronting_fee_1_overflow() {
         let btc_tx = get_valid_tx(0x0700000000000000000000000000000000000000000000000000000000000011, 5451, Option::Some(0xFFFFFFFFFFFFFFFF), Option::None, 0, 0xFFFFF, 0, 1_000_000_000);
         assert_eq!(
-            BitcoinVaultTransactionDataImpl::from_tx(btc_tx).unwrap_err(),
+            BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap_err(),
             'tx_data: fronting fee 1'
         );
     }
