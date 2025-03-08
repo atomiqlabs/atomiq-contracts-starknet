@@ -6,6 +6,7 @@ pub mod events;
 
 use crate::structs::ContractCall;
 use starknet::contract_address::ContractAddress;
+use crate::state::Execution;
 
 #[starknet::interface]
 pub trait IExecutionContract<TContractState> {
@@ -31,7 +32,7 @@ pub trait IExecutionContract<TContractState> {
 
 #[starknet::interface]
 pub trait IExecutionContractReadOnly<TContractState> {
-    fn get_execution(ref self: TContractState, owner: ContractAddress, salt: felt252);
+    fn get_execution(self: @TContractState, owner: ContractAddress, salt: felt252) -> Execution;
 }
 
 #[starknet::contract]
@@ -70,7 +71,7 @@ pub mod ExecutionContract {
     #[constructor]
     fn constructor(ref self: ContractState) {
         let (execution_proxy_address, _) = deploy_syscall(
-            0x0.try_into().unwrap(), //TODO: Replace with correct execution proxy class hash
+            0x5b4644a8bc1cafc820a7937b77af9cdf11472c764fe6636c0eaeef2a08032ca.try_into().unwrap(),
             0,
             array![].span(),
             false
@@ -87,11 +88,11 @@ pub mod ExecutionContract {
             execution_hash: felt252, expiry: u64
         ) {
             //Make sure the execution hash not 0, we use 0 to indicate that the saved execution is empty
-            assert(execution_hash != 0, 'post: execution_hash=0');
+            assert(execution_hash != 0, 'create: execution_hash=0');
 
             //Make sure execution not yet initialized
             let execution_ptr = self.executions.entry(owner).entry(salt);
-            assert(execution_ptr.read().execution_hash == 0, 'post: Already initiated');
+            assert(execution_ptr.read().execution_hash == 0, 'create: Already initiated');
 
             let execution = Execution {
                 token: token,
@@ -220,7 +221,7 @@ pub mod ExecutionContract {
 
             //Check if already processed
             let execution_hash = execution.execution_hash;
-            assert(execution_hash != 0, 'refund_exp: Already processed');
+            assert(execution_hash != 0, 'refund: Already processed');
 
             //Retrieve caller & the fee to be paid to caller
             let token = execution.token;
@@ -244,4 +245,14 @@ pub mod ExecutionContract {
             });
         }
     }
+
+    #[abi(embed_v0)]
+    impl ExecutionContractReadOnlyImpl of super::IExecutionContractReadOnly<ContractState> {
+        
+        fn get_execution(self: @ContractState, owner: ContractAddress, salt: felt252) -> Execution {
+            self.executions.entry(owner).entry(salt).read()
+        }
+
+    }
+
 }

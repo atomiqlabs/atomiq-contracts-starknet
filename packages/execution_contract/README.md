@@ -15,6 +15,7 @@
 - (success) execution success, clear_all=true
 - (success) execution failed, clear_all=false
 - (success) execution failed, clear_all=true
+- (fail) not initialized
 - (fail) already processed
 - (fail) invalid calls/drain tokens passed
 

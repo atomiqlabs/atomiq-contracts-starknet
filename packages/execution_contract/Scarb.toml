@@ -21,6 +21,8 @@ erc20_utils.workspace = true
 [dev-dependencies]
 assert_macros.workspace = true
 snforge_std.workspace = true
+openzeppelin_token = "1.0.0"
+openzeppelin_access = "1.0.0"
 
 [lib]
 

@@ -15,6 +15,7 @@ pub mod ExecutionProxy {
     use starknet::contract_address::ContractAddress;
     use crate::structs::ContractCall;
     use starknet::syscalls::call_contract_syscall;
+    use starknet::SyscallResultTrait;
     
     #[storage]
     struct Storage {}
@@ -23,7 +24,7 @@ pub mod ExecutionProxy {
     impl ExecutionProxyImpl of super::IExecutionProxy<ContractState> {
         fn execute(ref self: ContractState, data: Span<ContractCall>) {
             for call in data {
-                call_contract_syscall(*call.address, *call.entrypoint, *call.calldata).unwrap();
+                call_contract_syscall(*call.address, *call.entrypoint, *call.calldata).unwrap_syscall();
             }
         }
 
