@@ -155,7 +155,8 @@ pub mod SpvVaultManager {
             assert(current_state.is_opened(), 'claim: vault closed');
 
             //Update the state with newly deposited tokens
-            let amounts = current_state.deposit(raw_token_0_amount, raw_token_1_amount).unwrap();
+            let amounts = current_state.from_raw((raw_token_0_amount, raw_token_1_amount)).unwrap();
+            current_state.deposit(raw_token_0_amount, raw_token_1_amount);
 
             //Save the state
             storage_ptr.write(current_state);
@@ -205,7 +206,9 @@ pub mod SpvVaultManager {
                 self._transfer_out((current_state.token_0, current_state.token_1), amounts, data.recipient);
             } else {
                 let (_, amount_raw_1) = data.amount;
-                erc20_utils::transfer_out(current_state.token_1, data.recipient, current_state.from_raw_token1(amount_raw_1).unwrap());
+                if amount_raw_1 != 0 {
+                    erc20_utils::transfer_out(current_state.token_1, data.recipient, current_state.from_raw_token1(amount_raw_1).unwrap());
+                }
                 self._to_execution_contract(current_state, data, btc_tx_hash);
             }
 
@@ -292,10 +295,8 @@ pub mod SpvVaultManager {
                 } else {
                     let (_, amount_raw_1) = tx_data.amount;
                     let (fronting_fee_0, fronting_fee_1) = tx_data.fronting_fee;
-                    //Pay out the gas token straight to recipient
-                    erc20_utils::transfer_out(current_state.token_1, tx_data.recipient, current_state.from_raw_token1(amount_raw_1 + fronting_fee_1).unwrap());
-                    //Pay the fronting fee straight to recipient
-                    erc20_utils::transfer_out(current_state.token_0, tx_data.recipient, current_state.from_raw_token0(fronting_fee_0).unwrap());
+                    //Pay out the gas token & fronting fee straight to recipient
+                    self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw((fronting_fee_0, amount_raw_1 + fronting_fee_1)).unwrap(), tx_data.recipient);
                     //Instantiate the execution contract
                     self._to_execution_contract(current_state, tx_data, btc_tx_hash_u256);
                 }
@@ -356,7 +357,8 @@ pub mod SpvVaultManager {
 
         //Close the vault and return all the funds to owner
         fn _close(ref self: ContractState, owner: ContractAddress, vault_id: felt252, ref current_state: SpvVaultState, storage_ptr: StoragePath<Mutable<SpvVaultState>>, err: felt252) {
-            let amounts = current_state.close().unwrap();
+            let amounts = current_state.from_raw((current_state.token_0_amount, current_state.token_1_amount)).unwrap();
+            current_state.close();
 
             //Save state
             storage_ptr.write(current_state);

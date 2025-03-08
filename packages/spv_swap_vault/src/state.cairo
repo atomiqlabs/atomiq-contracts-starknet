@@ -81,15 +81,17 @@ pub impl SpvVaultImpl of SpvVaultImplTrait {
     }
 
     //Closes the spv vault, returning the amount of tokens left in the vault, before it was closed, returns scaled token amounts
-    fn close(ref self: SpvVaultState) -> Option<(u256, u256)> {
-        let token_0_amount = self.token_0_amount;
-        let token_1_amount = self.token_1_amount;
-
+    fn close(ref self: SpvVaultState) {
         self.utxo = (0, 0);
         self.token_0_amount = 0;
         self.token_1_amount = 0;
-        
-        self.from_raw((token_0_amount, token_1_amount))
+    }
+
+    //Updates the state with deposit, returns scaled token amounts
+    fn deposit(ref self: SpvVaultState, raw_amount_0: u64, raw_amount_1: u64) {
+        //Update the state
+        self.token_0_amount += raw_amount_0;
+        self.token_1_amount += raw_amount_1;
     }
 
     //Extracts the withdrawal bitcoin transaction data and updates the state with withdrawn token amounts
@@ -105,15 +107,6 @@ pub impl SpvVaultImpl of SpvVaultImplTrait {
         }
 
         Result::Ok(tx_data)
-    }
-
-    //Updates the state with deposit, returns scaled token amounts
-    fn deposit(ref self: SpvVaultState, raw_amount_0: u64, raw_amount_1: u64) -> Option<(u256, u256)> {
-        //Update the state
-        self.token_0_amount += raw_amount_0;
-        self.token_1_amount += raw_amount_1;
-
-        self.from_raw((raw_amount_0, raw_amount_1))
     }
 }
 
@@ -170,5 +163,392 @@ pub impl SpvVaultStateStorePacking of StorePacking<SpvVaultState, [felt252; 7]> 
             token_0_amount: token_0_amount,
             token_1_amount: token_1_amount
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    //Test consistency of the packing/unpacking functions
+    #[test]
+    fn test_packing() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0,
+            token_1_multiplier: 0,
+            utxo: (0, 0),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 0,
+            token_1_amount: 0
+        };
+        assert_eq!(SpvVaultStateStorePacking::unpack(SpvVaultStateStorePacking::pack(spv_vault_state)), spv_vault_state);
+
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.try_into().unwrap(),
+            token_0: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.try_into().unwrap(),
+            token_1: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.try_into().unwrap(),
+            token_0_multiplier: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            token_1_multiplier: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            utxo: (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF),
+            confirmations: 0xFF,
+            withdraw_count: 0xFFFFFFFF,
+            token_0_amount: 0xFFFFFFFFFFFFFFFF,
+            token_1_amount: 0xFFFFFFFFFFFFFFFF
+        };
+        assert_eq!(SpvVaultStateStorePacking::unpack(SpvVaultStateStorePacking::pack(spv_vault_state)), spv_vault_state);
+
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF.try_into().unwrap(),
+            token_0: 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF.try_into().unwrap(),
+            token_1: 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF.try_into().unwrap(),
+            token_0_multiplier: 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF,
+            token_1_multiplier: 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF,
+            utxo: (0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF, 0x00FF00FF),
+            confirmations: 0x0F,
+            withdraw_count: 0x00FF00FF,
+            token_0_amount: 0xFF00FF00FF00FF00,
+            token_1_amount: 0x00FF00FF00FF00FF
+        };
+        assert_eq!(SpvVaultStateStorePacking::unpack(SpvVaultStateStorePacking::pack(spv_vault_state)), spv_vault_state);
+
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.try_into().unwrap(),
+            token_0: 0x202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e.try_into().unwrap(),
+            token_1: 0x3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d.try_into().unwrap(),
+            token_0_multiplier: 0x5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c,
+            token_1_multiplier: 0x7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b,
+            utxo: (0x9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babc, 0xbdbebfc0),
+            confirmations: 0xc1,
+            withdraw_count: 0xc2c3c4c5,
+            token_0_amount: 0xc6c7c8c9cacbcccd,
+            token_1_amount: 0xcecfd0d1d2d3d4d5
+        };
+        assert_eq!(SpvVaultStateStorePacking::unpack(SpvVaultStateStorePacking::pack(spv_vault_state)), spv_vault_state);
+
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0x7a103cd2072c5a6ba4660ddbf8ada42385f2de05e2682408ec03b52c8cfc23c.try_into().unwrap(),
+            token_0: 0x59dc0fa33367211db9283b55d24b5e4ea240a2faa24d647f6ce2384384956c0.try_into().unwrap(),
+            token_1: 0x3e4cd6e9720ff9ddff09b4a051912d1d55ca37b9f413325e83f6d3a3057f37d.try_into().unwrap(),
+            token_0_multiplier: 0x4bf678bdec7218aad2f655434906d9aad9ef31f173ab5c05ec0b4e825d27920,
+            token_1_multiplier: 0x1b5e41d03bcd89578c225bc7e116924a67fde88419ef9a8701b7efdc49fd4e4,
+            utxo: (0x2a522f2a899536253d0c8480f08801f62848761656c1a2dc2e0f5d92f9897c06, 0xcf72180e),
+            confirmations: 0xbc,
+            withdraw_count: 0xdf35a61b,
+            token_0_amount: 0x53f49641f45c57ec,
+            token_1_amount: 0x13e3dff4883807ed
+        };
+        assert_eq!(SpvVaultStateStorePacking::unpack(SpvVaultStateStorePacking::pack(spv_vault_state)), spv_vault_state);
+    }
+
+    #[test]
+    fn deposit() {
+        let mut spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 58615365,
+            token_1_multiplier: 15665156156,
+            utxo: (0, 0),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        spv_vault_state.deposit(76321, 7472);
+
+        assert_eq!(spv_vault_state.token_0_amount, 50 + 76321);
+        assert_eq!(spv_vault_state.token_1_amount, 100 + 7472);
+    }
+
+    #[test]
+    fn is_opened() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0,
+            token_1_multiplier: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            utxo: (0, 0),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.is_opened(), false);
+
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0,
+            token_1_multiplier: 0,
+            utxo: (0xFF, 0),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.is_opened(), true);
+
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0,
+            token_1_multiplier: 0,
+            utxo: (0xFF, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.is_opened(), true);
+
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0,
+            token_1_multiplier: 0,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.is_opened(), true);
+    }
+
+    #[test]
+    fn from_raw_token0() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 7461236213,
+            token_1_multiplier: 0,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.from_raw_token0(9387123).unwrap(), 9387123 * 7461236213);
+    }
+
+    #[test]
+    fn from_raw_token0_overflow() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            token_1_multiplier: 0,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.from_raw_token0(789448615661).is_none(), true);
+    }
+
+    #[test]
+    fn from_raw_token1() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 7461236213,
+            token_1_multiplier: 45561313,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.from_raw_token1(1313864).unwrap(), 1313864 * 45561313);
+    }
+
+    #[test]
+    fn from_raw_token1_overflow() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0,
+            token_1_multiplier: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(spv_vault_state.from_raw_token1(848448666147).is_none(), true);
+    }
+
+    #[test]
+    fn from_raw() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 64489133,
+            token_1_multiplier: 45648616,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(
+            spv_vault_state.from_raw((5868468, 8123478)).unwrap(), 
+            (5868468 * 64489133, 8123478 * 45648616)
+        );
+    }
+
+    #[test]
+    fn from_raw_overflow_0() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            token_1_multiplier: 45648616,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(
+            spv_vault_state.from_raw((5868468, 8123478)).is_none(), 
+            true
+        );
+    }
+
+    #[test]
+    fn from_raw_overflow_1() {
+        let spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 789448665,
+            token_1_multiplier: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            utxo: (0, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        assert_eq!(
+            spv_vault_state.from_raw((5868468, 8123478)).is_none(), 
+            true
+        );
+    }
+
+    #[test]
+    fn close() {
+        let mut spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 58615365,
+            token_1_multiplier: 15665156156,
+            utxo: (0xFF, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 50,
+            token_1_amount: 100
+        };
+
+        spv_vault_state.close();
+
+        assert_eq!(spv_vault_state.token_0_amount, 0);
+        assert_eq!(spv_vault_state.token_1_amount, 0);
+        assert_eq!(spv_vault_state.utxo, (0, 0));
+    }
+
+    #[test]
+    fn withdraw() {
+        let mut spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 58615365,
+            token_1_multiplier: 15665156156,
+            utxo: (0xFF, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 844864,
+            token_1_amount: 3515154
+        };
+
+        spv_vault_state.withdraw(0x2313, 0x584, 84948, 48766).unwrap();
+
+        
+        assert_eq!(spv_vault_state.token_0_amount, 844864 - 84948);
+        assert_eq!(spv_vault_state.token_1_amount, 3515154 - 48766);
+        assert_eq!(spv_vault_state.utxo, (0x2313, 0x584));
+        assert_eq!(spv_vault_state.withdraw_count, 1);
+    }
+
+    #[test]
+    fn withdraw_too_much_token0() {
+        let mut spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 58615365,
+            token_1_multiplier: 15665156156,
+            utxo: (0xFF, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 844864,
+            token_1_amount: 3515154
+        };
+
+        assert_eq!(
+            spv_vault_state.withdraw(0x2313, 0x584, 844645665, 48766).unwrap_err(),
+            'withdraw: amount 0'
+        );
+    }
+
+    #[test]
+    fn withdraw_too_much_token1() {
+        let mut spv_vault_state = SpvVaultState {
+            relay_contract: 0.try_into().unwrap(),
+            token_0: 0.try_into().unwrap(),
+            token_1: 0.try_into().unwrap(),
+            token_0_multiplier: 58615365,
+            token_1_multiplier: 15665156156,
+            utxo: (0xFF, 0xFF),
+            confirmations: 0,
+            withdraw_count: 0,
+            token_0_amount: 844864,
+            token_1_amount: 3515154
+        };
+
+        assert_eq!(
+            spv_vault_state.withdraw(0x2313, 0x584, 874, 846441348423).unwrap_err(),
+            'withdraw: amount 1'
+        );
     }
 }
