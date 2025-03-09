@@ -88,7 +88,7 @@ pub mod SpvVaultManager {
     pub enum Event {
         Opened: events::Opened,
         Deposited: events::Deposited,
-        Claim: events::Claimed,
+        Claimed: events::Claimed,
         Fronted: events::Fronted,
         Closed: events::Closed
     }
@@ -274,7 +274,7 @@ pub mod SpvVaultManager {
             // .unwrap() on all .from_raw() calculations
             let withdrawal_result = current_state.parse_and_withdraw(btc_tx_hash_u256, @result);
             if withdrawal_result.is_err() {
-                self._close(owner, vault_id, ref current_state, storage_ptr, withdrawal_result.unwrap_err());
+                self._close(owner, vault_id, btc_tx_hash_u256, ref current_state, storage_ptr, withdrawal_result.unwrap_err());
                 return;
             }
             let tx_data = withdrawal_result.unwrap();
@@ -360,7 +360,7 @@ pub mod SpvVaultManager {
     impl SpvVaultManagerPriv of SpvVaultManagerPrivTrait {
 
         //Close the vault and return all the funds to owner
-        fn _close(ref self: ContractState, owner: ContractAddress, vault_id: felt252, ref current_state: SpvVaultState, storage_ptr: StoragePath<Mutable<SpvVaultState>>, err: felt252) {
+        fn _close(ref self: ContractState, owner: ContractAddress, vault_id: felt252, btc_tx_hash: u256, ref current_state: SpvVaultState, storage_ptr: StoragePath<Mutable<SpvVaultState>>, err: felt252) {
             let amounts = current_state.from_raw((current_state.token_0_amount, current_state.token_1_amount)).unwrap();
             current_state.close();
 
@@ -371,6 +371,7 @@ pub mod SpvVaultManager {
             self._transfer_out((current_state.token_0, current_state.token_1), amounts, owner);
 
             self.emit(events::Closed {
+                btc_tx_hash: btc_tx_hash,
                 owner: owner,
                 vault_id: vault_id,
                 error: err

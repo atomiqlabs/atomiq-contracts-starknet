@@ -1,3 +1,4 @@
+use core::num::traits::Zero;
 use starknet::SyscallResultTrait;
 use spv_swap_vault::{ISpvVaultManagerReadOnlyDispatcherTrait, ISpvVaultManagerSafeDispatcherTrait, SpvVaultManager};
 use spv_swap_vault::state::SpvVaultState;
@@ -5,13 +6,15 @@ use spv_swap_vault::events;
 use spv_swap_vault::structs::{BitcoinVaultTransactionData, BitcoinVaultTransactionDataImpl, BitcoinVaultTransactionDataTrait};
 use spv_swap_vault::utils::{U32ArrayToU256ParserTrait};
 
-use btc_utils::bitcoin_tx::{BitcoinTransaction, BitcoinTransactionTrait};
+use btc_utils::bitcoin_tx::{BitcoinTransaction, BitcoinTransactionImpl, BitcoinTransactionTrait};
+
+use btc_relay::structs::stored_blockheader::StoredBlockHeader;
 
 use snforge_std::{
     cheat_caller_address, CheatSpan, spy_events, EventSpyAssertionsTrait
 };
 
-use starknet::contract_address::{ContractAddress};
+use starknet::contract_address::{ContractAddress, contract_address_const};
 
 use crate::utils::contract::{Context};
 use crate::utils::erc20;
@@ -241,4 +244,156 @@ pub fn front_and_assert(
         assert_eq!(balance_token0_execution_contract + amount_0, context.token0.balance_of(context.execution_contract));
         assert_eq!(balance_token1_recipient + amount_1, context.token1.balance_of(data.recipient));
     }
+}
+
+pub fn claim_and_assert(
+    context: Context,
+    fronter: ContractAddress,
+    owner: ContractAddress,
+    recipient: ContractAddress,
+    vault_id: felt252,
+    token_0_multiplier: felt252,
+    token_1_multiplier: felt252,
+    transaction: @ByteArray,
+    blockheader: StoredBlockHeader,
+    merkle_proof: Span<[u32; 8]>,
+    position: u32,
+    close_err: felt252
+) -> Result<(), felt252> {
+    let caller: ContractAddress = contract_address_const::<'caller'>();
+
+    let mut spy = spy_events();
+
+    let balance_token0_owner = context.token0.balance_of(owner);
+    let balance_token0_caller = context.token0.balance_of(caller);
+    let balance_token0_fronter = context.token0.balance_of(fronter);
+    let balance_token0_recipient = context.token0.balance_of(recipient);
+    let balance_token0_contract = context.token0.balance_of(context.contract.contract_address);
+    let balance_token0_execution_contract = context.token0.balance_of(context.execution_contract);
+
+    let balance_token1_owner = context.token1.balance_of(owner);
+    let balance_token1_caller = context.token1.balance_of(caller);
+    let balance_token1_fronter = context.token1.balance_of(fronter);
+    let balance_token1_contract = context.token1.balance_of(context.contract.contract_address);
+    let balance_token1_recipient = context.token1.balance_of(recipient);
+
+    let mut previous_state = context.contract_read.get_vault(owner, vault_id);
+
+    cheat_caller_address(context.contract.contract_address, fronter, CheatSpan::TargetCalls(1));
+    let result = context.contract.claim(owner, vault_id, transaction.clone(), blockheader, merkle_proof, position);
+    if result.is_err() {
+        return Result::Err(*result.unwrap_err().at(0));
+    }
+
+    let parsed_btc_tx = BitcoinTransactionImpl::from_byte_array(transaction);
+    let tx_hash = parsed_btc_tx.get_hash().to_u256();
+
+    if close_err != 0 {
+        //Bitcoin transaction verification should've failed here, tokens refunded to owner
+
+        //Assert event emitted
+        spy.assert_emitted(
+            @array![(context.contract.contract_address, SpvVaultManager::Event::Closed(events::Closed {
+                btc_tx_hash: tx_hash,
+                owner: owner,
+                vault_id: vault_id,
+                error: close_err,
+            }))]
+        );
+
+        let amount_0: u256 = previous_state.token_0_amount.into() * token_0_multiplier.into();
+        let amount_1: u256 = previous_state.token_1_amount.into() * token_1_multiplier.into();
+
+        //Update to expected state
+        previous_state.token_0_amount = 0;
+        previous_state.token_1_amount = 0;
+        previous_state.utxo = (0, 0);
+
+        //Asert state saved
+        assert_eq!(context.contract_read.get_vault(owner, vault_id), previous_state);
+
+        //Assert tokens refunded back to owner
+        assert_eq!(balance_token0_contract - amount_0, context.token0.balance_of(context.contract.contract_address));
+        assert_eq!(balance_token1_contract - amount_1, context.token1.balance_of(context.contract.contract_address));
+        assert_eq!(balance_token0_owner + amount_0, context.token0.balance_of(owner));
+        assert_eq!(balance_token1_owner + amount_1, context.token1.balance_of(owner));
+
+        return Result::Ok(());
+    }
+
+    let data = BitcoinVaultTransactionDataImpl::from_tx(@parsed_btc_tx).unwrap();
+    
+    //Assert event emitted
+    spy.assert_emitted(
+        @array![(context.contract.contract_address, SpvVaultManager::Event::Claimed(events::Claimed {
+            btc_tx_hash: tx_hash,
+            owner: owner,
+            vault_id: vault_id,
+            recipient: data.recipient,
+            execution_hash: data.execution_hash,
+            caller: caller,
+            amounts: data.amount,
+            fronting_address: fronter
+        }))]
+    );
+
+    //Update to expected state
+    previous_state.withdraw_count += 1;
+    let (withdrawn_amount_0, withdrawn_amount_1) = data.get_full_amounts().unwrap();
+    previous_state.token_0_amount -= withdrawn_amount_0;
+    previous_state.token_1_amount -= withdrawn_amount_1;
+    previous_state.utxo = (tx_hash, 0);
+
+    //Asert state saved
+    assert_eq!(context.contract_read.get_vault(owner, vault_id), previous_state);
+
+    //Assert tokens sent
+    let (raw_amount_0, raw_amount_1) = data.amount;
+    let amount_0: u256 = raw_amount_0.into() * token_0_multiplier.into();
+    let amount_1: u256 = raw_amount_1.into() * token_1_multiplier.into();
+
+    let (raw_caller_fee_amount_0, raw_caller_fee_amount_1) = data.caller_fee;
+    let caller_fee_amount_0: u256 = raw_caller_fee_amount_0.into() * token_0_multiplier.into();
+    let caller_fee_amount_1: u256 = raw_caller_fee_amount_1.into() * token_1_multiplier.into();
+
+    let (raw_fronting_fee_amount_0, raw_fronting_fee_amount_1) = data.fronting_fee;
+    let fronting_fee_amount_0: u256 = raw_fronting_fee_amount_0.into() * token_0_multiplier.into();
+    let fronting_fee_amount_1: u256 = raw_fronting_fee_amount_1.into() * token_1_multiplier.into();
+
+    let execution_fee_amount_0: u256 = data.execution_handler_fee_amount_0.into() * token_1_multiplier.into();
+
+    //Assert tokens claimed from the contract
+    assert_eq!(
+        balance_token0_contract - amount_0 - caller_fee_amount_0 - fronting_fee_amount_0 - execution_fee_amount_0, 
+        context.token0.balance_of(context.contract.contract_address)
+    );
+    assert_eq!(
+        balance_token1_contract - amount_1 - caller_fee_amount_1 - fronting_fee_amount_1, 
+        context.token1.balance_of(context.contract.contract_address)
+    );
+    
+    //Assert caller fee paid to caller
+    assert_eq!(balance_token0_caller + caller_fee_amount_0, context.token0.balance_of(caller));
+    assert_eq!(balance_token1_caller + caller_fee_amount_1, context.token1.balance_of(caller));
+
+    if fronter.is_zero() {
+        if data.execution_hash == 0 {
+            //Everything should be transfered to recipient
+            assert_eq!(balance_token0_recipient + amount_0 + fronting_fee_amount_0 + execution_fee_amount_0, context.token0.balance_of(data.recipient));
+            assert_eq!(balance_token1_recipient + amount_1 + fronting_fee_amount_1, context.token1.balance_of(data.recipient));
+        } else {
+            //Fronting fee paid back to recipient
+            assert_eq!(balance_token0_recipient + fronting_fee_amount_0, context.token0.balance_of(data.recipient));
+            //Amount + execution fee transfered to execution contract
+            assert_eq!(balance_token0_execution_contract + amount_0 + execution_fee_amount_0, context.token0.balance_of(context.execution_contract));
+            //Amount of token1 is paid straight to recipient
+            assert_eq!(balance_token1_recipient + amount_1 + fronting_fee_amount_1, context.token1.balance_of(data.recipient));
+        }
+    } else {
+        //Everything should be transfered to fronter, who fronted the liquidity before
+        assert_eq!(balance_token0_fronter + amount_0 + fronting_fee_amount_0 + execution_fee_amount_0, context.token0.balance_of(fronter));
+        assert_eq!(balance_token1_fronter + amount_1 + fronting_fee_amount_1, context.token1.balance_of(fronter));
+    }
+
+    Result::Ok(())
 }

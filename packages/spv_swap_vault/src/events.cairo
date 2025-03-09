@@ -49,6 +49,9 @@ pub struct Claimed {
 #[derive(Drop, starknet::Event)]
 pub struct Closed {
     #[key]
+    pub btc_tx_hash: u256,
+    
+    #[key]
     pub owner: ContractAddress,
     #[key]
     pub vault_id: felt252,
