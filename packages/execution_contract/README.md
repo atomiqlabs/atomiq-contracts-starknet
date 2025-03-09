@@ -1,32 +1,19 @@
+# Execution contract
 
-## Tests
+Starknet contract that allows scheduling external calls to be executed on behalf of a user for a reward. Any party can come and execute the actions on behalf of the owners and earn the posted fee for it.
 
-#### Create
+## Scheduling executions
 
-- (success) create valid (event emitted, state saved, erc20 transfered)
-- (fail) create execution hash 0
-- (fail) create already initiated
-- (fail) create not enough funds
-- (fail) create not enough allowance
+Users/contracts can schedule executions on behalf of other users (owners) by calling the create() function, this will transfer the required erc20 tokens + specified execution fee to the smart contract (from the caller - not from the specified owner). The action to be executed is intended to be transfered out of bound, with only the hash (execution_hash) stored on-chain.
 
-#### Execute
+## Executing
 
-- (success) execution success, clear_all=false
-- (success) execution success, clear_all=true
-- (success) execution failed, clear_all=false
-- (success) execution failed, clear_all=true
-- (fail) not initialized
-- (fail) already processed
-- (fail) invalid calls/drain tokens passed
+Any party can execute any scheduled execution and claim the fee for doing so.
 
-#### Refund expired
+## Refunding
 
-- (success) refund valid, clear_all=false
-- (success) refund valid, clear_all=true
-- (fail) not expired yet
-- (fail) already processed
+It might happen that the specified action cannot be executed (i.e. costs infinite gas), or the specified execution fee is too little to cover the gas cost, such that no economically rational 3rd party executes it.
 
-#### Refund
-- (success) refund valid, clear_all=false
-- (success) refund valid, clear_all=true
-- (fail) already processed
+The owner can therefore refund at anytime, reclaiming the tokens + execution fee back to himself.
+
+It is also possible to specify an expiry of the scheduled execution, once it passes anyone can refund the funds back to the owner, still however claiming the execution fee.
