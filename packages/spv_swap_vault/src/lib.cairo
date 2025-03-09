@@ -179,6 +179,7 @@ pub mod SpvVaultManager {
             withdraw_sequence: u32, btc_tx_hash: u256, data: BitcoinVaultTransactionData
         ) {
             let caller = get_caller_address();
+            assert(!caller.is_zero(), 'front: caller is 0');
 
             //Check vault is opened
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
@@ -277,7 +278,7 @@ pub mod SpvVaultManager {
                 self._close(owner, vault_id, btc_tx_hash_u256, ref current_state, storage_ptr, withdrawal_result.unwrap_err());
                 return;
             }
-            let tx_data = withdrawal_result.unwrap();
+            let (total_raw_amounts, tx_data) = withdrawal_result.unwrap();
 
             //Save state
             storage_ptr.write(current_state);
@@ -291,7 +292,7 @@ pub mod SpvVaultManager {
             if !fronting_address.is_zero() {
                 let fronting_amounts = tx_data.amount + tx_data.fronting_fee + (tx_data.execution_handler_fee_amount_0, 0);
                 //Transfer funds to the account that fronted
-                self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(fronting_amounts).unwrap(), caller);
+                self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(fronting_amounts).unwrap(), fronting_address);
             } else {
                 if tx_data.execution_hash == 0 {
                     let payout_amounts = tx_data.amount + tx_data.fronting_fee + (tx_data.execution_handler_fee_amount_0, 0);
@@ -313,7 +314,7 @@ pub mod SpvVaultManager {
                 execution_hash: tx_data.execution_hash,
                 btc_tx_hash: btc_tx_hash_u256,
                 caller: caller,
-                amounts: tx_data.amount,
+                amounts: total_raw_amounts,
                 fronting_address: fronting_address
             });
         }

@@ -96,7 +96,7 @@ pub impl SpvVaultImpl of SpvVaultImplTrait {
 
     //Extracts the withdrawal bitcoin transaction data and updates the state with withdrawn token amounts
     //NOTE: Also verifies that full amounts are in bounds of u256 integer
-    fn parse_and_withdraw(ref self: SpvVaultState, btc_tx_hash_u256: u256, btc_tx: @BitcoinTransaction) -> Result<BitcoinVaultTransactionData, felt252> {
+    fn parse_and_withdraw(ref self: SpvVaultState, btc_tx_hash_u256: u256, btc_tx: @BitcoinTransaction) -> Result<((u64, u64), BitcoinVaultTransactionData), felt252> {
         let tx_data = BitcoinVaultTransactionDataImpl::from_tx(btc_tx)?;
         let (amount_0, amount_1) = tx_data.get_full_amounts()?;
         self.withdraw(btc_tx_hash_u256, 0, amount_0, amount_1)?;
@@ -106,7 +106,7 @@ pub impl SpvVaultImpl of SpvVaultImplTrait {
             return Result::Err('parse_and_wthdrw: u256 overflow');
         }
 
-        Result::Ok(tx_data)
+        Result::Ok(((amount_0, amount_1), tx_data))
     }
 }
 

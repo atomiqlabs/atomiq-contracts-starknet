@@ -80,6 +80,18 @@ pub fn get_funded_spv_vault(
 ) {
     create_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier);
 
+    fund_spv_vault(context, owner, vault_id, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
+}
+
+pub fn fund_spv_vault(
+    context: Context,
+    owner: ContractAddress,
+    vault_id: felt252,
+    token_0_multiplier: felt252,
+    token_1_multiplier: felt252,
+    raw_amount_0: u64,
+    raw_amount_1: u64
+) {
     let amount_0: u256 = raw_amount_0.into() * token_0_multiplier.into();
     let amount_1: u256 = raw_amount_1.into() * token_1_multiplier.into();
 
@@ -279,7 +291,7 @@ pub fn claim_and_assert(
 
     let mut previous_state = context.contract_read.get_vault(owner, vault_id);
 
-    cheat_caller_address(context.contract.contract_address, fronter, CheatSpan::TargetCalls(1));
+    cheat_caller_address(context.contract.contract_address, caller, CheatSpan::TargetCalls(1));
     let result = context.contract.claim(owner, vault_id, transaction.clone(), blockheader, merkle_proof, position);
     if result.is_err() {
         return Result::Err(*result.unwrap_err().at(0));
@@ -322,6 +334,7 @@ pub fn claim_and_assert(
     }
 
     let data = BitcoinVaultTransactionDataImpl::from_tx(@parsed_btc_tx).unwrap();
+    let (withdrawn_amount_0, withdrawn_amount_1) = data.get_full_amounts().unwrap();
     
     //Assert event emitted
     spy.assert_emitted(
@@ -332,14 +345,13 @@ pub fn claim_and_assert(
             recipient: data.recipient,
             execution_hash: data.execution_hash,
             caller: caller,
-            amounts: data.amount,
+            amounts: (withdrawn_amount_0, withdrawn_amount_1),
             fronting_address: fronter
         }))]
     );
 
     //Update to expected state
     previous_state.withdraw_count += 1;
-    let (withdrawn_amount_0, withdrawn_amount_1) = data.get_full_amounts().unwrap();
     previous_state.token_0_amount -= withdrawn_amount_0;
     previous_state.token_1_amount -= withdrawn_amount_1;
     previous_state.utxo = (tx_hash, 0);
@@ -360,7 +372,7 @@ pub fn claim_and_assert(
     let fronting_fee_amount_0: u256 = raw_fronting_fee_amount_0.into() * token_0_multiplier.into();
     let fronting_fee_amount_1: u256 = raw_fronting_fee_amount_1.into() * token_1_multiplier.into();
 
-    let execution_fee_amount_0: u256 = data.execution_handler_fee_amount_0.into() * token_1_multiplier.into();
+    let execution_fee_amount_0: u256 = data.execution_handler_fee_amount_0.into() * token_0_multiplier.into();
 
     //Assert tokens claimed from the contract
     assert_eq!(

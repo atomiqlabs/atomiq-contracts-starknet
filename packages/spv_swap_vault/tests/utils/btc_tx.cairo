@@ -11,7 +11,7 @@ pub fn get_btc_tx(utxo: (u256, u32), inputs: Array<u32>, outputs: Array<ByteArra
 
     for input in inputs.span() {
         tx.append_word((tx_hash_u256 / 0x100).try_into().unwrap(), 31); tx.append_word((tx_hash_u256 & 0xFF).try_into().unwrap(), 1); //Input utxo txId
-        tx.append_word(vout.into(), 4); //Input utxo vout
+        tx.append_word_rev(vout.into(), 4); //Input utxo vout
         tx.append_word_rev(0x00, 1); //Input script length
         tx.append_word_rev((*input).into(), 4); //Input nSequence
     };
