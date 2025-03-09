@@ -17,3 +17,11 @@ It might happen that the specified action cannot be executed (i.e. costs infinit
 The owner can therefore refund at anytime, reclaiming the tokens + execution fee back to himself.
 
 It is also possible to specify an expiry of the scheduled execution, once it passes anyone can refund the funds back to the owner, still however claiming the execution fee.
+
+## Why not use SafeDispatcher pattern?
+
+Initial idea was to simply use SafeDispatcher pattern (i.e. gracefully catching contract call errors with Result type) instead of execution contract to execute actions when swap happens.
+
+This is however unsafe if we allow the user to pick arbitrary contract calls, since the user might deploy an evil contract that simply uses infinite gas, and in that case the transaction will always fail as a whole, even with SafeDispatcher pattern (because there is no gas limit for external calls).
+
+It was therefore decided that the safest way is to use a standalone execution contract, which acts as a short-term "escrow" for executions and in case some of them are unexecutable, the funds can still be refunded back to the user.
