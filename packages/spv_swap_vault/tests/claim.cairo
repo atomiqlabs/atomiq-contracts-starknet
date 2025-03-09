@@ -1,21 +1,12 @@
-use spv_swap_vault::structs::BitcoinVaultTransactionDataTrait;
 use starknet::contract_address::{ContractAddress, contract_address_const};
 
-use openzeppelin_token::erc20::interface::{ERC20ABIDispatcherTrait};
-
-use snforge_std::{
-    cheat_caller_address, CheatSpan
-};
-
 use spv_swap_vault::structs::{BitcoinVaultTransactionDataImpl};
-use spv_swap_vault::utils::{U32ArrayToU256ParserTrait};
 
 use btc_utils::bitcoin_tx::BitcoinTransactionTrait;
 
 use crate::utils::contract::{Context, get_context};
 use crate::utils::btc_relay::get_btc_relay_with_txs;
-use crate::utils::spv_vault::{get_funded_spv_vault, mint_and_front, fund_spv_vault, claim_and_assert};
-use crate::utils::erc20;
+use crate::utils::spv_vault::{get_funded_spv_vault, mint_and_front, claim_and_assert};
 use crate::utils::btc_tx::{get_valid_tx, get_btc_tx};
 
 fn test_create_and_claim(
