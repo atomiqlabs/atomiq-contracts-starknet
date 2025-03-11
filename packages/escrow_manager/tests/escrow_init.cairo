@@ -32,7 +32,27 @@ fn valid_initialize() {
             if i & 0x10 == 0x10 { ESCROW_DEPOSIT_SMALL } else { 0 },
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
-        assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0), escrow);
+        assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0, false), escrow);
+    }
+}
+
+//Valid initialization of the escrow
+#[test]
+fn valid_initialize_legacy() {
+    let context = get_context();
+    for i in 0..32_u8 {
+        let (sender, escrow, signer, _, _) = create_escrow_data(context, 
+            true, 
+            i & 0x1 == 0x1,
+            i & 0x2 == 0x2,
+            i & 0x4 == 0x4,
+            ESCROW_INIT_MINT_AMOUNT,
+            ESCROW_INIT_AMOUNT,
+            ESCROW_GAS_MINT_AMOUNT,
+            if i & 0x8 == 0x8 { ESCROW_DEPOSIT_SMALL } else { 0 },
+            if i & 0x10 == 0x10 { ESCROW_DEPOSIT_LARGE } else { 0 }
+        );
+        assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0, true), escrow);
     }
 }
 
@@ -53,7 +73,7 @@ fn invalid_initialize_not_enough_balance() {
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
         assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, signer, 100, 0),
+            init_escrow_and_assert(context, sender, escrow, signer, 100, 0, false),
             if escrow.is_pay_in() { 'ERC20: insufficient balance' } else { '_xfer_in: not enough balance' },
             escrow
         );
@@ -82,7 +102,7 @@ fn invalid_initialize_not_enough_allowance() {
         context.token.approve(context.contract_address, 0);
 
         assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, signer, 100, 0),
+            init_escrow_and_assert(context, sender, escrow, signer, 100, 0, false),
             'ERC20: insufficient allowance',
             escrow
         );
@@ -107,7 +127,7 @@ fn invalid_initialize_not_enough_gas_balance() {
         );
 
         assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, signer, 100, 0),
+            init_escrow_and_assert(context, sender, escrow, signer, 100, 0, false),
             'ERC20: insufficient balance',
             escrow
         );
@@ -136,7 +156,7 @@ fn invalid_initialize_not_enough_gas_allowance() {
         context.gas_token.approve(context.contract_address, 0);
 
         assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, signer, 100, 0),
+            init_escrow_and_assert(context, sender, escrow, signer, 100, 0, false),
             'ERC20: insufficient allowance',
             escrow
         );
@@ -160,7 +180,7 @@ fn invalid_initialize_wrong_signer() {
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
         assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, StarkCurveKeyPairImpl::generate(), 100, 0),
+            init_escrow_and_assert(context, sender, escrow, StarkCurveKeyPairImpl::generate(), 100, 0, false),
             'verify_sig: Invalid response',
             escrow
         );
@@ -184,7 +204,7 @@ fn invalid_initialize_wrong_sign_message() {
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
         assert_result_error(
-            _init_escrow_and_assert(context, sender, escrow, signer, 100, 0, true, false),
+            _init_escrow_and_assert(context, sender, escrow, signer, 100, 0, true, false, false),
             'verify_sig: Invalid response',
             escrow
         );
@@ -208,7 +228,7 @@ fn invalid_initialize_wrong_sender() {
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
         assert_result_error(
-            init_escrow_and_assert(context, generate_random_felt().try_into().unwrap(), escrow, signer, 100, 0),
+            init_escrow_and_assert(context, generate_random_felt().try_into().unwrap(), escrow, signer, 100, 0, false),
             'init: caller_address',
             escrow
         );
@@ -232,7 +252,7 @@ fn invalid_initialize_expired() {
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
         assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, signer, 50, 100),
+            init_escrow_and_assert(context, sender, escrow, signer, 50, 100, false),
             'init: Authorization expired',
             escrow
         );
@@ -256,7 +276,7 @@ fn invalid_initialize_sign_different_timeout() {
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
         assert_result_error(
-            _init_escrow_and_assert(context, sender, escrow, signer, 0xFFFFFFFFFFFFFFFE, 100, false, true),
+            _init_escrow_and_assert(context, sender, escrow, signer, 0xFFFFFFFFFFFFFFFE, 100, false, true, false),
             'verify_sig: Invalid response',
             escrow
         );
@@ -279,9 +299,9 @@ fn invalid_initialize_commit_twice() {
             if i & 0x10 == 0x10 { ESCROW_DEPOSIT_SMALL } else { 0 },
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
-        assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0), escrow);
+        assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0, false), escrow);
         assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, signer, 100, 0),
+            init_escrow_and_assert(context, sender, escrow, signer, 100, 0, false),
             '_commit: Already committed',
             escrow
         );

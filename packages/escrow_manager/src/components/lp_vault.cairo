@@ -3,7 +3,7 @@ use starknet::ContractAddress;
 #[starknet::interface]
 pub trait ILPVault<TContractState> {
     //Deposit funds to the LP vault
-    fn deposit(ref self: TContractState, token: ContractAddress, amount: u256);
+    fn deposit(ref self: TContractState, token: ContractAddress, is_legacy: bool, amount: u256);
     //Withdraw funds from the LP vault
     fn withdraw(ref self: TContractState, token: ContractAddress, amount: u256, destination: ContractAddress);
     //Returns LP vault balances, the data parameter is in the format (owner, token_address)
@@ -30,12 +30,12 @@ pub mod lp_vault {
     pub impl LPVaultImpl<
         TContractState, +HasComponent<TContractState>,
     > of super::ILPVault<ComponentState<TContractState>> {
-        fn deposit(ref self: ComponentState<TContractState>, token: ContractAddress, amount: u256) {
+        fn deposit(ref self: ComponentState<TContractState>, token: ContractAddress, is_legacy: bool, amount: u256) {
             let caller = get_caller_address();
             let current_balance = self.lp_vault.entry(caller).entry(token).read();
             self.lp_vault.entry(caller).entry(token).write(current_balance + amount);
             
-            erc20_utils::transfer_in(token, caller, amount);
+            erc20_utils::transfer_in(token, is_legacy, caller, amount);
         }
 
         fn withdraw(ref self: ComponentState<TContractState>, token: ContractAddress, amount: u256, destination: ContractAddress) {

@@ -24,12 +24,12 @@ fn deploy_all(mint_amount: u256) -> (ContractAddress, ContractAddress, ERC20ABID
     (user, contract_address, erc20_dispatcher)
 }
 
-fn deposit_and_assert(user: ContractAddress, contract_address: ContractAddress, erc20_dispatcher: ERC20ABIDispatcher, amount: u256) {
+fn deposit_and_assert(user: ContractAddress, contract_address: ContractAddress, erc20_dispatcher: ERC20ABIDispatcher, is_legacy: bool, amount: u256) {
     let balance_erc20 = erc20_dispatcher.balance_of(user);
     let balance_contract = *ILPVaultDispatcher{contract_address}.get_balance(array![(user, erc20_dispatcher.contract_address)].span()).span()[0];
     let balance_erc20_contract = erc20_dispatcher.balance_of(contract_address);
     
-    ILPVaultDispatcher{contract_address}.deposit(erc20_dispatcher.contract_address, amount);
+    ILPVaultDispatcher{contract_address}.deposit(erc20_dispatcher.contract_address, is_legacy, amount);
 
     assert_eq!(erc20_dispatcher.balance_of(user), balance_erc20-amount);
     assert_eq!(ILPVaultDispatcher{contract_address}.get_balance(array![(user, erc20_dispatcher.contract_address)].span()), array![balance_contract+amount]);
@@ -40,7 +40,14 @@ fn deposit_and_assert(user: ContractAddress, contract_address: ContractAddress, 
 #[test]
 fn valid_deposit() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 50);
+}
+
+//Valid deposit to the LP vault
+#[test]
+fn valid_deposit_legacy() {
+    let (user, contract_address, erc20_dispatcher) = deploy_all(100);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, true, 50);
 }
 
 //Deposit to LP vault without sufficient erc20 allowance
@@ -51,7 +58,7 @@ fn invalid_deposit_no_allowance() {
 
     cheat_caller_address(erc20_dispatcher.contract_address, user, CheatSpan::TargetCalls(1));
     erc20_dispatcher.approve(contract_address, 0);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 50);
 }
 
 //Deposit to LP vault without sufficient erc20 balance
@@ -59,14 +66,14 @@ fn invalid_deposit_no_allowance() {
 #[should_panic(expected: 'ERC20: insufficient balance')]
 fn invalid_deposit_no_balance() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 200);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 200);
 }
 
 //Valid partial withdrawal from the LP vault (leaves funds in the LP vault)
 #[test]
 fn valid_withdraw_partial() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 50);
 
     ILPVaultDispatcher{contract_address}.withdraw(erc20_dispatcher.contract_address, 25, user);
     assert_eq!(erc20_dispatcher.balance_of(user), 75);
@@ -77,7 +84,7 @@ fn valid_withdraw_partial() {
 #[test]
 fn valid_withdraw_full() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 50);
 
     ILPVaultDispatcher{contract_address}.withdraw(erc20_dispatcher.contract_address, 50, user);
     assert_eq!(erc20_dispatcher.balance_of(user), 100);
@@ -88,7 +95,7 @@ fn valid_withdraw_full() {
 #[test]
 fn valid_withdraw_partial_external() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 50);
     let external = contract_address_const::<'external'>();
 
     ILPVaultDispatcher{contract_address}.withdraw(erc20_dispatcher.contract_address, 25, external);
@@ -101,7 +108,7 @@ fn valid_withdraw_partial_external() {
 #[test]
 fn valid_withdraw_full_external() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 50);
     let external = contract_address_const::<'external'>();
 
     ILPVaultDispatcher{contract_address}.withdraw(erc20_dispatcher.contract_address, 50, external);
@@ -115,7 +122,7 @@ fn valid_withdraw_full_external() {
 #[should_panic(expected: 'withdraw: not enough balance')]
 fn invalid_withdraw_no_balance() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
-    deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
+    deposit_and_assert(user, contract_address, erc20_dispatcher, false, 50);
 
     ILPVaultDispatcher{contract_address}.withdraw(erc20_dispatcher.contract_address, 100, user);
 }

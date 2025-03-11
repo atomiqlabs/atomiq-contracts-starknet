@@ -9,7 +9,7 @@ use crate::utils::erc20;
 
 use openzeppelin_token::erc20::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
 
-pub fn mint_to_lp_vault(contract_address: ContractAddress, user: ContractAddress, token: ERC20ABIDispatcher, amount: u256) {
+pub fn mint_to_lp_vault(contract_address: ContractAddress, user: ContractAddress, token: ERC20ABIDispatcher, is_legacy: bool, amount: u256) {
     erc20::mint(token, user, amount);
 
     cheat_caller_address(token.contract_address, user, CheatSpan::TargetCalls(1));
@@ -19,7 +19,7 @@ pub fn mint_to_lp_vault(contract_address: ContractAddress, user: ContractAddress
     let balance_contract = *ILPVaultDispatcher{contract_address}.get_balance(array![(user, token.contract_address)].span()).span()[0];
 
     cheat_caller_address(contract_address, user, CheatSpan::TargetCalls(1));
-    ILPVaultDispatcher{contract_address}.deposit(token.contract_address, amount);
+    ILPVaultDispatcher{contract_address}.deposit(token.contract_address, is_legacy, amount);
 
     assert_eq!(token.balance_of(user), balance_erc20-amount);
     assert_eq!(ILPVaultDispatcher{contract_address}.get_balance(array![(user, token.contract_address)].span()), array![balance_contract+amount]);

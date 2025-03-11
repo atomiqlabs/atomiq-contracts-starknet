@@ -10,7 +10,7 @@ use crate::structs::escrow::EscrowData;
 #[starknet::interface]
 pub trait IEscrowManager<TContractState> {
     //Initializes the escrow
-    fn initialize(ref self: TContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>);
+    fn initialize(ref self: TContractState, escrow: EscrowData, is_token_legacy: bool, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>);
     //Claims the escrow by providing a witness to the claim handler
     fn claim(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>);
     //Refunds the escrow by providing a witness to the refund handler
@@ -75,7 +75,7 @@ pub mod EscrowManager {
 
     #[abi(embed_v0)]
     impl EscrowManagerImpl of super::IEscrowManager<ContractState> {
-        fn initialize(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>) {
+        fn initialize(ref self: ContractState, escrow: EscrowData, is_token_legacy: bool, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>) {
             //Check expiry
             let execution_info = get_execution_info();
             assert(execution_info.block_info.block_timestamp < timeout, 'init: Authorization expired');
@@ -96,12 +96,12 @@ pub mod EscrowManager {
             let sighash = sighash::get_init_sighash(escrow_hash, timeout, signer);
             snip6::verify_signature(signer, sighash, signature);
 
-            //Transfer deposit
+            //Transfer deposit - this will always be just STRK or ETH, so we don't need is_legacy flag
             let deposit_amount = escrow.get_total_deposit();
-            if deposit_amount!=0 { erc20_utils::transfer_in(escrow.fee_token, caller, deposit_amount) };
+            if deposit_amount!=0 { erc20_utils::transfer_in(escrow.fee_token, false, caller, deposit_amount) };
 
             //Transfer funds
-            self._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
+            self._pay_in(escrow.offerer, escrow.token, is_token_legacy, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Initialize {
@@ -235,9 +235,9 @@ pub mod EscrowManager {
         }
 
         //Takes the funds from from an external account, or from the LP vault depending on the pay_in param
-        fn _pay_in(ref self: ContractState, src: ContractAddress, token: ContractAddress, amount: u256, pay_in: bool) {
+        fn _pay_in(ref self: ContractState, src: ContractAddress, token: ContractAddress, is_legacy: bool, amount: u256, pay_in: bool) {
             if pay_in {
-                erc20_utils::transfer_in(token, src, amount);
+                erc20_utils::transfer_in(token, is_legacy, src, amount);
             } else {
                 self.lp_vault._transfer_in(token, src, amount);
             }

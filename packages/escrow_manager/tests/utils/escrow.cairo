@@ -49,7 +49,7 @@ pub fn create_escrow_data(
     if pay_in {
         erc20::mint(context.token, offerer, mint_amount);
     } else {
-        lp_vault::mint_to_lp_vault(context.contract_address, offerer, context.token, mint_amount);
+        lp_vault::mint_to_lp_vault(context.contract_address, offerer, context.token, false, mint_amount);
     }
 
     if claimer_bounty!=0 || security_deposit!=0 {
@@ -98,16 +98,17 @@ pub fn create_escrow_data(
 pub fn init_escrow_and_assert(
     context: Context,
     sender: ContractAddress, escrow: structs::escrow::EscrowData, signer: KeyPair<felt252, felt252>,
-    timeout: u64, current_time: u64
+    timeout: u64, current_time: u64,
+    is_legacy: bool
 ) -> Result<(), felt252> {
-    _init_escrow_and_assert(context, sender, escrow, signer, timeout, current_time, false, false)
+    _init_escrow_and_assert(context, sender, escrow, signer, timeout, current_time, false, false, is_legacy)
 }
 
 pub fn _init_escrow_and_assert(
     context: Context,
     sender: ContractAddress, escrow: structs::escrow::EscrowData, signer: KeyPair<felt252, felt252>,
     timeout: u64, current_time: u64,
-    sign_random_message: bool, sign_different_timeout: bool
+    sign_random_message: bool, sign_different_timeout: bool, is_legacy: bool
 ) -> Result<(), felt252> {
     let balance_erc20 = context.token.balance_of(escrow.offerer);
     let balance_contract = *ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.offerer, context.token.contract_address)].span()).span()[0];
@@ -130,7 +131,7 @@ pub fn _init_escrow_and_assert(
     cheat_caller_address(context.contract_address, sender, CheatSpan::TargetCalls(1));
     cheat_block_timestamp(context.contract_address, current_time, CheatSpan::TargetCalls(1));
     cheat_block_number(context.contract_address, INIT_BLOCK_NUMBER, CheatSpan::TargetCalls(1));
-    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.initialize(escrow, array![r, s], timeout, array![].span());
+    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.initialize(escrow, is_legacy, array![r, s], timeout, array![].span());
     if result.is_err() {
         return Result::Err(*result.unwrap_err().span()[0]);
     }
@@ -196,7 +197,7 @@ pub fn get_initialized_escrow(
         if security_deposit { if deposit_invert { ESCROW_DEPOSIT_LARGE } else { ESCROW_DEPOSIT_SMALL } } else { 0 },
         if claimer_bounty { if deposit_invert { ESCROW_DEPOSIT_SMALL } else { ESCROW_DEPOSIT_LARGE } } else { 0 }
     );
-    if commit { assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0), escrow); };
+    if commit { assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0, true), escrow); };
 
     (escrow, offerer_signer, claimer_signer)
 }
