@@ -37,7 +37,8 @@ pub trait IExecutionContractReadOnly<TContractState> {
 
 #[starknet::contract]
 pub mod ExecutionContract {
-    use starknet::contract_address::ContractAddress;
+    use starknet::SyscallResultTrait;
+use starknet::contract_address::ContractAddress;
     use starknet::syscalls::deploy_syscall;
 
     use core::starknet::{get_caller_address, get_block_timestamp};
@@ -155,13 +156,15 @@ pub mod ExecutionContract {
 
             //Check for error during call
             let (call_err, success) = if call_result.is_err() {
+                //IMPORTANT NOTE: This case is not covered by tests since snforge doesn't work correctly
+                // with SafeDispatchers
                 (call_result.unwrap_err(), false)
             } else {
                 (array![], true)
             };
 
             //Drain all the tokens from the execution proxy straight to the owner
-            execution_proxy.drain_tokens(token, drain_tokens, owner).unwrap();
+            execution_proxy.drain_tokens(token, drain_tokens, owner).unwrap_syscall();
 
             //Emit event
             self.emit(ExecutionProcessed {

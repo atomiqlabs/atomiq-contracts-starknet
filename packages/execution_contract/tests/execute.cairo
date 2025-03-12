@@ -3,7 +3,6 @@ use execution_contract::structs::ContractCall;
 use execution_contract::state::Execution;
 use execution_contract::events;
 use execution_contract::utils::SpanHashImpl;
-use execution_contract::execution_proxy::{IExecutionProxySafeDispatcher, IExecutionProxySafeDispatcherTrait};
 
 use core::hash::{HashStateTrait, HashStateExTrait};
 use core::poseidon::PoseidonTrait;
@@ -18,12 +17,8 @@ use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
 use crate::utils::contract::{Context, get_context};
 use crate::utils::execution::create_execution;
-use crate::contracts::test_contract::{TestContract, TestEvent, ITestContractSafeDispatcher, ITestContractSafeDispatcherTrait};
+use crate::contracts::test_contract::{TestContract, TestEvent};
 use crate::utils::erc20;
-
-use snforge_std::{
-    declare, ContractClassTrait, DeclareResultTrait
-};
 
 fn execute_and_assert(
     context: Context,
@@ -170,6 +165,7 @@ fn valid_execute_test_contract_drain() {
 }
 
 //Valid execute call, calling test contract, which should panic and therefore emit event with success=false
+//IMPORTANT NOTE: This test doesn't work because snforge doesn't properly handle SafeDispatcher (try-catch) logic
 #[test]
 fn valid_execute_panic_test_contract() {
     let context = get_context();
@@ -189,33 +185,6 @@ fn valid_execute_panic_test_contract() {
 
     create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
     execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![panic_err].span(), false);
-}
-
-#[test]
-fn safe_dispatch_panic() {
-    let context = get_context();
-    let result = ITestContractSafeDispatcher{contract_address: context.test_contract}.panic('panic here!');
-    println!("{:x}", *result.unwrap_err().span()[0]);
-}
-
-#[test]
-fn safe_dispatch_panic_through_proxy() {
-    let context = get_context();
-    let contract = declare("ExecutionProxy").unwrap().contract_class();
-
-    let (contract_address, _) = contract.deploy(@array![]).unwrap();
-
-    let execution_proxy = IExecutionProxySafeDispatcher{contract_address: contract_address};
-
-    let panic_err = 'panic here!';
-    let calls: Span<ContractCall> = array![ContractCall {
-        address: context.test_contract,
-        entrypoint: selector!("panic"),
-        calldata: array![panic_err].span()
-    }].span();
-
-    let result = execution_proxy.execute(calls);
-    println!("{:x}", *result.unwrap_err().span()[0]);
 }
 
 //Invalid execute call, execution not created
