@@ -383,25 +383,27 @@ pub fn claim_and_assert(
         balance_token1_contract - amount_1 - caller_fee_amount_1 - fronting_fee_amount_1, 
         context.token1.balance_of(context.contract.contract_address)
     );
-    
-    //Assert caller fee paid to caller
-    assert_eq!(balance_token0_caller + caller_fee_amount_0, context.token0.balance_of(caller));
-    assert_eq!(balance_token1_caller + caller_fee_amount_1, context.token1.balance_of(caller));
 
     if fronter.is_zero() {
+        //Assert caller fee paid to caller
+        assert_eq!(balance_token0_caller + caller_fee_amount_0 + fronting_fee_amount_0, context.token0.balance_of(caller));
+        assert_eq!(balance_token1_caller + caller_fee_amount_1 + fronting_fee_amount_1, context.token1.balance_of(caller));
+
         if data.execution_hash == 0 {
-            //Everything should be transfered to recipient
-            assert_eq!(balance_token0_recipient + amount_0 + fronting_fee_amount_0 + execution_fee_amount_0, context.token0.balance_of(data.recipient));
-            assert_eq!(balance_token1_recipient + amount_1 + fronting_fee_amount_1, context.token1.balance_of(data.recipient));
+            //The amount is transfered to the recipient
+            assert_eq!(balance_token0_recipient + amount_0 + execution_fee_amount_0, context.token0.balance_of(data.recipient));
+            assert_eq!(balance_token1_recipient + amount_1, context.token1.balance_of(data.recipient));
         } else {
-            //Fronting fee paid back to recipient
-            assert_eq!(balance_token0_recipient + fronting_fee_amount_0, context.token0.balance_of(data.recipient));
             //Amount + execution fee transfered to execution contract
             assert_eq!(balance_token0_execution_contract + amount_0 + execution_fee_amount_0, context.token0.balance_of(context.execution_contract));
             //Amount of token1 is paid straight to recipient
-            assert_eq!(balance_token1_recipient + amount_1 + fronting_fee_amount_1, context.token1.balance_of(data.recipient));
+            assert_eq!(balance_token1_recipient + amount_1, context.token1.balance_of(data.recipient));
         }
     } else {
+        //Assert caller fee paid to caller
+        assert_eq!(balance_token0_caller + caller_fee_amount_0, context.token0.balance_of(caller));
+        assert_eq!(balance_token1_caller + caller_fee_amount_1 , context.token1.balance_of(caller));
+
         //Everything should be transfered to fronter, who fronted the liquidity before
         assert_eq!(balance_token0_fronter + amount_0 + fronting_fee_amount_0 + execution_fee_amount_0, context.token0.balance_of(fronter));
         assert_eq!(balance_token1_fronter + amount_1 + fronting_fee_amount_1, context.token1.balance_of(fronter));

@@ -283,25 +283,34 @@ pub mod SpvVaultManager {
             //Save state
             storage_ptr.write(current_state);
 
-            //Transfer funds to caller
-            self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(tx_data.caller_fee).unwrap(), caller);
-
             //Check if this was already fronted
             let fronting_id = tx_data.get_hash(btc_tx_hash_u256);
             let fronting_address: ContractAddress = self.liquidity_fronts.entry(owner).entry(vault_id).entry(fronting_id).read();
             if !fronting_address.is_zero() {
+                //Transfer funds to caller
+                self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(tx_data.caller_fee).unwrap(), caller);
+
                 let fronting_amounts = tx_data.amount + tx_data.fronting_fee + (tx_data.execution_handler_fee_amount_0, 0);
                 //Transfer funds to the account that fronted
                 self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(fronting_amounts).unwrap(), fronting_address);
             } else {
+                //Transfer caller fee + fronting fee to caller
+                //NOTE: The reason we are also sending fronting fee to the caller here is that even if we wouldn't an
+                // economically rational caller would just do a multical with front() & claim() in a single transaction
+                // essentially claiming both fees anyway, we therefore align this functionality with the economically
+                // rational behaviour of the caller
+                self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(tx_data.caller_fee + tx_data.fronting_fee).unwrap(), caller);
+                
                 if tx_data.execution_hash == 0 {
-                    let payout_amounts = tx_data.amount + tx_data.fronting_fee + (tx_data.execution_handler_fee_amount_0, 0);
+                    //Payout the whole amount to the recipient
+                    let payout_amounts = tx_data.amount + (tx_data.execution_handler_fee_amount_0, 0);
                     self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(payout_amounts).unwrap(), tx_data.recipient);
                 } else {
                     let (_, amount_raw_1) = tx_data.amount;
-                    let (fronting_fee_0, fronting_fee_1) = tx_data.fronting_fee;
-                    //Pay out the gas token & fronting fee straight to recipient
-                    self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw((fronting_fee_0, amount_raw_1 + fronting_fee_1)).unwrap(), tx_data.recipient);
+                    //Pay out the gas token straight to recipient
+                    if amount_raw_1 != 0 {
+                        erc20_utils::transfer_out(current_state.token_1, tx_data.recipient, current_state.from_raw_token1(amount_raw_1).unwrap());
+                    }
                     //Instantiate the execution contract
                     self._to_execution_contract(current_state, tx_data, btc_tx_hash_u256);
                 }
