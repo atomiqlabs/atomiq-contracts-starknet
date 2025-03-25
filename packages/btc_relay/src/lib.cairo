@@ -187,8 +187,8 @@ use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
                 fork_ptr.start_height.write(fork_start_blockheight);
                 fork_ptr.chain.entry(stored_header.block_height.into()).write(commit_hash);
             } else {
-                //Verify stored header is committed in the fork chain
-                assert(fork_ptr.chain.entry(stored_header.block_height.into()).read() == stored_header.get_hash(), 'fork: fork block commitment');
+                //Verify stored header is the tip of the fork chain
+                assert(fork_ptr.chain.entry(fork_ptr.tip_height.read()).read() == stored_header.get_hash(), 'fork: fork block commitment');
             }
 
             //Proccess new block headers
@@ -209,6 +209,9 @@ use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
                     header: _stored_header
                 });
             };
+
+            //Update tip height of the fork
+            fork_ptr.tip_height.write(_stored_header.block_height.into());
 
             //Check if this fork's chainwork is higher than main chainwork
             if self.main_chainwork.read().into() < _stored_header.chain_work {
