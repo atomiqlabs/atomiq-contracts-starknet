@@ -170,7 +170,7 @@ fn short_fork_stored_header_not_committed() {
 
 //Try to submit long fork headers, but use a stored blockheader that is not committed/saved in the main chain
 #[test]
-#[should_panic(expected: 'verify: block commitment')]
+#[should_panic(expected: 'fork: block commitment')]
 fn long_fork_stored_header_not_committed() {
     deploy_submit_main_and_long_fork_assert(
         crate::data::fork_chain::main_chain::STORED_BLOCKHEADERS.span(),

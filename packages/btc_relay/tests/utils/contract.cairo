@@ -227,7 +227,7 @@ pub fn submit_long_fork_and_assert(
     );
     long_fork_assert_start_height(contract_address, fork_submitter, fork_id, fork_start_height);
 
-    for stored_blockheader in fork_stored_blockheaders.slice(1, fork_stored_blockheaders.len() - 1) {
+    for stored_blockheader in fork_stored_blockheaders {
         assert_fork_blockheader_commitment(contract_address, fork_submitter, fork_id, *stored_blockheader);
     };
 
