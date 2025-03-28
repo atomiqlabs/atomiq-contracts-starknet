@@ -20,7 +20,9 @@ pub struct EscrowData {
     //Address of the IClaimHandler deciding if this escrow is claimable
     pub claim_handler: ContractAddress,
 
-    //Misc escrow data flags, currently defined: payIn, payOut, reputation
+    //Misc escrow data flags, currently defined: payIn, payOut, reputation.
+    //It is recommended to randomize the other unused bits in the flags to act as a salt,
+    // such that no 2 escrow data are the same, even if all the other data in them match. 
     pub flags: u128,
 
     //Data provided to the claim handler along with the witness to check claimability
