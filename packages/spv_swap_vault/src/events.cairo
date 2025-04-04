@@ -45,6 +45,8 @@ pub struct Claimed {
 
     pub amounts: (u64, u64),
 
+    pub withdraw_count: u32,
+
     pub fronting_address: ContractAddress
 }
 

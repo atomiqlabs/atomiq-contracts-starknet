@@ -325,7 +325,8 @@ pub mod SpvVaultManager {
                 btc_tx_hash: btc_tx_hash_u256,
                 caller: caller,
                 amounts: total_raw_amounts,
-                fronting_address: fronting_address
+                fronting_address: fronting_address,
+                withdraw_count: current_state.withdraw_count
             });
         }
     }
