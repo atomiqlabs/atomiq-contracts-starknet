@@ -339,6 +339,12 @@ pub fn claim_and_assert(
     let data = BitcoinVaultTransactionDataImpl::from_tx(@parsed_btc_tx).unwrap();
     let (withdrawn_amount_0, withdrawn_amount_1) = data.get_full_amounts().unwrap();
     
+    //Update to expected state
+    previous_state.withdraw_count += 1;
+    previous_state.token_0_amount -= withdrawn_amount_0;
+    previous_state.token_1_amount -= withdrawn_amount_1;
+    previous_state.utxo = (tx_hash, 0);
+
     //Assert event emitted
     spy.assert_emitted(
         @array![(context.contract.contract_address, SpvVaultManager::Event::Claimed(events::Claimed {
@@ -349,15 +355,10 @@ pub fn claim_and_assert(
             execution_hash: data.execution_hash,
             caller: caller,
             amounts: (withdrawn_amount_0, withdrawn_amount_1),
-            fronting_address: fronter
+            fronting_address: fronter,
+            withdraw_count: previous_state.withdraw_count
         }))]
     );
-
-    //Update to expected state
-    previous_state.withdraw_count += 1;
-    previous_state.token_0_amount -= withdrawn_amount_0;
-    previous_state.token_1_amount -= withdrawn_amount_1;
-    previous_state.utxo = (tx_hash, 0);
 
     //Asert state saved
     assert_eq!(context.contract_read.get_vault(owner, vault_id), previous_state);
