@@ -21,6 +21,8 @@ pub struct Deposited {
     pub vault_id: felt252,
 
     pub amounts: (u64, u64),
+
+    pub deposit_count: u32
 }
 
 #[derive(Drop, starknet::Event)]

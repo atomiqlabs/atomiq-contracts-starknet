@@ -61,6 +61,7 @@ pub fn create_spv_vault(
         utxo: utxo,
         confirmations: confirmations,
         withdraw_count: 0,
+        deposit_count: 0,
         token_0_amount: 0,
         token_1_amount: 0
     });
@@ -130,13 +131,15 @@ pub fn deposit_and_assert(
 
     prev_state.token_0_amount += raw_amount_0;
     prev_state.token_1_amount += raw_amount_1;
+    prev_state.deposit_count += 1;
 
     //Assert event emitted
     spy.assert_emitted(
         @array![(context.contract.contract_address, SpvVaultManager::Event::Deposited(events::Deposited {
             owner: owner,
             vault_id: vault_id,
-            amounts: (raw_amount_0, raw_amount_1)
+            amounts: (raw_amount_0, raw_amount_1),
+            deposit_count: prev_state.deposit_count
         }))]
     );
 

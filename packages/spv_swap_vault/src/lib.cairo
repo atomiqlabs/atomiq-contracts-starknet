@@ -129,6 +129,7 @@ pub mod SpvVaultManager {
                 utxo: utxo,
                 confirmations: confirmations,
                 withdraw_count: 0,
+                deposit_count: 0,
             
                 token_0_amount: 0,
                 token_1_amount: 0,
@@ -169,7 +170,8 @@ pub mod SpvVaultManager {
             self.emit(events::Deposited {
                 owner: owner,
                 vault_id: vault_id,
-                amounts: (raw_token_0_amount, raw_token_1_amount)
+                amounts: (raw_token_0_amount, raw_token_1_amount),
+                deposit_count: current_state.deposit_count
             });
         }
 

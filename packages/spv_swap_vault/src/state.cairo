@@ -27,8 +27,12 @@ pub struct SpvVaultState {
     pub utxo: (u256, u32),
     //Required BTC transaction confirmations to advance the state of the vault
     pub confirmations: u8,
+
     //Count of total withdrawals that happened from the creation of the vault
     pub withdraw_count: u32,
+    //Count of total deposits that happened from the creation of the vault (used for
+    // emitted deposit events, to make sure they are properly ordered)
+    pub deposit_count: u32,
 
     //Primary erc20 token amount locked in the vault
     pub token_0_amount: u64,
@@ -92,6 +96,7 @@ pub impl SpvVaultImpl of SpvVaultImplTrait {
         //Update the state
         self.token_0_amount += raw_amount_0;
         self.token_1_amount += raw_amount_1;
+        self.deposit_count += 1;
     }
 
     //Extracts the withdrawal bitcoin transaction data and updates the state with withdrawn token amounts
@@ -126,8 +131,9 @@ pub impl SpvVaultStateStorePacking of StorePacking<SpvVaultState, [felt252; 7]> 
             vout.into() * 0x100 +
             value.confirmations.into() * 0x10000000000 +
             value.withdraw_count.into() * 0x1000000000000 +
-            value.token_0_amount.into() * 0x100000000000000000000 +
-            value.token_1_amount.into() * 0x1000000000000000000000000000000000000;
+            value.deposit_count.into() * 0x100000000000000000000 +
+            value.token_0_amount.into() * 0x10000000000000000000000000000 +
+            value.token_1_amount.into() * 0x100000000000000000000000000000000000000000000;
         
         [val_0, val_1, val_2, val_3, val_4, val_5, val_6]
     }
@@ -148,8 +154,9 @@ pub impl SpvVaultStateStorePacking of StorePacking<SpvVaultState, [felt252; 7]> 
         let vout: u32 = ((additional_data.low / 0x100) & 0xFFFFFFFF).try_into().unwrap();
         let confirmations: u8 = ((additional_data.low / 0x10000000000) & 0xFF).try_into().unwrap();
         let withdraw_count: u32 = ((additional_data.low / 0x1000000000000) & 0xFFFFFFFF).try_into().unwrap();
-        let token_0_amount: u64 = ((additional_data / 0x100000000000000000000) & 0xFFFFFFFFFFFFFFFF).try_into().unwrap();
-        let token_1_amount: u64 = ((additional_data.high / 0x10000) & 0xFFFFFFFFFFFFFFFF).try_into().unwrap();
+        let deposit_count: u32 = ((additional_data.low / 0x100000000000000000000) & 0xFFFFFFFF).try_into().unwrap();
+        let token_0_amount: u64 = ((additional_data / 0x10000000000000000000000000000) & 0xFFFFFFFFFFFFFFFF).try_into().unwrap();
+        let token_1_amount: u64 = ((additional_data.high / 0x1000000000000) & 0xFFFFFFFFFFFFFFFF).try_into().unwrap();
 
         SpvVaultState {
             relay_contract: relay_contract,
@@ -160,6 +167,7 @@ pub impl SpvVaultStateStorePacking of StorePacking<SpvVaultState, [felt252; 7]> 
             utxo: (tx_id, vout),
             confirmations: confirmations,
             withdraw_count: withdraw_count,
+            deposit_count: deposit_count,
             token_0_amount: token_0_amount,
             token_1_amount: token_1_amount
         }
@@ -183,6 +191,7 @@ mod tests {
             utxo: (0, 0),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 0,
             token_0_amount: 0,
             token_1_amount: 0
         };
@@ -197,6 +206,7 @@ mod tests {
             utxo: (0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF),
             confirmations: 0xFF,
             withdraw_count: 0xFFFFFFFF,
+            deposit_count: 0xFFFFFFFF,
             token_0_amount: 0xFFFFFFFFFFFFFFFF,
             token_1_amount: 0xFFFFFFFFFFFFFFFF
         };
@@ -211,6 +221,7 @@ mod tests {
             utxo: (0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF, 0x00FF00FF),
             confirmations: 0x0F,
             withdraw_count: 0x00FF00FF,
+            deposit_count: 0xFF00FF00,
             token_0_amount: 0xFF00FF00FF00FF00,
             token_1_amount: 0x00FF00FF00FF00FF
         };
@@ -225,8 +236,9 @@ mod tests {
             utxo: (0x9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babc, 0xbdbebfc0),
             confirmations: 0xc1,
             withdraw_count: 0xc2c3c4c5,
-            token_0_amount: 0xc6c7c8c9cacbcccd,
-            token_1_amount: 0xcecfd0d1d2d3d4d5
+            deposit_count: 0xc6c7c8c9,
+            token_0_amount: 0xcacbcccdcecfd0d1,
+            token_1_amount: 0xd2d3d4d5d6d7d8d9
         };
         assert_eq!(SpvVaultStateStorePacking::unpack(SpvVaultStateStorePacking::pack(spv_vault_state)), spv_vault_state);
 
@@ -239,6 +251,7 @@ mod tests {
             utxo: (0x2a522f2a899536253d0c8480f08801f62848761656c1a2dc2e0f5d92f9897c06, 0xcf72180e),
             confirmations: 0xbc,
             withdraw_count: 0xdf35a61b,
+            deposit_count: 0x8bc87d76,
             token_0_amount: 0x53f49641f45c57ec,
             token_1_amount: 0x13e3dff4883807ed
         };
@@ -256,6 +269,7 @@ mod tests {
             utxo: (0, 0),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -264,6 +278,7 @@ mod tests {
 
         assert_eq!(spv_vault_state.token_0_amount, 50 + 76321);
         assert_eq!(spv_vault_state.token_1_amount, 100 + 7472);
+        assert_eq!(spv_vault_state.deposit_count, 14321 + 1);
     }
 
     #[test]
@@ -277,6 +292,7 @@ mod tests {
             utxo: (0, 0),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -292,6 +308,7 @@ mod tests {
             utxo: (0xFF, 0),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -305,6 +322,7 @@ mod tests {
             token_0_multiplier: 0,
             token_1_multiplier: 0,
             utxo: (0xFF, 0xFF),
+            deposit_count: 14321,
             confirmations: 0,
             withdraw_count: 0,
             token_0_amount: 50,
@@ -322,6 +340,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -340,6 +359,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -358,6 +378,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -376,6 +397,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -394,6 +416,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -412,6 +435,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -433,6 +457,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -454,6 +479,7 @@ mod tests {
             utxo: (0, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -475,6 +501,7 @@ mod tests {
             utxo: (0xFF, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 50,
             token_1_amount: 100
         };
@@ -497,6 +524,7 @@ mod tests {
             utxo: (0xFF, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 844864,
             token_1_amount: 3515154
         };
@@ -521,6 +549,7 @@ mod tests {
             utxo: (0xFF, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 844864,
             token_1_amount: 3515154
         };
@@ -542,6 +571,7 @@ mod tests {
             utxo: (0xFF, 0xFF),
             confirmations: 0,
             withdraw_count: 0,
+            deposit_count: 14321,
             token_0_amount: 844864,
             token_1_amount: 3515154
         };
