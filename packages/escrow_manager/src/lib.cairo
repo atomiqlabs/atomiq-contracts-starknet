@@ -75,6 +75,8 @@ pub mod EscrowManager {
 
     #[abi(embed_v0)]
     impl EscrowManagerImpl of super::IEscrowManager<ContractState> {
+        //extra_data parameter is used for data-availability/propagation of escrow-specific extraneous data on-chain
+        // and is therefore unused in the function itself
         fn initialize(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>) {
             //Check expiry
             let execution_info = get_execution_info();

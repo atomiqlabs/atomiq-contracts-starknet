@@ -133,6 +133,31 @@ fn long_fork_assert_start_height(
     assert!(*loaded_start_height[0] == fork_start_height.into());
 }
 
+fn long_fork_assert_tip_height(
+    contract_address: ContractAddress,
+    fork_submitter: ContractAddress,
+    fork_id: felt252,
+    fork_tip_height: u32
+) {
+    let loaded_tip_height = load(
+        contract_address,
+        map_entry_address(
+            map_entry_address(
+                selector!("forks"),
+                array![
+                    fork_submitter.into(),
+                    fork_id
+                ].span(),
+            ),
+            array![
+                selector!("tip_height")
+            ].span(),
+        ),
+        1
+    );
+    assert!(*loaded_tip_height[0] == fork_tip_height.into());
+}
+
 fn load_main_chain_commitment(
     contract_address: ContractAddress,
     block_height: u32
@@ -227,7 +252,10 @@ pub fn submit_long_fork_and_assert(
     );
     long_fork_assert_start_height(contract_address, fork_submitter, fork_id, fork_start_height);
 
-    for stored_blockheader in fork_stored_blockheaders.slice(1, fork_stored_blockheaders.len() - 1) {
+    let last_stored_blockheader = *fork_stored_blockheaders[fork_stored_blockheaders.len() - 1];
+    long_fork_assert_tip_height(contract_address, fork_submitter, fork_id, last_stored_blockheader.block_height);
+
+    for stored_blockheader in fork_stored_blockheaders {
         assert_fork_blockheader_commitment(contract_address, fork_submitter, fork_id, *stored_blockheader);
     };
 
@@ -246,8 +274,6 @@ pub fn submit_long_fork_and_assert(
                 )
             )]
         );
-
-        let last_stored_blockheader = *fork_stored_blockheaders[fork_stored_blockheaders.len() - 1];
 
         assert_fork_copied_to_main_chain(contract_address, fork_submitter, fork_id, fork_start_height, last_stored_blockheader.block_height);
 

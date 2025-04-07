@@ -164,8 +164,8 @@ use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
         }
 
         fn submit_fork_blockheaders(ref self: ContractState, fork_id: felt252, block_headers: Span<BlockHeader>, stored_header: StoredBlockHeader) {
-            assert(block_headers.len() != 0, 'short_fork: no headers');
-            assert(fork_id != 0, 'short_fork: fork_id 0 reserved');
+            assert(block_headers.len() != 0, 'fork: no headers');
+            assert(fork_id != 0, 'fork: fork_id 0 reserved');
 
             let starknet_timestamp: u32 = get_block_timestamp().try_into().unwrap();
 
@@ -176,12 +176,19 @@ use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
 
             if fork_start_blockheight == 0 {
                 //Verify stored header is committed in the main chain
-                self.verify_blockheader(stored_header);
+                let commit_hash = stored_header.get_hash();
+                assert(
+                    self.get_commit_hash(stored_header.block_height) == commit_hash,
+                    'fork: block commitment'
+                );
                 fork_start_blockheight = stored_header.block_height.into() + 1;
+                //Save the block start height and also the commitment of the fork root block (latest
+                // block that is still committed in the main chain)
                 fork_ptr.start_height.write(fork_start_blockheight);
+                fork_ptr.chain.entry(stored_header.block_height.into()).write(commit_hash);
             } else {
-                //Verify stored header is committed in the fork chain
-                assert(fork_ptr.chain.entry(stored_header.block_height.into()).read() == stored_header.get_hash(), 'fork: fork block commitment');
+                //Verify stored header is the tip of the fork chain
+                assert(fork_ptr.chain.entry(fork_ptr.tip_height.read()).read() == stored_header.get_hash(), 'fork: fork block commitment');
             }
 
             //Proccess new block headers
@@ -203,11 +210,22 @@ use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
                 });
             };
 
+            //Update tip height of the fork
+            fork_ptr.tip_height.write(_stored_header.block_height.into());
+
             //Check if this fork's chainwork is higher than main chainwork
             if self.main_chainwork.read().into() < _stored_header.chain_work {
                 //This fork has just overtaken the main chain in chainwork
                 //Make this fork main chain
-                let mut block_height = fork_start_blockheight;
+                let mut block_height = fork_start_blockheight-1;
+
+                //Make sure that the fork's root block is still committed
+                assert(
+                    self.get_commit_hash(block_height.try_into().unwrap()) == fork_ptr.chain.entry(block_height).read(),
+                    'fork: reorg block commitment'
+                );
+
+                block_height += 1;
 
                 while block_height != _stored_header.block_height.into()+1 {
                     self.main_chain.entry(block_height).write(fork_ptr.chain.entry(block_height).read());

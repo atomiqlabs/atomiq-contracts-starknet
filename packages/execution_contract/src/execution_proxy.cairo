@@ -6,7 +6,7 @@ pub trait IExecutionProxy<TContractState> {
     //Execute
     fn execute(ref self: TContractState, data: Span<ContractCall>);
     //Reclaims erc20 tokens held by the execution proxy
-    fn drain_tokens(ref self: TContractState, token: ContractAddress, other_tokens: Span<ContractAddress>, recipient: ContractAddress);
+    fn drain_tokens(ref self: TContractState, main_token: ContractAddress, other_tokens: Span<ContractAddress>, recipient: ContractAddress);
 }
 
 #[starknet::contract]
@@ -28,15 +28,15 @@ pub mod ExecutionProxy {
             }
         }
 
-        fn drain_tokens(ref self: ContractState, token: ContractAddress, other_tokens: Span<ContractAddress>, recipient: ContractAddress) {
-            let balance = erc20_utils::balance_of(token, get_contract_address());
+        fn drain_tokens(ref self: ContractState, main_token: ContractAddress, other_tokens: Span<ContractAddress>, recipient: ContractAddress) {
+            let balance = erc20_utils::balance_of(main_token, get_contract_address());
             if balance != 0 {
-                erc20_utils::transfer_out(token, recipient, balance);
+                erc20_utils::transfer_out(main_token, recipient, balance);
             }
-            for token in other_tokens {
-                let balance = erc20_utils::balance_of(*token, get_contract_address());
+            for other_token in other_tokens {
+                let balance = erc20_utils::balance_of(*other_token, get_contract_address());
                 if balance != 0 {
-                    erc20_utils::transfer_out(*token, recipient, balance);
+                    erc20_utils::transfer_out(*other_token, recipient, balance);
                 }
             }
         }

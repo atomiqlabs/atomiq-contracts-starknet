@@ -179,7 +179,6 @@ pub mod SpvVaultManager {
             withdraw_sequence: u32, btc_tx_hash: u256, data: BitcoinVaultTransactionData
         ) {
             let caller = get_caller_address();
-            assert(!caller.is_zero(), 'front: caller is 0');
 
             //Check vault is opened
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
