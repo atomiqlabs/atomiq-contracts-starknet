@@ -25,7 +25,7 @@ pub mod EscrowManager {
     use starknet::event::EventEmitter;
     use core::starknet::{get_execution_info, get_caller_address};
     use starknet::contract_address::ContractAddress;
-    use crate::structs::escrow::{EscrowData, EscrowDataImpl};
+    use crate::structs::escrow::{EscrowData, EscrowDataImpl, EscrowDataImplTrait};
     use crate::sighash;
     use crate::utils::snip6;
     use crate::events;
@@ -87,16 +87,19 @@ pub mod EscrowManager {
 
             //Verify signature
             let caller = execution_info.caller_address;
-            let signer = if caller == escrow.offerer {
-                escrow.claimer
+            if caller == escrow.offerer {
+                //Here we only require signature in case the reputation tracking flag is set,
+                // otherwise there is no harm done to the claimer even if he were to be spammed
+                // with many escrows
+                if escrow.is_tracking_reputation() {
+                    snip6::verify_signature(escrow.claimer, sighash::get_init_sighash(escrow_hash, timeout, escrow.claimer), signature);
+                }
             } else if caller == escrow.claimer {
-                escrow.offerer
+                //In this case we always require signature because we are taking funds from the offerer
+                snip6::verify_signature(escrow.offerer, sighash::get_init_sighash(escrow_hash, timeout, escrow.offerer), signature);
             } else {
                 panic(array!['init: caller_address'])
             };
-
-            let sighash = sighash::get_init_sighash(escrow_hash, timeout, signer);
-            snip6::verify_signature(signer, sighash, signature);
 
             //Transfer deposit
             let deposit_amount = escrow.get_total_deposit();

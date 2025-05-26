@@ -116,21 +116,27 @@ pub fn _init_escrow_and_assert(
     let balance_gas_erc20 = context.gas_token.balance_of(sender);
     let balance_gas_erc20_contract = context.gas_token.balance_of(context.contract_address);
 
-    let signer_address = if escrow.offerer == sender { escrow.claimer } else { escrow.offerer };
     let escrow_hash = escrow.get_struct_hash();
-    let sighash = if sign_random_message { 
-        generate_random_felt()
+
+    let signature = if sender==escrow.offerer && !escrow.is_tracking_reputation() {
+        array![] //Signature not required
     } else {
-        sighash::get_init_sighash(escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
+        let signer_address = if escrow.offerer == sender { escrow.claimer } else { escrow.offerer };
+        let sighash = if sign_random_message { 
+            generate_random_felt()
+        } else {
+            sighash::get_init_sighash(escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
+        };
+        let (r, s) = signer.sign(sighash).expect('Failed to sign');
+        array![r, s]
     };
-    let (r, s) = signer.sign(sighash).expect('Failed to sign');
 
     let mut spy = spy_events();
 
     cheat_caller_address(context.contract_address, sender, CheatSpan::TargetCalls(1));
     cheat_block_timestamp(context.contract_address, current_time, CheatSpan::TargetCalls(1));
     cheat_block_number(context.contract_address, INIT_BLOCK_NUMBER, CheatSpan::TargetCalls(1));
-    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.initialize(escrow, array![r, s], timeout, array![].span());
+    let result = IEscrowManagerSafeDispatcher{contract_address: context.contract_address}.initialize(escrow, signature, timeout, array![].span());
     if result.is_err() {
         return Result::Err(*result.unwrap_err().span()[0]);
     }
