@@ -20,6 +20,7 @@ openzeppelin_account = "1.0.0"
 openzeppelin_utils = "1.0.0"
 common.workspace = true
 erc20_utils.workspace = true
+execution_contract.workspace = true
 
 [dev-dependencies]
 assert_macros.workspace = true

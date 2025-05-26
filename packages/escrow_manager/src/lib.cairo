@@ -25,7 +25,7 @@ pub mod EscrowManager {
     use starknet::event::EventEmitter;
     use core::starknet::{get_execution_info, get_caller_address};
     use starknet::contract_address::ContractAddress;
-    use crate::structs::escrow::{EscrowData, EscrowDataImpl, EscrowDataImplTrait};
+    use crate::structs::escrow::{EscrowExecution, EscrowData, EscrowDataImpl, EscrowDataImplTrait};
     use crate::sighash;
     use crate::utils::snip6;
     use crate::events;
@@ -34,6 +34,7 @@ pub mod EscrowManager {
     use crate::components::lp_vault::lp_vault;
     use crate::components::reputation::reputation;
     use crate::components::escrow_storage::escrow_storage;
+    use execution_contract::{IExecutionContractDispatcher, IExecutionContractDispatcherTrait};
     
     component!(path: lp_vault, storage: lp_vault, event: LPVaultEvent);
     component!(path: reputation, storage: reputation, event: ReputationTrackerEvent);
@@ -143,7 +144,13 @@ pub mod EscrowManager {
                 erc20_utils::transfer_out(escrow.fee_token, escrow.claimer, security_deposit);
             }
 
-            self._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out());
+            if escrow.success_action.is_some() {
+                //Transfer funds to execution contract in case success action was defined
+                self._to_execution_contract(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out(), escrow.success_action.unwrap(), escrow_hash);
+            } else {
+                //Pay out directly to the claimer
+                self._pay_out(escrow.claimer, escrow.token, escrow.amount, escrow.is_pay_out());
+            }
 
             //Emit event
             self.emit(events::Claim {
@@ -246,6 +253,20 @@ pub mod EscrowManager {
             } else {
                 self.lp_vault._transfer_in(token, src, amount);
             }
+        }
+
+        //Create the execution in execution contract
+        fn _to_execution_contract(ref self: ContractState, dst: ContractAddress, token: ContractAddress, amount: u256, pay_out: bool, escrow_execution: EscrowExecution, escrow_hash: felt252) {
+            if amount < escrow_execution.fee {
+                //Fee is larger than the full amount, just pay out as a fallback
+                self._pay_out(dst, token, amount, pay_out);
+                return;
+            }
+            
+            let execution_contract = IExecutionContractDispatcher{contract_address: escrow_execution.contract};
+
+            erc20_utils::approve(token, execution_contract.contract_address, amount);
+            execution_contract.create(dst, escrow_hash, token, amount - escrow_execution.fee, escrow_execution.fee, escrow_execution.hash, escrow_execution.expiry);
         }
     }
 

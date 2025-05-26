@@ -131,7 +131,30 @@ fn valid_refund() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
+        );
+        assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
+    }
+}
+
+//Valid claim security_deposit < claimer_bounty, with success action
+#[test]
+fn valid_refund_with_success_action() {
+    let context = get_context();
+    for i in 0..64_u8 {
+        let (escrow, _, _) = get_initialized_escrow(context, 
+            i & 0x1 == 0x1, 
+            i & 0x2 == 0x2,
+            i & 0x4 == 0x4,
+            i & 0x8 == 0x8,
+            i & 0x10 == 0x10,
+            i & 0x20 == 0x20,
+            false,
+            true,
+            true,
+            false
         );
         assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
@@ -150,7 +173,9 @@ fn valid_refund_invert_deposits() {
             true,
             true,
             true,
-            true
+            true,
+            false,
+            false
         );
         assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
@@ -169,7 +194,9 @@ fn invalid_refund_handler() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result_error(refund_escrow(context, escrow, array![]), 'mock_refund: witness len==0', escrow);
     }
@@ -187,6 +214,8 @@ fn invalid_refund_uninitialized() {
             i & 0x8 == 0x8,
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
+            false,
+            false,
             false,
             false
         );
@@ -207,7 +236,9 @@ fn invalid_refund_double() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
         assert_result_error(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), '_finalize: Not committed', escrow);

@@ -131,7 +131,29 @@ fn valid_coop_refund() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
+        );
+        assert_result(coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false), escrow);
+    }
+}
+
+#[test]
+fn valid_coop_refund_with_success_action() {
+    let context = get_context();
+    for i in 0..64_u8 {
+        let (escrow, _, claimer_keypair) = get_initialized_escrow(context, 
+            i & 0x1 == 0x1, 
+            i & 0x2 == 0x2,
+            i & 0x4 == 0x4,
+            i & 0x8 == 0x8,
+            i & 0x10 == 0x10,
+            i & 0x20 == 0x20,
+            false,
+            true,
+            true,
+            false
         );
         assert_result(coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false), escrow);
     }
@@ -148,6 +170,8 @@ fn invalid_coop_refund_uninitialized() {
             i & 0x8 == 0x8,
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
+            false,
+            false,
             false,
             false
         );
@@ -171,7 +195,9 @@ fn invalid_refund_double() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result(coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, false, false), escrow);
         assert_result_error(
@@ -194,7 +220,9 @@ fn invalid_coop_refund_timed_out() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result_error(
             coop_refund_escrow(context, escrow, claimer_keypair, 100, 200, false, false),
@@ -216,7 +244,9 @@ fn invalid_coop_refund_sign_diff_timeout() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result_error(
             coop_refund_escrow(context, escrow, claimer_keypair, 0xFFFFFFFFFFFFFFFE, 200, false, true),
@@ -238,7 +268,9 @@ fn invalid_coop_refund_sign_random_msg() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result_error(
             coop_refund_escrow(context, escrow, claimer_keypair, 100, 0, true, false),
@@ -260,7 +292,9 @@ fn invalid_coop_refund_wrong_signer() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result_error(
             coop_refund_escrow(context, escrow, StarkCurveKeyPairImpl::generate(), 100, 0, false, false),
