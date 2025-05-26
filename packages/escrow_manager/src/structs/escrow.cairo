@@ -2,9 +2,24 @@ use starknet::ContractAddress;
 use core::hash::{HashStateTrait, HashStateExTrait};
 use core::poseidon::PoseidonTrait;
 
+use crate::utils::option_hash::OptionHashImpl;
+
 pub const FLAG_PAY_OUT: u128 = 0x01;
 pub const FLAG_PAY_IN: u128 = 0x02;
 pub const FLAG_REPUTATION: u128 = 0x04;
+
+//Escrow execution data, used for executing arbitrary calls on success 
+#[derive(Drop, Hash, Copy, Serde, Debug)]
+pub struct EscrowExecution {
+    //Execution contract instance to use
+    pub contract: ContractAddress,
+    //Hash of the execution to execute
+    pub hash: felt252,
+    //Expiry of the execution
+    pub expiry: u64,
+    //Execution fee
+    pub fee: u256
+}
 
 //Escrow data, this is hashed and used as a storage key for the escrow state mapping
 #[derive(Drop, Hash, Copy, Serde, Debug)]
@@ -38,7 +53,10 @@ pub struct EscrowData {
     //Security deposit taken by the offerer if swap expires without claimer claiming (i.e. options premium)
     pub security_deposit: u256,
     //Claimer bounty that can be claimed by a 3rd party claimer if he were to claim this swap on behalf of claimer
-    pub claimer_bounty: u256
+    pub claimer_bounty: u256,
+
+    //Optional success action executed on claim (through the execution_contract)
+    pub success_action: Option<EscrowExecution>
 }
 
 #[generate_trait]
@@ -92,7 +110,8 @@ mod tests {
 
             fee_token: contract_address_const::<'fee_token'>(),
             security_deposit,
-            claimer_bounty
+            claimer_bounty,
+            success_action: Option::None
         }
     }
 
@@ -154,6 +173,56 @@ mod tests {
 
         let escrow_data = get_escrow_data(0, 100, 150);
         assert_eq!(escrow_data.get_total_deposit(), 150);
+    }
+
+    //Check if the optional success_action is hashed when present
+    #[test]
+    fn execution_hash() {
+        let escrow_data_1 = EscrowData {
+            offerer: contract_address_const::<'offerer'>(),
+            claimer: contract_address_const::<'claimer'>(),
+            token: contract_address_const::<'token'>(),
+            refund_handler: contract_address_const::<'refund_handler'>(),
+            claim_handler: contract_address_const::<'claim_handler'>(),
+
+            flags: 0b011,
+
+            claim_data: 0,
+            refund_data: 0,
+
+            amount: 0,
+
+            fee_token: contract_address_const::<'fee_token'>(),
+            security_deposit: 12312,
+            claimer_bounty: 324241,
+            success_action: Option::None
+        };
+        let escrow_data_2 = EscrowData {
+            offerer: contract_address_const::<'offerer'>(),
+            claimer: contract_address_const::<'claimer'>(),
+            token: contract_address_const::<'token'>(),
+            refund_handler: contract_address_const::<'refund_handler'>(),
+            claim_handler: contract_address_const::<'claim_handler'>(),
+
+            flags: 0b011,
+
+            claim_data: 0,
+            refund_data: 0,
+
+            amount: 0,
+
+            fee_token: contract_address_const::<'fee_token'>(),
+            security_deposit: 12312,
+            claimer_bounty: 324241,
+            success_action: Option::Some(EscrowExecution {
+                contract: contract_address_const::<'escrow_contract'>(),
+                hash: 9544444444832852385237527938452934243,
+                expiry: 1893234521,
+                fee: 123123
+            })
+        };
+        //Hashes should differ!
+        assert_ne!(escrow_data_1.get_struct_hash(), escrow_data_2.get_struct_hash());
     }
 
 }
