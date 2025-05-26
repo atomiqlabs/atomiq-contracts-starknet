@@ -49,13 +49,24 @@ pub fn deploy_claim_handler() -> ContractAddress {
     contract_address
 }
 
+pub fn deploy_execution_contract() -> ContractAddress {
+    // First declare and deploy a contract
+    let contract = declare("MockExecutionContract").unwrap().contract_class();
+
+    let (contract_address, _) = contract.deploy(@array![]).unwrap();
+    
+    // Create a Dispatcher object that will allow interacting with the deployed contract
+    contract_address
+}
+
 #[derive(Copy, Drop)]
 pub struct Context {
     pub contract_address: ContractAddress,
     pub token: ERC20ABIDispatcher,
     pub gas_token: ERC20ABIDispatcher,
     pub refund_handler: ContractAddress,
-    pub claim_handler: ContractAddress
+    pub claim_handler: ContractAddress,
+    pub execution_contract: ContractAddress
 }
 
 pub fn get_context() -> Context {
@@ -64,6 +75,7 @@ pub fn get_context() -> Context {
         token: erc20::deploy(),
         gas_token: erc20::deploy(),
         refund_handler: deploy_refund_handler(),
-        claim_handler: deploy_claim_handler()
+        claim_handler: deploy_claim_handler(),
+        execution_contract: deploy_execution_contract()
     }
 }

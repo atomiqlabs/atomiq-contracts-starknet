@@ -15,6 +15,8 @@ use escrow_manager::structs;
 use escrow_manager::state;
 use escrow_manager::events;
 
+use execution_contract::{IExecutionContractReadOnlyDispatcher, IExecutionContractReadOnlyDispatcherTrait};
+
 use crate::utils::contract::{get_context, Context};
 use crate::utils::result::{assert_result, assert_result_error};
 use crate::utils::escrow::get_initialized_escrow;
@@ -31,6 +33,7 @@ fn claim_escrow(
     let balance_erc20 = context.token.balance_of(escrow.claimer);
     let balance_contract = *ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.claimer, context.token.contract_address)].span()).span()[0];
     let balance_erc20_contract = context.token.balance_of(context.contract_address);
+    let balance_erc20_execution_contract = context.token.balance_of(context.execution_contract);
 
     let external_claimer: ContractAddress = generate_random_felt().try_into().unwrap();
     let balance_gas_erc20_claimer = context.gas_token.balance_of(escrow.claimer);
@@ -87,14 +90,27 @@ fn claim_escrow(
         }
     }
 
-    if escrow.is_pay_out() {
-        if (context.token.balance_of(escrow.claimer) != balance_erc20+leaves_escrow_amount) ||
+    if escrow.success_action.is_some() && escrow.success_action.unwrap().fee <= escrow.amount {
+        let success_action = escrow.success_action.unwrap();
+        let scheduled_execution = IExecutionContractReadOnlyDispatcher{contract_address: context.execution_contract}.get_execution(escrow.claimer, escrow_hash);
+        if scheduled_execution.amount != escrow.amount - success_action.fee { return Result::Err('test: exec amount'); }
+        if scheduled_execution.execution_fee != success_action.fee { return Result::Err('test: exec fee'); }
+        if scheduled_execution.execution_hash != success_action.hash { return Result::Err('test: exec hash'); }
+        if scheduled_execution.expiry != success_action.expiry { return Result::Err('test: exec expiry'); }
+        if (context.token.balance_of(context.execution_contract) != balance_erc20_execution_contract+leaves_escrow_amount) ||
             (context.token.balance_of(context.contract_address) != balance_erc20_contract-escrow.amount) {
             return Result::Err('test: erc20 balance');
         }
     } else {
-        if (ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.claimer, context.token.contract_address)].span()) != array![balance_contract+leaves_escrow_amount]) {
-            return Result::Err('test: vault balance');
+        if escrow.is_pay_out() {
+            if (context.token.balance_of(escrow.claimer) != balance_erc20+leaves_escrow_amount) ||
+                (context.token.balance_of(context.contract_address) != balance_erc20_contract-escrow.amount) {
+                return Result::Err('test: erc20 balance');
+            }
+        } else {
+            if (ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.claimer, context.token.contract_address)].span()) != array![balance_contract+leaves_escrow_amount]) {
+                return Result::Err('test: vault balance');
+            }
         }
     }
 
@@ -132,7 +148,9 @@ fn valid_claim() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
@@ -151,6 +169,29 @@ fn valid_claim_success_action() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
+            true,
+            true,
+            false
+        );
+        assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
+    }
+}
+
+//Valid claim security_deposit < claimer_bounty
+#[test]
+fn valid_claim_success_action_fee_too_high() {
+    let context = get_context();
+    for i in 0..64_u8 {
+        let (escrow, _, _) = get_initialized_escrow(context, 
+            i & 0x1 == 0x1, 
+            i & 0x2 == 0x2,
+            i & 0x4 == 0x4,
+            i & 0x8 == 0x8,
+            i & 0x10 == 0x10,
+            i & 0x20 == 0x20,
+            false,
+            true,
+            true,
             true
         );
         assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
@@ -161,7 +202,7 @@ fn valid_claim_success_action() {
 #[test]
 fn valid_claim_invert_deposits() {
     let context = get_context();
-    for i in 0..16_u8 {
+    for i in 0..64_u8 {
         let (escrow, _, _) = get_initialized_escrow(context, 
             i & 0x1 == 0x1, 
             i & 0x2 == 0x2,
@@ -170,7 +211,9 @@ fn valid_claim_invert_deposits() {
             true,
             true,
             true,
-            true
+            true,
+            i & 0x10 == 0x10,
+            i & 0x20 == 0x20
         );
         assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
     }
@@ -189,7 +232,9 @@ fn invalid_claim_handler() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result_error(claim_escrow(context, escrow, array![]), 'mock_claim: witness len==0', escrow);
     }
@@ -207,6 +252,8 @@ fn invalid_claim_uninitialized() {
             i & 0x8 == 0x8,
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
+            false,
+            false,
             false,
             false
         );
@@ -227,7 +274,9 @@ fn invalid_claim_double() {
             i & 0x10 == 0x10,
             i & 0x20 == 0x20,
             false,
-            true
+            true,
+            false,
+            false
         );
         assert_result(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), escrow);
         assert_result_error(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), '_finalize: Not committed', escrow);
