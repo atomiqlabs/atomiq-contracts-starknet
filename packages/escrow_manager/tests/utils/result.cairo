@@ -15,5 +15,9 @@ pub fn assert_result_error(result: Result<(), felt252>, expected: felt252, escro
             byte_buffer.append_word(result.unwrap_err(), 31);
             panic!("Unexpected error {} {:?}", byte_buffer, escrow);
         }
+    } else {
+        let mut byte_buffer: ByteArray = "";
+        byte_buffer.append_word(expected, 31);
+        panic!("Error not thrown, expected: {} {:?}", byte_buffer, escrow);
     }
 }

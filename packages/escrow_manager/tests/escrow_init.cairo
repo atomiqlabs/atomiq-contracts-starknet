@@ -159,11 +159,19 @@ fn invalid_initialize_wrong_signer() {
             if i & 0x10 == 0x10 { ESCROW_DEPOSIT_SMALL } else { 0 },
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
-        assert_result_error(
-            init_escrow_and_assert(context, sender, escrow, StarkCurveKeyPairImpl::generate(), 100, 0),
-            'verify_sig: Invalid response',
-            escrow
-        );
+        let result = init_escrow_and_assert(context, sender, escrow, StarkCurveKeyPairImpl::generate(), 100, 0);
+        if sender==escrow.offerer && !escrow.is_tracking_reputation() {
+            assert_result(
+                result,
+                escrow
+            ); //This should succeed, because the signature of the target is not checked
+        } else {
+            assert_result_error(
+                result,
+                'verify_sig: Invalid response',
+                escrow
+            );
+        }
     }
 }
 
@@ -183,11 +191,19 @@ fn invalid_initialize_wrong_sign_message() {
             if i & 0x10 == 0x10 { ESCROW_DEPOSIT_SMALL } else { 0 },
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
-        assert_result_error(
-            _init_escrow_and_assert(context, sender, escrow, signer, 100, 0, true, false),
-            'verify_sig: Invalid response',
-            escrow
-        );
+        let result = _init_escrow_and_assert(context, sender, escrow, signer, 100, 0, true, false);
+        if sender==escrow.offerer && !escrow.is_tracking_reputation() {
+            assert_result(
+                result,
+                escrow
+            ); //This should succeed, because the signature of the target is not checked
+        } else {
+            assert_result_error(
+                result,
+                'verify_sig: Invalid response',
+                escrow
+            );
+        }
     }
 }
 
@@ -255,11 +271,19 @@ fn invalid_initialize_sign_different_timeout() {
             if i & 0x10 == 0x10 { ESCROW_DEPOSIT_SMALL } else { 0 },
             if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 }
         );
-        assert_result_error(
-            _init_escrow_and_assert(context, sender, escrow, signer, 0xFFFFFFFFFFFFFFFE, 100, false, true),
-            'verify_sig: Invalid response',
-            escrow
-        );
+        let result = _init_escrow_and_assert(context, sender, escrow, signer, 0xFFFFFFFFFFFFFFFE, 100, false, true);
+        if sender==escrow.offerer && !escrow.is_tracking_reputation() {
+            assert_result(
+                result,
+                escrow
+            ); //This should succeed, because the signature of the target is not checked
+        } else {
+            assert_result_error(
+                result,
+                'verify_sig: Invalid response',
+                escrow
+            );
+        }
     }
 }
 
