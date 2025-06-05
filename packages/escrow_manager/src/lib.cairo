@@ -6,13 +6,15 @@ pub mod structs;
 pub mod components;
 
 use crate::structs::escrow::EscrowData;
+use starknet::contract_address::ContractAddress;
+use execution_contract::structs::ContractCall;
 
 #[starknet::interface]
 pub trait IEscrowManager<TContractState> {
     //Initializes the escrow
     fn initialize(ref self: TContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>);
     //Claims the escrow by providing a witness to the claim handler
-    fn claim(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>);
+    fn claim(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>, success_action: Option<(Span<ContractCall>, Span<ContractAddress>)>);
     //Refunds the escrow by providing a witness to the refund handler
     fn refund(ref self: TContractState, escrow: EscrowData, witness: Array<felt252>);
     //Cooperatively refunds the escrow with a valid signature from claimer
@@ -21,14 +23,21 @@ pub trait IEscrowManager<TContractState> {
 
 #[starknet::contract]
 pub mod EscrowManager {
-    use core::num::traits::SaturatingSub;
     use starknet::event::EventEmitter;
-    use core::starknet::{get_execution_info, get_caller_address};
     use starknet::contract_address::ContractAddress;
+    use starknet::syscalls::deploy_syscall;
+    use starknet::SyscallResultTrait;
+    use core::num::traits::SaturatingSub;
+    use core::starknet::{get_execution_info, get_caller_address};
+    use core::starknet::storage::{
+        StoragePointerReadAccess, StoragePointerWriteAccess
+    };
     use crate::structs::escrow::{EscrowData, EscrowDataImpl, EscrowDataImplTrait};
     use crate::sighash;
     use crate::utils::snip6;
     use crate::events;
+    use execution_contract::structs::ContractCall;
+    use execution_contract::execution_proxy::{IExecutionProxySafeDispatcher, IExecutionProxySafeDispatcherTrait};
     use common::handlers::claim::{IClaimHandlerDispatcher, IClaimHandlerDispatcherTrait};
     use common::handlers::refund::{IRefundHandlerDispatcher, IRefundHandlerDispatcherTrait};
     use crate::components::lp_vault::lp_vault;
@@ -46,7 +55,9 @@ pub mod EscrowManager {
         #[substorage(v0)]
         reputation: reputation::Storage,
         #[substorage(v0)]
-        escrow_storage: escrow_storage::Storage
+        escrow_storage: escrow_storage::Storage,
+        //Execution proxy to separate this contract's balance
+        execution_proxy: ContractAddress
     }
 
     #[abi(embed_v0)]
@@ -71,6 +82,17 @@ pub mod EscrowManager {
         Initialize: events::Initialize,
         Claim: events::Claim,
         Refund: events::Refund
+    }
+
+    #[constructor]
+    fn constructor(ref self: ContractState) {
+        let (execution_proxy_address, _) = deploy_syscall(
+            0x11c5e6e9fac6c0bc989ff1204f5c2edbadde6cd4fa8ca4f05abf803f257711c.try_into().unwrap(),
+            0,
+            array![].span(),
+            false
+        ).unwrap();
+        self.execution_proxy.write(execution_proxy_address);
     }
 
     #[abi(embed_v0)]
@@ -120,7 +142,7 @@ pub mod EscrowManager {
             });
         }
 
-        fn claim(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>) {
+        fn claim(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>, success_action: Option<(Span<ContractCall>, Span<ContractAddress>)>) {
             //Check committed
             let escrow_hash = self.escrow_storage._finalize(escrow, true);
 
@@ -246,6 +268,27 @@ pub mod EscrowManager {
             } else {
                 self.lp_vault._transfer_in(token, src, amount);
             }
+        }
+        
+        //Create the execution in execution contract
+        fn _execute(ref self: ContractState, dst: ContractAddress, token: ContractAddress, amount: u256, calls: Span<ContractCall>, drain_tokens: Span<ContractAddress>) {
+            //Transfer the amount to execution proxy contract
+            let execution_proxy = IExecutionProxySafeDispatcher{contract_address: self.execution_proxy.read()};
+            erc20_utils::transfer_out(token, execution_proxy.contract_address, amount);
+
+            //Execute external calls through the execution proxy
+            let call_result = execution_proxy.execute(calls);
+
+            //Check for error during call
+            if call_result.is_err() {
+                //IMPORTANT NOTE: This case is not covered by tests since snforge doesn't work correctly
+                // with SafeDispatchers
+                //Emit ExecutionError event
+
+            }
+
+            //Drain all the tokens from the execution proxy straight to the destination
+            execution_proxy.drain_tokens(token, drain_tokens, dst).unwrap_syscall();
         }
     }
 
