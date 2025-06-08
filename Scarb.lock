@@ -85,6 +85,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "erc20_utils",
+ "execution_contract",
  "openzeppelin_access",
  "openzeppelin_account",
  "openzeppelin_introspection",

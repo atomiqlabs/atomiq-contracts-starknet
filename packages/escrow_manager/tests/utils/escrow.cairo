@@ -139,7 +139,7 @@ pub fn _init_escrow_and_assert(
         let sighash = if sign_random_message { 
             generate_random_felt()
         } else {
-            sighash::get_init_sighash(escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
+            sighash::get_init_sighash(escrow, escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
         };
         let (r, s) = signer.sign(sighash).expect('Failed to sign');
         array![r, s]
