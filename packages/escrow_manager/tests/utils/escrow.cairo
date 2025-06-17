@@ -38,7 +38,8 @@ pub fn create_escrow_data(
     context: Context,
     sender_claimer: bool, pay_in: bool, pay_out: bool, reputation: bool,
     mint_amount: u256, escrow_amount: u256,
-    gas_mint_amount: u256, security_deposit: u256, claimer_bounty: u256
+    gas_mint_amount: u256, security_deposit: u256, claimer_bounty: u256,
+    add_success_action: bool, success_action_fee: u256
 ) -> (ContractAddress, structs::escrow::EscrowData, KeyPair<felt252, felt252>, KeyPair<felt252, felt252>, KeyPair<felt252, felt252>) {
     let (offerer, offerer_keypair) = deploy_account();
     let (claimer, claimer_keypair) = deploy_account();
@@ -60,6 +61,17 @@ pub fn create_escrow_data(
         if pay_out { structs::escrow::FLAG_PAY_OUT } else { 0 } +
         if reputation { structs::escrow::FLAG_REPUTATION } else { 0 };
 
+    let success_action = if add_success_action {
+        Option::Some(structs::escrow::EscrowExecution {
+            contract: context.execution_contract,
+            hash: generate_random_felt(),
+            expiry: 1732847323,
+            fee: success_action_fee
+        })
+    } else {
+        Option::None
+    };
+
     let escrow = structs::escrow::EscrowData {
         offerer,
         claimer,
@@ -76,7 +88,9 @@ pub fn create_escrow_data(
 
         fee_token: context.gas_token.contract_address,
         security_deposit,
-        claimer_bounty
+        claimer_bounty,
+
+        success_action
     };
 
     //Increase allowance for token
@@ -125,7 +139,7 @@ pub fn _init_escrow_and_assert(
         let sighash = if sign_random_message { 
             generate_random_felt()
         } else {
-            sighash::get_init_sighash(escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
+            sighash::get_init_sighash(escrow, escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
         };
         let (r, s) = signer.sign(sighash).expect('Failed to sign');
         array![r, s]
@@ -189,7 +203,7 @@ pub fn _init_escrow_and_assert(
 pub fn get_initialized_escrow(
     context: Context,
     sender_claimer: bool, pay_in: bool, pay_out: bool, reputation: bool, security_deposit: bool, claimer_bounty: bool, deposit_invert: bool,
-    commit: bool
+    commit: bool, add_success_action: bool, success_action_fee_too_high: bool
 ) -> (structs::escrow::EscrowData, KeyPair<felt252, felt252>, KeyPair<felt252, felt252>) {
     let (sender, escrow, signer, offerer_signer, claimer_signer) = create_escrow_data(context,
         sender_claimer,
@@ -200,7 +214,9 @@ pub fn get_initialized_escrow(
         500,
         1000,
         if security_deposit { if deposit_invert { ESCROW_DEPOSIT_LARGE } else { ESCROW_DEPOSIT_SMALL } } else { 0 },
-        if claimer_bounty { if deposit_invert { ESCROW_DEPOSIT_SMALL } else { ESCROW_DEPOSIT_LARGE } } else { 0 }
+        if claimer_bounty { if deposit_invert { ESCROW_DEPOSIT_SMALL } else { ESCROW_DEPOSIT_LARGE } } else { 0 },
+        add_success_action,
+        if success_action_fee_too_high { 1500 } else {0}
     );
     if commit { assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0), escrow); };
 
