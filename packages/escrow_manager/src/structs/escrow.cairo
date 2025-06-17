@@ -21,6 +21,14 @@ pub struct EscrowExecution {
     pub fee: u256
 }
 
+#[generate_trait]
+pub impl EscrowExecutionImpl of EscrowExecutionImplTrait {
+    //Returns poseidon hash of the struct, used as a key for mapping storing the escrow state
+    fn get_struct_hash(self: EscrowExecution) -> felt252 {
+        PoseidonTrait::new().update_with(self).finalize()
+    }
+}
+
 //Escrow data, this is hashed and used as a storage key for the escrow state mapping
 #[derive(Drop, Hash, Copy, Serde, Debug)]
 pub struct EscrowData {
