@@ -63,7 +63,6 @@ pub fn create_escrow_data(
 
     let success_action = if add_success_action {
         Option::Some(structs::escrow::EscrowExecution {
-            contract: context.execution_contract,
             hash: generate_random_felt(),
             expiry: 1732847323,
             fee: success_action_fee

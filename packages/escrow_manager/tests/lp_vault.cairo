@@ -5,7 +5,7 @@ use starknet::contract_address::{ContractAddress, contract_address_const};
 
 use escrow_manager::components::lp_vault::{ILPVaultDispatcher, ILPVaultDispatcherTrait};
 
-use crate::utils::contract::{deploy};
+use crate::utils::contract::{get_context};
 use crate::utils::erc20;
 
 use openzeppelin_token::erc20::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
@@ -13,7 +13,7 @@ use openzeppelin_token::erc20::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
 fn deploy_all(mint_amount: u256) -> (ContractAddress, ContractAddress, ERC20ABIDispatcher) {
     let user = contract_address_const::<'depositor'>();
 
-    let contract_address = deploy();
+    let contract_address = get_context().contract_address;
     let erc20_dispatcher = erc20::deploy_mint_and_assert(user, mint_amount);
 
     cheat_caller_address(erc20_dispatcher.contract_address, user, CheatSpan::TargetCalls(1));

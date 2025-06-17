@@ -11,8 +11,6 @@ pub const FLAG_REPUTATION: u128 = 0x04;
 //Escrow execution data, used for executing arbitrary calls on success 
 #[derive(Drop, Hash, Copy, Serde, Debug)]
 pub struct EscrowExecution {
-    //Execution contract instance to use
-    pub contract: ContractAddress,
     //Hash of the execution to execute
     pub hash: felt252,
     //Expiry of the execution
@@ -223,7 +221,6 @@ mod tests {
             security_deposit: 12312,
             claimer_bounty: 324241,
             success_action: Option::Some(EscrowExecution {
-                contract: contract_address_const::<'escrow_contract'>(),
                 hash: 9544444444832852385237527938452934243,
                 expiry: 1893234521,
                 fee: 123123

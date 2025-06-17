@@ -8,11 +8,11 @@ use snforge_std::signature::stark_curve::{StarkCurveKeyPairImpl, StarkCurveSigne
 use snforge_std::signature::KeyPair;
 use crate::utils::erc20;
 
-pub fn deploy() -> ContractAddress {
+pub fn deploy(execution_contract: ContractAddress) -> ContractAddress {
     // First declare and deploy a contract
     let contract = declare("EscrowManager").unwrap().contract_class();
 
-    let (contract_address, _) = contract.deploy(@array![]).unwrap();
+    let (contract_address, _) = contract.deploy(@array![execution_contract.into()]).unwrap();
     
     // Create a Dispatcher object that will allow interacting with the deployed contract
     contract_address
@@ -70,12 +70,13 @@ pub struct Context {
 }
 
 pub fn get_context() -> Context {
+    let execution_contract = deploy_execution_contract();
     Context {
-        contract_address: deploy(),
+        contract_address: deploy(execution_contract),
         token: erc20::deploy(),
         gas_token: erc20::deploy(),
         refund_handler: deploy_refund_handler(),
         claim_handler: deploy_claim_handler(),
-        execution_contract: deploy_execution_contract()
+        execution_contract
     }
 }

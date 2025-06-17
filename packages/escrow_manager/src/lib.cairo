@@ -24,6 +24,7 @@ pub mod EscrowManager {
     use core::num::traits::SaturatingSub;
     use starknet::event::EventEmitter;
     use core::starknet::{get_execution_info, get_caller_address};
+    use core::starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use starknet::contract_address::ContractAddress;
     use crate::structs::escrow::{EscrowExecution, EscrowData, EscrowDataImpl, EscrowDataImplTrait};
     use crate::sighash;
@@ -47,7 +48,9 @@ pub mod EscrowManager {
         #[substorage(v0)]
         reputation: reputation::Storage,
         #[substorage(v0)]
-        escrow_storage: escrow_storage::Storage
+        escrow_storage: escrow_storage::Storage,
+
+        execution_contract: ContractAddress
     }
 
     #[abi(embed_v0)]
@@ -72,6 +75,11 @@ pub mod EscrowManager {
         Initialize: events::Initialize,
         Claim: events::Claim,
         Refund: events::Refund
+    }
+
+    #[constructor]
+    fn constructor(ref self: ContractState, execution_contract: ContractAddress) {
+        self.execution_contract.write(execution_contract);
     }
 
     #[abi(embed_v0)]
@@ -263,7 +271,7 @@ pub mod EscrowManager {
                 return;
             }
             
-            let execution_contract = IExecutionContractDispatcher{contract_address: escrow_execution.contract};
+            let execution_contract = IExecutionContractDispatcher{contract_address: self.execution_contract.read()};
 
             erc20_utils::approve(token, execution_contract.contract_address, amount);
             execution_contract.create(dst, escrow_hash, token, amount - escrow_execution.fee, escrow_execution.fee, escrow_execution.hash, escrow_execution.expiry);
