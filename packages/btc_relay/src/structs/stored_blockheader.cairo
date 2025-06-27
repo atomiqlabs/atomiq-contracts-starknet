@@ -47,12 +47,12 @@ pub impl StoredBlockHeaderUpdate of StoredBlockHeaderUpdateTrait {
         if self.block_height % constants::DIFF_ADJUSTMENT_INTERVAL == 0 {
             //Compute new nbits, bitcoin uses the timestamp of the last block in the epoch to re-target PoW difficulty
             // https://github.com/bitcoin/bitcoin/blob/78dae8caccd82cfbfd76557f1fb7d7557c7b5edb/src/pow.cpp#L49
-            let computed_nbits = difficulty::compute_new_target(
-                prev_block_timestamp,
-                self.last_diff_adjustment,
-                self.blockheader.nbits.to_target()
-            ).to_nbits(); //Comment this line for testnet deployment
-            assert(block_header.nbits == computed_nbits, 'update_chain: new nbits'); //Comment this line for testnet deployment
+            // let computed_nbits = difficulty::compute_new_target(
+            //     prev_block_timestamp,
+            //     self.last_diff_adjustment,
+            //     self.blockheader.nbits.to_target()
+            // ).to_nbits(); //Comment this line for testnet deployment
+            // assert(block_header.nbits == computed_nbits, 'update_chain: new nbits'); //Comment this line for testnet deployment
             //Even though timestamp of the last block in epoch is used to re-target PoW difficulty, the first
             // block in a new epoch is used as last_diff_adjustment, the time it takes to mine the first block
             // in every epoch is therefore not taken into consideration when retargetting PoW - one of many
@@ -60,7 +60,7 @@ pub impl StoredBlockHeaderUpdate of StoredBlockHeaderUpdateTrait {
             self.last_diff_adjustment = curr_block_timestamp;
         } else {
             //nbits must be same as last block
-            assert(block_header.nbits == self.blockheader.nbits, 'update_chain: nbits'); //Comment this line for testnet deployment
+            // assert(block_header.nbits == self.blockheader.nbits, 'update_chain: nbits'); //Comment this line for testnet deployment
         }
 
         //Check PoW
