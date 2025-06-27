@@ -64,6 +64,7 @@ snforge_std.workspace = true
 
 [[target.starknet-contract]]
 sierra = true
+casm = true
 
 [scripts]
 test = "cd scripts; npm i; npm run integration; cd ..; snforge test -w;"

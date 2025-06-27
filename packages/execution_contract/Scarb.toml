@@ -28,3 +28,4 @@ openzeppelin_access = "1.0.0"
 
 [[target.starknet-contract]]
 sierra = true
+casm = true

@@ -29,3 +29,4 @@ snforge_std.workspace = true
 
 [[target.starknet-contract]]
 sierra = true
+casm = true

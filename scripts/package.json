@@ -11,7 +11,8 @@
   "dependencies": {
     "bitcoinjs-lib": "^6.1.7",
     "bn.js": "^5.2.1",
+    "dotenv": "^16.6.0",
     "micro-starknet": "^0.2.3",
-    "starknet": "^6.11.0"
+    "starknet": "^7.1.0"
   }
 }

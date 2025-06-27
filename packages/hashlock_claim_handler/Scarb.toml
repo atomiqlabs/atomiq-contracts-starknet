@@ -28,3 +28,4 @@ fuzzing = []
 
 [[target.starknet-contract]]
 sierra = true
+casm = true
