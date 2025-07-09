@@ -2,25 +2,6 @@
 version = 1
 
 [[package]]
-name = "atomiq_contracts"
-version = "0.1.0"
-dependencies = [
- "btc_nonced_output_claim_handler",
- "btc_output_claim_handler",
- "btc_relay",
- "btc_txid_claim_handler",
- "btc_utils",
- "common",
- "erc20_utils",
- "escrow_manager",
- "execution_contract",
- "hashlock_claim_handler",
- "snforge_std",
- "spv_swap_vault",
- "timelock_refund_handler",
-]
-
-[[package]]
 name = "btc_nonced_output_claim_handler"
 version = "0.1.0"
 dependencies = [

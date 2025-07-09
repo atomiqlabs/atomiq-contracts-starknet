@@ -14,10 +14,11 @@ members = [
     "packages/execution_contract"
 ]
 
-[package]
-name = "atomiq_contracts"
-version.workspace = true
-edition.workspace = true
+# [package]
+# name = "atomiq_contracts"
+# version.workspace = true
+# edition.workspace = true
+# license.workspace = true
 
 [workspace.package]
 version = "0.1.0"
@@ -29,23 +30,24 @@ description = "atomiq labs contracts for Starknet"
 documentation = "https://github.com/atomiqlabs/atomiq-contracts-starknet"
 repository = "https://github.com/atomiqlabs/atomiq-contracts-starknet"
 license-file = "LICENSE"
+license = "Apache-2.0"
 
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
 
-[dependencies]
-starknet.workspace = true
-common.workspace = true
-erc20_utils.workspace = true
-btc_utils.workspace = true
-btc_relay.workspace = true
-execution_contract.workspace = true
-escrow_manager = { path = "packages/escrow_manager" }
-hashlock_claim_handler = { path = "packages/hashlock_claim_handler" }
-timelock_refund_handler = { path = "packages/timelock_refund_handler" }
-btc_txid_claim_handler = { path = "packages/btc_txid_claim_handler" }
-btc_output_claim_handler = { path = "packages/btc_output_claim_handler" }
-btc_nonced_output_claim_handler = { path = "packages/btc_nonced_output_claim_handler" }
-spv_swap_vault = { path = "packages/spv_swap_vault" }
+# [dependencies]
+# starknet.workspace = true
+# common.workspace = true
+# erc20_utils.workspace = true
+# btc_utils.workspace = true
+# btc_relay.workspace = true
+# execution_contract.workspace = true
+# escrow_manager = { path = "packages/escrow_manager" }
+# hashlock_claim_handler = { path = "packages/hashlock_claim_handler" }
+# timelock_refund_handler = { path = "packages/timelock_refund_handler" }
+# btc_txid_claim_handler = { path = "packages/btc_txid_claim_handler" }
+# btc_output_claim_handler = { path = "packages/btc_output_claim_handler" }
+# btc_nonced_output_claim_handler = { path = "packages/btc_nonced_output_claim_handler" }
+# spv_swap_vault = { path = "packages/spv_swap_vault" }
 
 [workspace.dependencies]
 starknet = "2.10.1"
