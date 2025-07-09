@@ -11,7 +11,8 @@ members = [
     "packages/btc_nonced_output_claim_handler",
     "packages/erc20_utils",
     "packages/spv_swap_vault",
-    "packages/execution_contract"
+    "packages/execution_contract",
+    "packages/oz_account_starknet"
 ]
 
 # [package]
@@ -51,7 +52,7 @@ license = "Apache-2.0"
 
 [workspace.dependencies]
 starknet = "2.10.1"
-snforge_std = "0.38.0"
+snforge_std = "0.45.0"
 assert_macros = "2.10.1"
 common = { path = "packages/common" }
 erc20_utils = { path = "packages/erc20_utils" }

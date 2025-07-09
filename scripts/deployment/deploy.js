@@ -59,6 +59,9 @@ Params:
 */
 
 async function main() {
+    console.log("\n- Declaring OZ account...");
+    await declare("oz_account_starknet_OZAccount");
+
     const blockchainInfo = await getBlockchainInfo();
     const finalizedHeight = Math.max(0, blockchainInfo.headers - 500);
 

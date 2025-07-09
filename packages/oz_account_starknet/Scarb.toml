@@ -1,0 +1,22 @@
+[package]
+name = "oz_account_starknet"
+version.workspace = true
+edition.workspace = true
+cairo-version.workspace = true
+scarb-version.workspace = true
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+repository.workspace = true
+license-file.workspace = true
+
+[dependencies]
+starknet.workspace = true
+openzeppelin_account = "1.0.0"
+openzeppelin_introspection = "1.0.0"
+
+[lib]
+
+[[target.starknet-contract]]
+sierra = true
+casm = true

@@ -138,16 +138,24 @@ source = "registry+https://scarbs.xyz/"
 checksum = "sha256:fd348b31c4a4407add33adc3c2b8f26dca71dbd7431faaf726168f37a91db0c1"
 
 [[package]]
+name = "oz_account_starknet"
+version = "0.1.0"
+dependencies = [
+ "openzeppelin_account",
+ "openzeppelin_introspection",
+]
+
+[[package]]
 name = "snforge_scarb_plugin"
-version = "0.38.3"
+version = "0.45.0"
 source = "registry+https://scarbs.xyz/"
-checksum = "sha256:0cd914b547acd96b4cad99a78e95c0eda001d0c280da4969b2161e286079cf46"
+checksum = "sha256:568482e8c40e7018d9ea729d6df3d5ec22b665cfff1e89181d8ad31bacca11cc"
 
 [[package]]
 name = "snforge_std"
-version = "0.38.3"
+version = "0.45.0"
 source = "registry+https://scarbs.xyz/"
-checksum = "sha256:d376526fbbe22535ad89ed630b11d6e209f22c50168de6c6430c0591c81c3174"
+checksum = "sha256:c08b359c266e45c4e71b71baa3c4af8dae7fc5416fc8168f0983e5c9a2ac0abe"
 dependencies = [
  "snforge_scarb_plugin",
 ]
