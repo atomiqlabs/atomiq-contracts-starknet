@@ -184,7 +184,7 @@ fn valid_execute_panic_test_contract() {
     let drain_tokens: Span<ContractAddress> = array![].span();
 
     let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
-    execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![panic_err].span(), false);
+    execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![panic_err, 'ENTRYPOINT_FAILED', 'ENTRYPOINT_FAILED'].span(), false);
 }
 
 //Invalid execute call, execution not created
