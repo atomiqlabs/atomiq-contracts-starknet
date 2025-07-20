@@ -24,10 +24,10 @@ pub fn create_execution(
     amount: u256,
     fee: u256,
     expiry: u64,
-    salt: felt252,
+    creator_salt: felt252,
     calls: Span<ContractCall>,
     drain_tokens: Span<ContractAddress>
-) {
+) -> felt252 {
     let funder = contract_address_const::<'funder'>();
 
     erc20::mint(context.token0, funder, amount + fee);
@@ -36,7 +36,7 @@ pub fn create_execution(
 
     let execution_hash = PoseidonTrait::new().update_with(calls).update_with(drain_tokens).finalize();
 
-    create_and_assert(context, funder, owner, amount, fee, execution_hash, expiry, salt);
+    create_and_assert(context, funder, owner, amount, fee, execution_hash, expiry, creator_salt)
 }
 
 pub fn create_and_assert(
@@ -47,19 +47,27 @@ pub fn create_and_assert(
     fee: u256,
     execution_hash: felt252,
     expiry: u64,
-    salt: felt252
-) {
+    creator_salt: felt252
+) -> felt252 {
     let balance_erc20_funder = context.token0.balance_of(funder);
     let balance_erc20_contract = context.token0.balance_of(context.contract.contract_address);
 
     let mut spy = spy_events();
 
     cheat_caller_address(context.contract.contract_address, funder, CheatSpan::TargetCalls(1));
-    let result = context.contract.create(owner, salt, context.token0.contract_address, amount, fee, execution_hash, expiry);
+    let result = context.contract.create(owner, creator_salt, context.token0.contract_address, amount, fee, execution_hash, expiry);
 
     if result.is_err() {
         panic(result.unwrap_err());
     }
+
+    //Compute the actual salt from the sender address and provided creator_salt,
+    // this ensures that no one else can try to front-run the execution creation
+    // and block the actual execution from being created
+    let salt = PoseidonTrait::new()
+        .update_with(funder)
+        .update(creator_salt)
+        .finalize();
 
     //Assert event emitted
     spy.assert_emitted(
@@ -86,4 +94,6 @@ pub fn create_and_assert(
     //Assert tokens transfered
     assert_eq!(balance_erc20_funder - amount - fee, context.token0.balance_of(funder));
     assert_eq!(balance_erc20_contract + amount + fee, context.token0.balance_of(context.contract.contract_address));
+
+    salt
 }

@@ -80,17 +80,17 @@ fn valid_refund_expired() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     let expiry = 10;
     let current_timestamp = 1000;
     
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, expiry, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, expiry, creator_salt, calls, drain_tokens);
     refund_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, current_timestamp);
     
-    create_execution(context, owner, amount, fee, expiry, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, expiry, creator_salt, calls, drain_tokens);
     refund_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, true, current_timestamp);
 }
 
@@ -102,17 +102,17 @@ fn valid_refund_not_expired() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     let expiry = 10000;
     let current_timestamp = 0;
     
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, expiry, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, expiry, creator_salt, calls, drain_tokens);
     refund_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, current_timestamp);
     
-    create_execution(context, owner, amount, fee, expiry, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, expiry, creator_salt, calls, drain_tokens);
     refund_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, true, current_timestamp);
 }
 
@@ -144,14 +144,14 @@ fn invalid_already_processed() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     let expiry = 10;
     let current_timestamp = 1000;
     
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, expiry, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, expiry, creator_salt, calls, drain_tokens);
     refund_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, current_timestamp);
     refund_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, current_timestamp);
 }

@@ -87,15 +87,15 @@ fn valid_execute_empty() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
     execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![].span(), true);
     
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
     execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, true, array![].span(), true);
 }
 
@@ -107,7 +107,7 @@ fn valid_execute_test_contract() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     
     let event_data = 0123481284124123412213123;
     let calls: Span<ContractCall> = array![ContractCall {
@@ -117,7 +117,7 @@ fn valid_execute_test_contract() {
     }].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
     let mut spy = execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![].span(), true);
 
     //Assert test event emitted
@@ -137,7 +137,7 @@ fn valid_execute_test_contract_drain() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     
     let event_data = 0123481284124123412213123;
     let calls: Span<ContractCall> = array![ContractCall {
@@ -150,7 +150,7 @@ fn valid_execute_test_contract_drain() {
     //Mint some tokens straight to the execution proxy
     erc20::mint(context.token1, context.execution_proxy, 1000);
 
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
     let mut spy = execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![].span(), true);
 
     //Make sure tokens were drained back to owner
@@ -173,7 +173,7 @@ fn valid_execute_panic_test_contract() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     
     let panic_err = 'panic here!';
     let calls: Span<ContractCall> = array![ContractCall {
@@ -183,7 +183,7 @@ fn valid_execute_panic_test_contract() {
     }].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
     execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![panic_err].span(), false);
 }
 
@@ -213,12 +213,12 @@ fn invalid_already_processed() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
     execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![].span(), true);
     execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![].span(), true);
 }
@@ -232,12 +232,12 @@ fn invalid_drain_tokens() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
 
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![12312.try_into().unwrap()].span();
@@ -254,12 +254,12 @@ fn invalid_calls() {
     let owner = contract_address_const::<'owner'>();
     let amount = 1000;
     let fee = 100;
-    let salt = 0;
+    let creator_salt = 0;
     
     let calls: Span<ContractCall> = array![].span();
     let drain_tokens: Span<ContractAddress> = array![].span();
 
-    create_execution(context, owner, amount, fee, 10, salt, calls, drain_tokens);
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
 
     let calls: Span<ContractCall> = array![ContractCall {
         address: 8468464612144.try_into().unwrap(),

@@ -6,6 +6,9 @@ use core::num::traits::SaturatingAdd;
 
 use starknet::contract_address::{ContractAddress};
 
+use core::hash::{HashStateTrait, HashStateExTrait};
+use core::poseidon::PoseidonTrait;
+
 use escrow_manager::{EscrowManager, IEscrowManagerSafeDispatcher, IEscrowManagerSafeDispatcherTrait};
 use escrow_manager::components::lp_vault::{ILPVaultDispatcher, ILPVaultDispatcherTrait};
 use escrow_manager::components::escrow_storage::{IEscrowStorageDispatcher, IEscrowStorageDispatcherTrait};
@@ -92,7 +95,11 @@ fn claim_escrow(
 
     if escrow.success_action.is_some() && escrow.success_action.unwrap().fee <= escrow.amount {
         let success_action = escrow.success_action.unwrap();
-        let scheduled_execution = IExecutionContractReadOnlyDispatcher{contract_address: context.execution_contract}.get_execution(escrow.claimer, escrow_hash);
+        let salt = PoseidonTrait::new()
+            .update_with(context.contract_address)
+            .update(escrow_hash)
+            .finalize();
+        let scheduled_execution = IExecutionContractReadOnlyDispatcher{contract_address: context.execution_contract}.get_execution(escrow.claimer, salt);
         if scheduled_execution.amount != escrow.amount - success_action.fee { return Result::Err('test: exec amount'); }
         if scheduled_execution.execution_fee != success_action.fee { return Result::Err('test: exec fee'); }
         if scheduled_execution.execution_hash != success_action.hash { return Result::Err('test: exec hash'); }

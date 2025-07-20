@@ -3,6 +3,8 @@ pub mod MockExecutionContract {
     use starknet::contract_address::ContractAddress;
 
     use core::starknet::{get_caller_address};
+    use core::hash::{HashStateTrait, HashStateExTrait};
+    use core::poseidon::PoseidonTrait;
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
@@ -30,12 +32,20 @@ pub mod MockExecutionContract {
     impl ExecutionContractImpl of IExecutionContract<ContractState> {
         fn create(
             ref self: ContractState, 
-            owner: ContractAddress, salt: felt252, token: ContractAddress, 
+            owner: ContractAddress, creator_salt: felt252, token: ContractAddress, 
             amount: u256, execution_fee: u256,
             execution_hash: felt252, expiry: u64
         ) {
             //Make sure the execution hash not 0, we use 0 to indicate that the saved execution is empty
             assert(execution_hash != 0, 'create: execution_hash=0');
+
+            //Compute the actual salt from the sender address and provided creator_salt,
+            // this ensures that no one else can try to front-run the execution creation
+            // and block the actual execution from being created
+            let salt = PoseidonTrait::new()
+                .update_with(get_caller_address())
+                .update(creator_salt)
+                .finalize();
 
             //Make sure execution not yet initialized
             let execution_ptr = self.executions.entry(owner).entry(salt);
