@@ -63,21 +63,22 @@ pub trait ISpvVaultManagerReadOnly<TContractState> {
 
 #[starknet::contract]
 pub mod SpvVaultManager {
+    use starknet::SyscallResultTrait;
     use super::structs::BitcoinVaultTransactionDataTrait;
     use super::SpvVaultImplTrait;
     use core::num::traits::Zero;
 
-    use core::starknet::{get_caller_address, ContractAddress};
+    use core::starknet::{get_caller_address, ContractAddress, SyscallResult};
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map, StoragePath, Mutable
     };
-    use core::hash::{HashStateTrait, HashStateExTrait};
+    use core::hash::{HashStateTrait};
     use core::poseidon::PoseidonTrait;
 
     use btc_utils::bitcoin_merkle_tree;
     use btc_relay::{IBtcRelayReadOnlyDispatcher, IBtcRelayReadOnlyDispatcherTrait};
     use btc_utils::bitcoin_tx::{BitcoinTransactionImpl, BitcoinTransactionTrait, BitcoinTxInputTrait};
-    use execution_contract::{IExecutionContractDispatcher, IExecutionContractDispatcherTrait};
+    use execution_contract::{IExecutionContractSafeDispatcher, IExecutionContractSafeDispatcherTrait};
 
     use crate::utils::{U32ArrayToU256ParserTrait, U64TupleAdd};
     use crate::structs::{BitcoinVaultTransactionDataImpl};
@@ -215,7 +216,7 @@ pub mod SpvVaultManager {
                 if amount_raw_1 != 0 {
                     erc20_utils::transfer_out(current_state.token_1, data.recipient, current_state.from_raw_token1(amount_raw_1).unwrap());
                 }
-                self._to_execution_contract(current_state, data, btc_tx_hash);
+                self._to_execution_contract(owner, vault_id, fronting_id, current_state, data).unwrap_syscall();
             }
 
             self.emit(events::Fronted {
@@ -307,13 +308,16 @@ pub mod SpvVaultManager {
                     let payout_amounts = tx_data.amount + (tx_data.execution_handler_fee_amount_0, 0);
                     self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(payout_amounts).unwrap(), tx_data.recipient);
                 } else {
-                    let (_, amount_raw_1) = tx_data.amount;
+                    let (amount_raw_0, amount_raw_1) = tx_data.amount;
                     //Pay out the gas token straight to recipient
                     if amount_raw_1 != 0 {
                         erc20_utils::transfer_out(current_state.token_1, tx_data.recipient, current_state.from_raw_token1(amount_raw_1).unwrap());
                     }
-                    //Instantiate the execution contract
-                    self._to_execution_contract(current_state, tx_data, btc_tx_hash_u256);
+                    //Try instantiate the execution contract
+                    if self._to_execution_contract(owner, vault_id, fronting_id, current_state, tx_data).is_err() {
+                        //If failed just transfer the tokens directly
+                        erc20_utils::transfer_out(current_state.token_0, tx_data.recipient, current_state.from_raw_token0(amount_raw_0 + tx_data.execution_handler_fee_amount_0).unwrap());
+                    }
                 }
             }
 
@@ -418,18 +422,37 @@ pub mod SpvVaultManager {
         }
 
         //Create the execution in execution contract
-        fn _to_execution_contract(self: @ContractState, current_state: SpvVaultState, data: BitcoinVaultTransactionData, btc_tx_hash: u256) {
+        fn _to_execution_contract(
+            self: @ContractState,
+            owner: ContractAddress, 
+            vault_id: felt252,
+            fronting_id: felt252,
+            current_state: SpvVaultState,
+            data: BitcoinVaultTransactionData,
+        ) -> SyscallResult<()> {
             let (amount_raw_0, _) = data.amount;
 
             let amount_0 = current_state.from_raw_token0(amount_raw_0).unwrap();
             let execution_handler_fee = current_state.from_raw_token0(data.execution_handler_fee_amount_0).unwrap();
-            let execution_contract = IExecutionContractDispatcher{contract_address: self.execution_contract.read()};
+            let execution_contract = IExecutionContractSafeDispatcher{contract_address: self.execution_contract.read()};
 
             erc20_utils::approve(current_state.token_0, execution_contract.contract_address, amount_0 + execution_handler_fee);
             
-            //Generate salt from bitcoin transaction hash - as this has to be unique
-            let salt = PoseidonTrait::new().update_with(btc_tx_hash).finalize();
-            execution_contract.create(data.recipient, salt, current_state.token_0, amount_0, execution_handler_fee, data.execution_hash, data.execution_expiry.into());
+            //Generate salt from fronting hash - as this has to be unique
+            let salt = PoseidonTrait::new()
+                .update(owner.into()) //Commit to vault owner
+                .update(vault_id) //And vault id
+                .update(fronting_id) //And use fronting hash
+                .finalize();
+
+            let result = execution_contract.create(data.recipient, salt, current_state.token_0, amount_0, execution_handler_fee, data.execution_hash, data.execution_expiry.into());
+
+            if result.is_err() {
+                //If execution fails, we revert the approval as well
+                erc20_utils::approve(current_state.token_0, execution_contract.contract_address, 0);
+            }
+
+            result
         }
 
     }
