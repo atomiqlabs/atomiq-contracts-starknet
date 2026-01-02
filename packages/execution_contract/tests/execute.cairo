@@ -270,3 +270,39 @@ fn invalid_calls() {
 
     execute_and_assert(context, owner, amount, fee, salt, calls, drain_tokens, false, array![].span(), true);
 }
+
+//Try to maliciously execute no calls by moving all the data to drain tokens
+#[test]
+#[should_panic(expected: 'execute: Invalid calls/tokens')]
+fn malicious_execute_no_calls() {
+    let context = get_context();
+
+    let owner = contract_address_const::<'owner'>();
+    let amount = 1000;
+    let fee = 100;
+    let creator_salt = 0;
+    
+    let event_data = 123481284124123412213123;
+    let entrypoint = 13123121512499412; //Made-up entrypoint, doesn't matter since it won't be executed anyway!
+    let calls: Span<ContractCall> = array![ContractCall {
+        address: context.test_contract,
+        entrypoint: entrypoint,
+        calldata: array![event_data].span()
+    }].span();
+    let drain_tokens: Span<ContractAddress> = array![].span();
+
+    let salt = create_execution(context, owner, amount, fee, 10, creator_salt, calls, drain_tokens);
+
+    //Assume that no delimeters were put inside the execution hash, so we can supply an empty calls array
+    // and move all the data over to the drain tokens
+    execute_and_assert(
+        context, owner, amount, fee, salt,
+        array![].span(), // <--- Empty array here, 
+        array![
+            context.test_contract,
+            entrypoint.try_into().unwrap(),
+            event_data.try_into().unwrap()
+        ].span(), // <--- All the data from the calls moved to the drain tokens here
+        false, array![].span(), true
+    );
+}
