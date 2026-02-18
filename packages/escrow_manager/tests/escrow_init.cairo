@@ -2,6 +2,7 @@ use snforge_std::{
     cheat_caller_address, CheatSpan, generate_random_felt
 };
 use snforge_std::signature::stark_curve::{StarkCurveKeyPairImpl, StarkCurveSignerImpl};
+use starknet::ContractAddress;
 
 use escrow_manager::structs::escrow::{EscrowDataImpl, EscrowDataImplTrait};
 
@@ -9,6 +10,7 @@ use crate::utils::contract::get_context;
 use crate::utils::result::{assert_result, assert_result_error};
 use crate::utils::escrow::{
     create_escrow_data, init_escrow_and_assert, _init_escrow_and_assert,
+    _create_escrow_data,
     ESCROW_DEPOSIT_SMALL, ESCROW_DEPOSIT_LARGE, ESCROW_INIT_AMOUNT,
     ESCROW_GAS_MINT_AMOUNT, ESCROW_GAS_MINT_NOT_ENOUGH_AMOUNT,
     ESCROW_INIT_MINT_AMOUNT, ESCROW_INIT_MINT_NOT_ENOUGH_AMOUNT
@@ -35,6 +37,33 @@ fn valid_initialize() {
             0
         );
         assert_result(init_escrow_and_assert(context, sender, escrow, signer, 100, 0), escrow);
+    }
+}
+
+//Initialize transaction sent by a third party sender
+#[test]
+fn valid_initialize_3rd_party_sender() {
+    let context = get_context();
+    for i in 0..32_u8 {
+        let random_account: ContractAddress = generate_random_felt().try_into().unwrap();
+        let (_, escrow, signer, _, _) = _create_escrow_data(context,
+            Option::Some(random_account),
+            false,
+            i & 0x1 == 0x1, 
+            i & 0x2 == 0x2,
+            i & 0x4 == 0x4,
+            ESCROW_INIT_MINT_AMOUNT,
+            ESCROW_INIT_AMOUNT,
+            ESCROW_GAS_MINT_AMOUNT,
+            if i & 0x8 == 0x8 { ESCROW_DEPOSIT_SMALL } else { 0 },
+            if i & 0x10 == 0x10 { ESCROW_DEPOSIT_LARGE } else { 0 },
+            true,
+            0
+        );
+        assert_result(
+            init_escrow_and_assert(context, random_account, escrow, signer, 100, 0),
+            escrow
+        );
     }
 }
 
@@ -240,32 +269,6 @@ fn invalid_initialize_wrong_sign_message() {
                 escrow
             );
         }
-    }
-}
-
-//Initialize transaction sent by a third party sender
-#[test]
-fn invalid_initialize_wrong_sender() {
-    let context = get_context();
-    for i in 0..64_u8 {
-        let (_, escrow, signer, _, _) = create_escrow_data(context, 
-            i & 0x1 == 0x1, 
-            i & 0x2 == 0x2,
-            i & 0x4 == 0x4,
-            i & 0x8 == 0x8,
-            ESCROW_INIT_MINT_AMOUNT,
-            ESCROW_INIT_AMOUNT,
-            ESCROW_GAS_MINT_AMOUNT,
-            if i & 0x10 == 0x10 { ESCROW_DEPOSIT_SMALL } else { 0 },
-            if i & 0x20 == 0x20 { ESCROW_DEPOSIT_LARGE } else { 0 },
-            true,
-            0
-        );
-        assert_result_error(
-            init_escrow_and_assert(context, generate_random_felt().try_into().unwrap(), escrow, signer, 100, 0),
-            'init: caller_address',
-            escrow
-        );
     }
 }
 
