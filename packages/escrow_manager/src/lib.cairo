@@ -93,29 +93,30 @@ pub mod EscrowManager {
             
             //Check committed
             let escrow_hash = self.escrow_storage._commit(escrow);
-
+            
             //Verify signature
             let caller = execution_info.caller_address;
-            if caller == escrow.offerer {
+            if caller != escrow.claimer {
                 //Here we only require signature in case the reputation tracking flag is set,
                 // otherwise there is no harm done to the claimer even if he were to be spammed
                 // with many escrows
                 if escrow.is_tracking_reputation() {
                     snip6::verify_signature(escrow.claimer, sighash::get_init_sighash(escrow, escrow_hash, timeout, escrow.claimer), signature);
                 }
-            } else if caller == escrow.claimer {
+
+                //Transfer funds - use caller here, as we want to allow anyone to fund the escrow
+                self._pay_in(caller, escrow.token, escrow.amount, escrow.is_pay_in());
+            } else {
                 //In this case we always require signature because we are taking funds from the offerer
                 snip6::verify_signature(escrow.offerer, sighash::get_init_sighash(escrow, escrow_hash, timeout, escrow.offerer), signature);
-            } else {
-                panic(array!['init: caller_address'])
+
+                //Transfer funds from the offerer
+                self._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
             };
 
             //Transfer deposit
             let deposit_amount = escrow.get_total_deposit();
             if deposit_amount!=0 { erc20_utils::transfer_in(escrow.fee_token, caller, deposit_amount) };
-
-            //Transfer funds
-            self._pay_in(escrow.offerer, escrow.token, escrow.amount, escrow.is_pay_in());
 
             //Emit event
             self.emit(events::Initialize {
