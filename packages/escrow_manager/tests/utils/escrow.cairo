@@ -34,8 +34,27 @@ pub const ESCROW_DEPOSIT_LARGE: u256 = 150;
 
 pub const INIT_BLOCK_NUMBER: u64 = 8577342;
 
+
 pub fn create_escrow_data(
     context: Context,
+    sender_claimer: bool, pay_in: bool, pay_out: bool, reputation: bool,
+    mint_amount: u256, escrow_amount: u256,
+    gas_mint_amount: u256, security_deposit: u256, claimer_bounty: u256,
+    add_success_action: bool, success_action_fee: u256
+) -> (ContractAddress, structs::escrow::EscrowData, KeyPair<felt252, felt252>, KeyPair<felt252, felt252>, KeyPair<felt252, felt252>) {
+    _create_escrow_data(
+        context,
+        Option::None,
+        sender_claimer, pay_in, pay_out, reputation,
+        mint_amount, escrow_amount,
+        gas_mint_amount, security_deposit, claimer_bounty,
+        add_success_action, success_action_fee
+    )
+}
+
+pub fn _create_escrow_data(
+    context: Context,
+    funder_option: Option<ContractAddress>,
     sender_claimer: bool, pay_in: bool, pay_out: bool, reputation: bool,
     mint_amount: u256, escrow_amount: u256,
     gas_mint_amount: u256, security_deposit: u256, claimer_bounty: u256,
@@ -44,13 +63,14 @@ pub fn create_escrow_data(
     let (offerer, offerer_keypair) = deploy_account();
     let (claimer, claimer_keypair) = deploy_account();
 
-    let sender = if sender_claimer { claimer } else { offerer };
+    let sender = funder_option.unwrap_or(if sender_claimer { claimer } else { offerer });
+    let funder = funder_option.unwrap_or(offerer);
     let signer = if sender_claimer { offerer_keypair } else { claimer_keypair };
 
     if pay_in {
-        erc20::mint(context.token, offerer, mint_amount);
+        erc20::mint(context.token, funder, mint_amount);
     } else {
-        lp_vault::mint_to_lp_vault(context.contract_address, offerer, context.token, mint_amount);
+        lp_vault::mint_to_lp_vault(context.contract_address, funder, context.token, mint_amount);
     }
 
     if claimer_bounty!=0 || security_deposit!=0 {
@@ -94,7 +114,7 @@ pub fn create_escrow_data(
 
     //Increase allowance for token
     if pay_in {
-        cheat_caller_address(context.token.contract_address, offerer, CheatSpan::TargetCalls(1));
+        cheat_caller_address(context.token.contract_address, funder, CheatSpan::TargetCalls(1));
         context.token.approve(context.contract_address, 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe);
     }
 
@@ -122,8 +142,11 @@ pub fn _init_escrow_and_assert(
     timeout: u64, current_time: u64,
     sign_random_message: bool, sign_different_timeout: bool
 ) -> Result<(), felt252> {
-    let balance_erc20 = context.token.balance_of(escrow.offerer);
-    let balance_contract = *ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.offerer, context.token.contract_address)].span()).span()[0];
+    let claimer_inits = sender == escrow.claimer;
+    let funder = if claimer_inits { escrow.offerer } else { sender }; 
+
+    let balance_erc20 = context.token.balance_of(funder);
+    let balance_contract = *ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(funder, context.token.contract_address)].span()).span()[0];
     let balance_erc20_contract = context.token.balance_of(context.contract_address);
 
     let balance_gas_erc20 = context.gas_token.balance_of(sender);
@@ -131,10 +154,10 @@ pub fn _init_escrow_and_assert(
 
     let escrow_hash = escrow.get_struct_hash();
 
-    let signature = if sender==escrow.offerer && !escrow.is_tracking_reputation() {
+    let signature = if !claimer_inits && !escrow.is_tracking_reputation() {
         array![] //Signature not required
     } else {
-        let signer_address = if escrow.offerer == sender { escrow.claimer } else { escrow.offerer };
+        let signer_address = if claimer_inits { escrow.offerer } else { escrow.claimer };
         let sighash = if sign_random_message { 
             generate_random_felt()
         } else {
@@ -178,12 +201,12 @@ pub fn _init_escrow_and_assert(
 
 
     if escrow.is_pay_in() {
-        if (context.token.balance_of(escrow.offerer) != balance_erc20-escrow.amount) ||
+        if (context.token.balance_of(funder) != balance_erc20-escrow.amount) ||
             (context.token.balance_of(context.contract_address) != balance_erc20_contract+escrow.amount) {
             return Result::Err('test: erc20 balance');
         }
     } else {
-        if (ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(escrow.offerer, context.token.contract_address)].span()) != array![balance_contract-escrow.amount]) {
+        if (ILPVaultDispatcher{contract_address: context.contract_address}.get_balance(array![(funder, context.token.contract_address)].span()) != array![balance_contract-escrow.amount]) {
             return Result::Err('test: vault balance');
         }
     }
