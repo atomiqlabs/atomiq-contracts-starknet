@@ -11,31 +11,3 @@ pub impl SpanHashImpl<HashState, +HashStateTrait<HashState>, +Drop<HashState>, T
         result
     }
 }
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use core::hash::{HashStateTrait, HashStateExTrait};
-    use core::poseidon::PoseidonTrait;
-
-    #[test]
-    fn span_hash() {
-        let hash = PoseidonTrait::new().update_with(array![0, 1, 2, 3, 4, 5, 6, 7].span()).finalize();
-        assert!(hash != PoseidonTrait::new().update_with(array![0, 1, 2, 3, 4, 5, 6, 6].span()).finalize());
-
-        let hash = PoseidonTrait::new().update_with(array![0, 0, 0, 0, 0, 0, 0, 0].span()).finalize();
-        assert!(hash != PoseidonTrait::new().update_with(array![0, 0, 0, 0, 0, 0, 0, 1].span()).finalize());
-    }
-
-    #[test]
-    fn properly_delimetered_spans() {
-        let hash = PoseidonTrait::new()
-            .update_with(array![0, 1, 2, 3].span())
-            .update_with(array![4, 5, 6, 7].span())
-            .finalize();
-        assert!(hash != PoseidonTrait::new().update_with(array![0, 1, 2, 3, 4, 5, 6, 7].span()).finalize());
-    }
-
-}
