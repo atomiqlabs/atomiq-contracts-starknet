@@ -207,7 +207,7 @@ pub impl ByteArrayReader of ByteArrayReaderTrait {
     //Hash the range starting at {start_index} (inclusive) and ending with {end_index} (not inclusive)
     // by reading the 31 byte segments, representing them as felt252 and then incrementally hashing them
     fn hash_poseidon_range(self: @ByteArray, start_index: usize, end_index: usize) -> felt252 {
-        let mut hasher = PoseidonTrait::new();
+        let mut hasher = PoseidonTrait::new().update((end_index - start_index).into());
         let mut index = start_index;
         while index < end_index {
             let remaining = end_index - index;
