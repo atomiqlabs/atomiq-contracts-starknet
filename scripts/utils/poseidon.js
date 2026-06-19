@@ -6,7 +6,7 @@ function poseidonHashRange(buffer, startIndex, endIndex) {
         values.push(BigInt("0x"+buffer.subarray(i-31, i).toString("hex")));
     }
     if(endIndex > startIndex + (values.length*31)) values.push(BigInt("0x"+buffer.subarray(startIndex + (values.length*31), endIndex).toString("hex")));
-    return starknet.poseidonHashMany(values);
+    return starknet.poseidonHashMany([BigInt(endIndex - startIndex), ...values]);
 }
 
 module.exports = {
