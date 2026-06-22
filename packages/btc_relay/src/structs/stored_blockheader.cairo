@@ -66,7 +66,7 @@ pub impl StoredBlockHeaderUpdate of StoredBlockHeaderUpdateTrait {
         //Check PoW
         let target: u256 = block_header.nbits.to_target();
         let block_hash: [u32; 8] = block_header.dbl_sha256_hash();
-        assert(block_hash.from_le_to_u256() < target, 'update_chain: invalid PoW');
+        assert(block_hash.from_le_to_u256() <= target, 'update_chain: invalid PoW');
 
         //Verify timestamp is larger than median of last 11 block timestamps
         let mut count: u8 = 0;
