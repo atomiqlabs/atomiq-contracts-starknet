@@ -49,7 +49,7 @@ fn coop_refund_escrow(
     let sighash = if sign_random_message { 
         generate_random_felt()
     } else {
-        sighash::get_refund_sighash(escrow_hash, if sign_different_timeout { 0 } else { timeout }, escrow.claimer)
+        sighash::get_refund_sighash(context.contract_address, escrow_hash, if sign_different_timeout { 0 } else { timeout }, escrow.claimer)
     };
     let (r, s) = claimer_keypair.sign(sighash).expect('Failed to sign');
 
