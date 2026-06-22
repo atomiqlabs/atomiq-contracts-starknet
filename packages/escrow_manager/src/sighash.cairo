@@ -11,7 +11,7 @@ impl SNIP12MetadataImpl of SNIP12Metadata {
 }
 
 const INITIALIZE_STRUCT_TYPE_HASH: felt252 =
-    selector!("\"Initialize\"(\"Swap hash\":\"felt\",\"Offerer\":\"ContractAddress\",\"Claimer\":\"ContractAddress\",\"Token amount\":\"TokenAmount\",\"Pay in\":\"bool\",\"Pay out\":\"bool\",\"Tracking reputation\":\"bool\",\"Claim handler\":\"ContractAddress\",\"Claim data\":\"felt\",\"Refund handler\":\"ContractAddress\",\"Refund data\":\"felt\",\"Security deposit\":\"TokenAmount\",\"Claimer bounty\":\"TokenAmount\",\"Claim action hash\":\"felt\",\"Deadline\":\"timestamp\")\"TokenAmount\"(\"token_address\":\"ContractAddress\",\"amount\":\"u256\")\"u256\"(\"low\":\"u128\",\"high\":\"u128\")");
+    selector!("\"Initialize\"(\"Escrow contract\":\"ContractAddress\",\"Swap hash\":\"felt\",\"Offerer\":\"ContractAddress\",\"Claimer\":\"ContractAddress\",\"Token amount\":\"TokenAmount\",\"Pay in\":\"bool\",\"Pay out\":\"bool\",\"Tracking reputation\":\"bool\",\"Claim handler\":\"ContractAddress\",\"Claim data\":\"felt\",\"Refund handler\":\"ContractAddress\",\"Refund data\":\"felt\",\"Security deposit\":\"TokenAmount\",\"Claimer bounty\":\"TokenAmount\",\"Claim action hash\":\"felt\",\"Deadline\":\"timestamp\")\"TokenAmount\"(\"token_address\":\"ContractAddress\",\"amount\":\"u256\")\"u256\"(\"low\":\"u128\",\"high\":\"u128\")");
 
 const U256_TYPE_HASH: felt252 =
     selector!("\"u256\"(\"low\":\"u128\",\"high\":\"u128\")");
@@ -29,8 +29,9 @@ fn token_amount_tagged_hash(token: ContractAddress, value: u256) -> felt252 {
 
 #[derive(Drop, Copy)]
 struct InitializeStruct {
-    escrow: EscrowData, 
-    escrow_hash: felt252, 
+    escrow_contract: ContractAddress,
+    escrow_hash: felt252,
+    escrow: EscrowData,
     timeout: u64
 }
 
@@ -38,6 +39,7 @@ impl InitializeStructHashImpl of StructHash<InitializeStruct> {
     fn hash_struct(self: @InitializeStruct) -> felt252 {
         let hash_state = PoseidonTrait::new();
         hash_state.update(INITIALIZE_STRUCT_TYPE_HASH)
+            .update_with(*self.escrow_contract)
             .update(*self.escrow_hash)
             .update_with(*self.escrow.offerer)
             .update_with(*self.escrow.claimer)
@@ -60,19 +62,21 @@ impl InitializeStructHashImpl of StructHash<InitializeStruct> {
 }
 
 //Computes the init message sighash
-pub fn get_init_sighash(escrow: EscrowData, escrow_hash: felt252, timeout: u64, signer: ContractAddress) -> felt252 {
+pub fn get_init_sighash(escrow_contract: ContractAddress, escrow: EscrowData, escrow_hash: felt252, timeout: u64, signer: ContractAddress) -> felt252 {
     InitializeStruct {
-        escrow,
+        escrow_contract,
         escrow_hash,
+        escrow,
         timeout: timeout.into()
     }.get_message_hash(signer)
 }
 
 const REFUND_STRUCT_TYPE_HASH: felt252 =
-    selector!("\"Refund\"(\"Swap hash\":\"felt\",\"Timeout\":\"timestamp\")");
+    selector!("\"Refund\"(\"Escrow contract\":\"ContractAddress\",\"Swap hash\":\"felt\",\"Timeout\":\"timestamp\")");
 
 #[derive(Drop, Copy, Hash)]
 struct RefundStruct {
+    escrow_contract: ContractAddress,
     escrow_hash: felt252,
     timeout: u128
 }
@@ -85,8 +89,9 @@ impl RefundStructHashImpl of StructHash<RefundStruct> {
 }
 
 //Computes the refund message sighash
-pub fn get_refund_sighash(escrow_hash: felt252, timeout: u64, signer: ContractAddress) -> felt252 {
+pub fn get_refund_sighash(escrow_contract: ContractAddress, escrow_hash: felt252, timeout: u64, signer: ContractAddress) -> felt252 {
     RefundStruct {
+        escrow_contract: escrow_contract,
         escrow_hash: escrow_hash,
         timeout: timeout.into()
     }.get_message_hash(signer)
