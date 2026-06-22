@@ -101,11 +101,11 @@ pub mod EscrowManager {
                 // otherwise there is no harm done to the claimer even if he were to be spammed
                 // with many escrows
                 if escrow.is_tracking_reputation() {
-                    snip6::verify_signature(escrow.claimer, sighash::get_init_sighash(escrow, escrow_hash, timeout, escrow.claimer), signature);
+                    snip6::verify_signature(escrow.claimer, sighash::get_init_sighash(execution_info.contract_address, escrow, escrow_hash, timeout, escrow.claimer), signature);
                 }
             } else if caller == escrow.claimer {
                 //In this case we always require signature because we are taking funds from the offerer
-                snip6::verify_signature(escrow.offerer, sighash::get_init_sighash(escrow, escrow_hash, timeout, escrow.offerer), signature);
+                snip6::verify_signature(escrow.offerer, sighash::get_init_sighash(execution_info.contract_address, escrow, escrow_hash, timeout, escrow.offerer), signature);
             } else {
                 panic(array!['init: caller_address'])
             };
@@ -216,7 +216,7 @@ pub mod EscrowManager {
             let escrow_hash = self.escrow_storage._finalize(escrow, false);
 
             //Check refund signature
-            let sighash = sighash::get_refund_sighash(escrow_hash, timeout, escrow.claimer);
+            let sighash = sighash::get_refund_sighash(execution_info.contract_address, escrow_hash, timeout, escrow.claimer);
             snip6::verify_signature(escrow.claimer, sighash, signature);
 
             //Update reputation
