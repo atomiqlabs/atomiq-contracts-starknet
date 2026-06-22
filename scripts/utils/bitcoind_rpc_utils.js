@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const bitcoindRpc = process.env.BITCOIND_RPC ?? "https://bitcoin-mainnet.public.blastapi.io";
+const bitcoindRpc = process.env.BITCOIND_RPC ?? "https://bitcoin-rpc.publicnode.com/";
 let headers = {};
 if(process.env.BITCOIND_USERNAME || process.env.BITCOIND_PASSWORD) {
     headers = {
