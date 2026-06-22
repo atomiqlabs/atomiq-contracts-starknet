@@ -1,4 +1,5 @@
 use crate::constants;
+use core::num::traits::SaturatingSub;
 
 #[cfg(target: 'test')]
 use core::integer::{u512_safe_div_rem_by_u256};
@@ -20,7 +21,7 @@ pub const TARGET_TIMESPAN_MUL_4: u32 = constants::TARGET_TIMESPAN_u32 * 4;
 #[cfg(target: 'test')]
 #[inline(always)]
 pub fn compute_new_target_test(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
-    let mut time_span = prev_time - start_time;
+    let mut time_span = prev_time.saturating_sub(start_time);
 
     //Difficulty increase/decrease multiples are clamped between 0.25 (-75%) and 4 (+300%)
     if time_span < TARGET_TIMESPAN_DIV_4 {
@@ -40,7 +41,7 @@ pub fn compute_new_target_test(prev_time: u32, start_time: u32, prev_target: u25
 // new_difficulty_target = prev_difficulty_target * (timespan / target_timespan)
 #[inline(always)]
 pub fn compute_new_target_release(prev_time: u32, start_time: u32, prev_target: u256) -> u256 {
-    let mut time_span = prev_time - start_time;
+    let mut time_span = prev_time.saturating_sub(start_time);
 
     //Difficulty increase/decrease multiples are clamped between 0.25 (-75%) and 4 (+300%)
     if time_span < TARGET_TIMESPAN_DIV_4 {
