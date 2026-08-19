@@ -21,6 +21,7 @@ openzeppelin_utils = "1.0.0"
 common.workspace = true
 erc20_utils.workspace = true
 execution_contract.workspace = true
+openzeppelin_security = "1.0.0"
 
 [dev-dependencies]
 assert_macros.workspace = true

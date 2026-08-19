@@ -36,10 +36,14 @@ pub mod EscrowManager {
     use crate::components::reputation::reputation;
     use crate::components::escrow_storage::escrow_storage;
     use execution_contract::{IExecutionContractDispatcher, IExecutionContractDispatcherTrait};
+    use openzeppelin_security::ReentrancyGuardComponent;
     
     component!(path: lp_vault, storage: lp_vault, event: LPVaultEvent);
     component!(path: reputation, storage: reputation, event: ReputationTrackerEvent);
     component!(path: escrow_storage, storage: escrow_storage, event: EscrowStorageEvent);
+    component!(
+        path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent
+    );
 
     #[storage]
     struct Storage {
@@ -50,7 +54,10 @@ pub mod EscrowManager {
         #[substorage(v0)]
         escrow_storage: escrow_storage::Storage,
 
-        execution_contract: ContractAddress
+        execution_contract: ContractAddress,
+        
+        #[substorage(v0)]
+        reentrancy_guard: ReentrancyGuardComponent::Storage
     }
 
     #[abi(embed_v0)]
@@ -65,6 +72,8 @@ pub mod EscrowManager {
     impl EscrowStorageImpl = escrow_storage::EscrowStorage<ContractState>;
     impl EscrowStorageInternalImpl = escrow_storage::InternalImpl<ContractState>;
 
+    impl ReentrancyGuardInternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
+
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
@@ -74,7 +83,10 @@ pub mod EscrowManager {
 
         Initialize: events::Initialize,
         Claim: events::Claim,
-        Refund: events::Refund
+        Refund: events::Refund,
+        
+        #[flat]
+        ReentrancyGuardEvent: ReentrancyGuardComponent::Event
     }
 
     #[constructor]
@@ -87,6 +99,8 @@ pub mod EscrowManager {
         //extra_data parameter is used for data-availability/propagation of escrow-specific extraneous data on-chain
         // and is therefore unused in the function itself
         fn initialize(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64, extra_data: Span<felt252>) {
+            self.reentrancy_guard.start();
+
             //Check expiry
             let execution_info = get_execution_info();
             assert(execution_info.block_info.block_timestamp < timeout, 'init: Authorization expired');
@@ -127,9 +141,13 @@ pub mod EscrowManager {
                 claim_handler: escrow.claim_handler,
                 refund_handler: escrow.refund_handler
             });
+
+            self.reentrancy_guard.end();
         }
 
         fn claim(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>) {
+            self.reentrancy_guard.start();
+            
             //Check committed
             let escrow_hash = self.escrow_storage._finalize(escrow, true);
 
@@ -169,9 +187,13 @@ pub mod EscrowManager {
                 witness_result: claim_result,
                 claim_handler: escrow.claim_handler
             });
+
+            self.reentrancy_guard.end();
         }
 
         fn refund(ref self: ContractState, escrow: EscrowData, witness: Array<felt252>) {
+            self.reentrancy_guard.start();
+
             //Check committed
             let escrow_hash = self.escrow_storage._finalize(escrow, false);
 
@@ -205,9 +227,13 @@ pub mod EscrowManager {
                 witness_result: refund_result,
                 refund_handler: escrow.refund_handler
             });
+
+            self.reentrancy_guard.end();
         }
 
         fn cooperative_refund(ref self: ContractState, escrow: EscrowData, signature: Array<felt252>, timeout: u64) {
+            self.reentrancy_guard.start();
+
             //Check expiry
             let execution_info = get_execution_info();
             assert(execution_info.block_info.block_timestamp < timeout, 'coop_refund: Auth expired');
@@ -240,6 +266,8 @@ pub mod EscrowManager {
                 witness_result: array![].span(),
                 refund_handler: 0.try_into().unwrap()
             });
+            
+            self.reentrancy_guard.end();
         }
     }
 

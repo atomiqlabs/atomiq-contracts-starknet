@@ -70,6 +70,7 @@ dependencies = [
  "openzeppelin_access",
  "openzeppelin_account",
  "openzeppelin_introspection",
+ "openzeppelin_security",
  "openzeppelin_token",
  "openzeppelin_utils",
  "snforge_std",
