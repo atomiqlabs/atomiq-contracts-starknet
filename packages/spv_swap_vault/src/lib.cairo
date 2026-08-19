@@ -72,7 +72,7 @@ pub mod SpvVaultManager {
 
     use core::starknet::{get_caller_address, ContractAddress, SyscallResult};
     use core::starknet::storage::{
-        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map, StoragePath, Mutable
+        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use core::hash::{HashStateTrait};
     use core::poseidon::PoseidonTrait;
