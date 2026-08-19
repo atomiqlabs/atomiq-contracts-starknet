@@ -249,10 +249,6 @@ pub mod SpvVaultManager {
             //Make sure the transaction properly spends last vault UTXO
             assert(result.get_in(0).expect('claim: empty inputs').unbox().get_utxo()==current_state.utxo, 'claim: incorrect in_0 utxo');
 
-            //Verify blockheader against the light client
-            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: current_state.relay_contract}.verify_blockheader(blockheader);
-            assert(block_confirmations>=current_state.confirmations.into(), 'claim: confirmations');
-
             let transaction_hash = result.get_hash();
 
             //Verify merkle proof
@@ -348,6 +344,13 @@ pub mod SpvVaultManager {
                     });
                 }
             }
+            
+            //IMPORTANT NOTE: This is actually an `effect` not a `check` in the check-state-effects flow. Starknet's runtime
+            // doesn't differentiate between view-only and state-mutating calls, hence this can reenter!
+            //PS: This is retarded, IK
+            //Verify blockheader against the light client
+            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: current_state.relay_contract}.verify_blockheader(blockheader);
+            assert(block_confirmations>=current_state.confirmations.into(), 'claim: confirmations');
         }
     }
 
