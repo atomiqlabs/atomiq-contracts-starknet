@@ -7,6 +7,8 @@ use starknet::{ContractAddress};
 use btc_utils::byte_array::ByteArrayReader;
 use btc_relay::structs::stored_blockheader::StoredBlockHeader;
 
+use openzeppelin_security::ReentrancyGuardComponent;
+
 use crate::state::{SpvVaultStateStorePacking, SpvVaultState, SpvVaultImplTrait};
 use crate::structs::{BitcoinVaultTransactionData};
 
@@ -84,6 +86,12 @@ pub mod SpvVaultManager {
     use crate::structs::{BitcoinVaultTransactionDataImpl};
     use super::*;
 
+    component!(
+        path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent
+    );
+
+    impl InternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
+
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
@@ -91,14 +99,20 @@ pub mod SpvVaultManager {
         Deposited: events::Deposited,
         Claimed: events::Claimed,
         Fronted: events::Fronted,
-        Closed: events::Closed
+        Closed: events::Closed,
+    
+        #[flat]
+        ReentrancyGuardEvent: ReentrancyGuardComponent::Event
     }
 
     #[storage]
     struct Storage {
         execution_contract: ContractAddress,
         vaults: Map<ContractAddress, Map<felt252, SpvVaultState>>,
-        liquidity_fronts: Map<ContractAddress, Map<felt252, Map<felt252, ContractAddress>>>
+        liquidity_fronts: Map<ContractAddress, Map<felt252, Map<felt252, ContractAddress>>>,
+
+        #[substorage(v0)]
+        reentrancy_guard: ReentrancyGuardComponent::Storage
     }
 
     #[constructor]
@@ -114,6 +128,8 @@ pub mod SpvVaultManager {
             relay_contract: ContractAddress, utxo: (u256, u32), confirmations: u8,
             token_0: ContractAddress, token_1: ContractAddress, token_0_multiplier: felt252, token_1_multiplier: felt252
         ) {
+            self.reentrancy_guard.start();
+
             assert(utxo != (0, 0), 'utxo is zero');
 
             //Check vault is not opened
@@ -146,6 +162,8 @@ pub mod SpvVaultManager {
                 vault_id: vault_id,
                 vout: vout
             });
+
+            self.reentrancy_guard.end();
         }
 
         //Deposits funds into the specific vault
@@ -153,6 +171,8 @@ pub mod SpvVaultManager {
             ref self: ContractState, owner: ContractAddress, vault_id: felt252, 
             raw_token_0_amount: u64, raw_token_1_amount: u64
         ) {
+            self.reentrancy_guard.start();
+
             //Check vault is opened
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
             let mut current_state = storage_ptr.read();
@@ -174,6 +194,8 @@ pub mod SpvVaultManager {
                 amounts: (raw_token_0_amount, raw_token_1_amount),
                 deposit_count: current_state.deposit_count
             });
+            
+            self.reentrancy_guard.end();
         }
 
         //Fronts the liquidity for a specific withdrawal bitcoin transaction
@@ -181,6 +203,8 @@ pub mod SpvVaultManager {
             ref self: ContractState, owner: ContractAddress, vault_id: felt252,
             withdraw_sequence: u32, btc_tx_hash: u256, data: BitcoinVaultTransactionData
         ) {
+            self.reentrancy_guard.start();
+
             let caller = get_caller_address();
 
             //Check vault is opened
@@ -228,6 +252,8 @@ pub mod SpvVaultManager {
                 caller: caller,
                 amounts: raw_amount
             });
+
+            self.reentrancy_guard.end();
         }
 
         //Claim funds from the vault, given a proper bitcoin transaction as verified through the relay contract
@@ -235,6 +261,8 @@ pub mod SpvVaultManager {
             ref self: ContractState, owner: ContractAddress, vault_id: felt252,
             transaction: ByteArray, blockheader: StoredBlockHeader, merkle_proof: Span<[u32; 8]>, position: u32
         ) {
+            self.reentrancy_guard.start();
+            
             let caller = get_caller_address();
 
             //Check vault is opened
@@ -351,6 +379,8 @@ pub mod SpvVaultManager {
             //Verify blockheader against the light client
             let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: current_state.relay_contract}.verify_blockheader(blockheader);
             assert(block_confirmations>=current_state.confirmations.into(), 'claim: confirmations');
+
+            self.reentrancy_guard.end();
         }
     }
 

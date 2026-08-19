@@ -20,6 +20,7 @@ erc20_utils.workspace = true
 execution_contract.workspace = true
 btc_relay.workspace = true
 btc_utils.workspace = true
+openzeppelin_security = "1.0.0"
 
 [dev-dependencies]
 assert_macros.workspace = true
