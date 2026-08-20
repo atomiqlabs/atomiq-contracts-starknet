@@ -17,7 +17,6 @@ pub impl SpanHashImpl<HashState, +HashStateTrait<HashState>, +Drop<HashState>, T
 mod tests {
     use super::*;
 
-    use core::hash::{HashStateTrait, HashStateExTrait};
     use core::poseidon::PoseidonTrait;
 
     #[test]

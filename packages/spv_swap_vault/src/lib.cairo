@@ -67,7 +67,6 @@ pub trait ISpvVaultManagerReadOnly<TContractState> {
 pub mod SpvVaultManager {
     use starknet::SyscallResultTrait;
     use super::structs::BitcoinVaultTransactionDataTrait;
-    use super::SpvVaultImplTrait;
     use core::num::traits::Zero;
 
     use starknet::{get_caller_address, ContractAddress, SyscallResult};
