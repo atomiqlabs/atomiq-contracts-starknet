@@ -33,6 +33,25 @@ pub fn deploy_btc_relay(stored_header: StoredBlockHeader, block_height: u32) -> 
     contract_address
 }
 
+//Deploys a malicious btc relay which attempts to re-enter the claim() function of the spv swap vault
+pub fn deploy_malicious_btc_relay(
+    spv_vault: ContractAddress,
+    owner: ContractAddress,
+    vault_id: felt252,
+    transaction: ByteArray
+) -> ContractAddress {
+    let contract = declare("MaliciousBtcRelay").unwrap().contract_class();
+
+    let mut arr: Array<felt252> = array![];
+    spv_vault.serialize(ref arr);
+    owner.serialize(ref arr);
+    vault_id.serialize(ref arr);
+    transaction.serialize(ref arr);
+    let (contract_address, _) = contract.deploy(@arr).unwrap();
+
+    contract_address
+}
+
 pub fn get_btc_relay_with_merkle_root(merkle_root: [u32; 8], confirmations: u32) -> (StoredBlockHeader, ContractAddress) {
     let blockheader = StoredBlockHeader {
         blockheader: BlockHeader {
