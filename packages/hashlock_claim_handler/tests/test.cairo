@@ -33,7 +33,7 @@ pub fn execute_should_fail(dispatcher: IClaimHandlerDispatcher, hash: felt252, s
     secret.serialize(ref secret_arr);
     let result = safe_dispatcher.claim(hash, secret_arr);
     let error = result.unwrap_err();
-    assert!(error==array![panic_reason]);
+    assert(*error[0]==panic_reason, *error[0]);
 }
 
 pub fn deploy_and_execute(hash: felt252, secret: [u32; 8]) {

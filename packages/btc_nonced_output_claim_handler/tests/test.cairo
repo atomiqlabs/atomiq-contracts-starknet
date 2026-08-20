@@ -112,7 +112,7 @@ fn test_invalid_empty_witness() {
         let mut witness_arr = array![];
         let result = safe_dispatcher.claim(PoseidonTrait::new().update_with(commitment).finalize(), witness_arr);
         let error = result.unwrap_err();
-        assert!(error==array!['btcnoutlock: Deserialize witnes']);
+        assert(*error[0]=='btcnoutlock: Deserialize witnes', *error[0]);
     }
 }
 

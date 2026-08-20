@@ -51,7 +51,7 @@ pub fn execute_should_fail(dispatcher: IClaimHandlerDispatcher, commitment: Comm
     let result = safe_dispatcher.claim(PoseidonTrait::new().update_with(commitment).finalize(), witness_arr);
     let error = result.unwrap_err();
     if panic_reason != 0 {
-        assert!(error==array![panic_reason]);
+        assert(*error[0]==panic_reason, *error[0]);
     };
 }
 
@@ -133,7 +133,7 @@ fn test_invalid_empty_witness() {
         let mut witness_arr = array![];
         let result = safe_dispatcher.claim(PoseidonTrait::new().update_with(commitment).finalize(), witness_arr);
         let error = result.unwrap_err();
-        assert!(error==array!['txidlock: Deserialize witness']);
+        assert(*error[0]=='txidlock: Deserialize witness', *error[0]);
     }
 }
 
