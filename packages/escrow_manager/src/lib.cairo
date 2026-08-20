@@ -23,8 +23,8 @@ pub trait IEscrowManager<TContractState> {
 pub mod EscrowManager {
     use core::num::traits::SaturatingSub;
     use starknet::event::EventEmitter;
-    use core::starknet::{get_execution_info, get_caller_address};
-    use core::starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+    use starknet::{get_execution_info, get_caller_address};
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use starknet::contract_address::ContractAddress;
     use crate::structs::escrow::{EscrowExecution, EscrowData, EscrowDataImpl, EscrowDataImplTrait};
     use crate::sighash;

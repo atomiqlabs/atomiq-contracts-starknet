@@ -4,7 +4,7 @@
 #[starknet::contract]
 mod TimelockRefundHandler {
     use common::handlers::refund::IRefundHandler;
-    use core::starknet::get_block_timestamp;
+    use starknet::get_block_timestamp;
 
     #[storage]
     struct Storage {}

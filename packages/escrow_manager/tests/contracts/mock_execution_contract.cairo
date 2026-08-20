@@ -2,10 +2,10 @@
 pub mod MockExecutionContract {
     use starknet::contract_address::ContractAddress;
 
-    use core::starknet::{get_caller_address};
+    use starknet::{get_caller_address};
     use core::hash::{HashStateTrait, HashStateExTrait};
     use core::poseidon::PoseidonTrait;
-    use core::starknet::storage::{
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     

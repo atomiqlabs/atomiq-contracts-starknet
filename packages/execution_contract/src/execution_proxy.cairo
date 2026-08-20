@@ -11,7 +11,7 @@ pub trait IExecutionProxy<TContractState> {
 
 #[starknet::contract]
 pub mod ExecutionProxy {
-    use core::starknet::{get_contract_address};
+    use starknet::{get_contract_address};
     use starknet::contract_address::ContractAddress;
     use crate::structs::ContractCall;
     use starknet::syscalls::call_contract_syscall;

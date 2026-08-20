@@ -1,5 +1,5 @@
 use openzeppelin_utils::snip12::OffchainMessageHash;
-use core::starknet::ContractAddress;
+use starknet::ContractAddress;
 use core::poseidon::PoseidonTrait;
 use core::hash::{HashStateTrait, HashStateExTrait};
 use openzeppelin_utils::snip12::{StructHash, SNIP12Metadata};

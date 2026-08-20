@@ -1,5 +1,5 @@
 use starknet::contract_address::ContractAddress;
-use core::starknet::storage_access::StorePacking;
+use starknet::storage_access::StorePacking;
 
 //On-chain saved reputation state
 #[derive(Drop, Serde, PartialEq, Debug, Copy)]

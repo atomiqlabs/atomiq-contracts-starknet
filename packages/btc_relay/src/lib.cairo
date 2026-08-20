@@ -36,8 +36,8 @@ pub trait IBtcRelayReadOnly<TContractState> {
 #[starknet::contract]
 pub mod BtcRelay {
     use super::IBtcRelayReadOnly;
-use core::starknet::{get_caller_address, get_block_timestamp, ContractAddress};
-    use core::starknet::storage::{
+use starknet::{get_caller_address, get_block_timestamp, ContractAddress};
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use crate::structs::blockheader::{BlockHeader, BlockHeaderSha256Hash};

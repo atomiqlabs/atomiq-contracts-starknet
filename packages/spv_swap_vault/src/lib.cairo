@@ -70,8 +70,8 @@ pub mod SpvVaultManager {
     use super::SpvVaultImplTrait;
     use core::num::traits::Zero;
 
-    use core::starknet::{get_caller_address, ContractAddress, SyscallResult};
-    use core::starknet::storage::{
+    use starknet::{get_caller_address, ContractAddress, SyscallResult};
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use core::hash::{HashStateTrait};

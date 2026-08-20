@@ -41,10 +41,10 @@ pub mod ExecutionContract {
 use starknet::contract_address::ContractAddress;
     use starknet::syscalls::deploy_syscall;
 
-    use core::starknet::{get_caller_address, get_block_timestamp};
+    use starknet::{get_caller_address, get_block_timestamp};
     use core::hash::{HashStateTrait, HashStateExTrait};
     use core::poseidon::PoseidonTrait;
-    use core::starknet::storage::{
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     

@@ -1,7 +1,7 @@
 
 #[starknet::contract]
 pub mod MockBtcRelay {
-    use core::starknet::storage::{
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use btc_relay::structs::blockheader::{BlockHeaderSha256Hash};
