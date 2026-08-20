@@ -72,7 +72,7 @@ use starknet::contract_address::ContractAddress;
     #[constructor]
     fn constructor(ref self: ContractState) {
         let (execution_proxy_address, _) = deploy_syscall(
-            0x11c5e6e9fac6c0bc989ff1204f5c2edbadde6cd4fa8ca4f05abf803f257711c.try_into().unwrap(),
+            0x7f4a720debf069ed318c0987a85e8ce79d01d16ca91d9fd8c53e4ea42df3248.try_into().unwrap(),
             0,
             array![].span(),
             false
