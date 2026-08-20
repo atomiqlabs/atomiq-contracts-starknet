@@ -39,6 +39,7 @@ pub fn create_execution(
     create_and_assert(context, funder, owner, amount, fee, execution_hash, expiry, creator_salt)
 }
 
+#[feature("safe_dispatcher")]
 pub fn create_and_assert(
     context: Context,
     funder: ContractAddress,

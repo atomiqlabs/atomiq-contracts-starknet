@@ -21,6 +21,7 @@ use crate::utils::erc20;
 
 use openzeppelin_token::erc20::interface::{ERC20ABIDispatcherTrait};
 
+#[feature("safe_dispatcher")]
 pub fn create_spv_vault(
     context: Context,
     owner: ContractAddress,
@@ -107,6 +108,7 @@ pub fn fund_spv_vault(
     deposit_and_assert(context, owner, vault_id, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 }
 
+#[feature("safe_dispatcher")]
 pub fn deposit_and_assert(
     context: Context,
     owner: ContractAddress,
@@ -195,6 +197,7 @@ pub fn mint_and_front(
     );
 }
 
+#[feature("safe_dispatcher")]
 pub fn front_and_assert(
     context: Context,
     fronter: ContractAddress,
@@ -261,6 +264,7 @@ pub fn front_and_assert(
     }
 }
 
+#[feature("safe_dispatcher")]
 pub fn claim_and_assert(
     context: Context,
     fronter: ContractAddress,

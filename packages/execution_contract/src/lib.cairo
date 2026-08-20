@@ -128,6 +128,7 @@ use starknet::contract_address::ContractAddress;
             });
         }
 
+        #[feature("safe_dispatcher")]
         fn execute(ref self: ContractState, owner: ContractAddress, salt: felt252, calls: Span<ContractCall>, drain_tokens: Span<ContractAddress>, clear_all: bool) {
             let execution_ptr = self.executions.entry(owner).entry(salt);
             let mut execution = execution_ptr.read();

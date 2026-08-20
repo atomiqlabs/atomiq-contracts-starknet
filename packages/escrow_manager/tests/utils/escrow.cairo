@@ -116,6 +116,7 @@ pub fn init_escrow_and_assert(
     _init_escrow_and_assert(context, sender, escrow, signer, timeout, current_time, false, false)
 }
 
+#[feature("safe_dispatcher")]
 pub fn _init_escrow_and_assert(
     context: Context,
     sender: ContractAddress, escrow: structs::escrow::EscrowData, signer: KeyPair<felt252, felt252>,

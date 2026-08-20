@@ -27,6 +27,7 @@ pub fn execute(dispatcher: IClaimHandlerDispatcher, hash: felt252, secret: [u32;
     assert!(result==secret_arr_span);
 }
 
+#[feature("safe_dispatcher")]
 pub fn execute_should_fail(dispatcher: IClaimHandlerDispatcher, hash: felt252, secret: [u32; 8], panic_reason: felt252) {
     let safe_dispatcher = IClaimHandlerSafeDispatcher { contract_address: dispatcher.contract_address };
     let mut secret_arr = array![];

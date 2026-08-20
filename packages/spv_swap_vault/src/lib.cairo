@@ -451,6 +451,7 @@ pub mod SpvVaultManager {
         }
 
         //Create the execution in execution contract
+        #[feature("safe_dispatcher")]
         fn _to_execution_contract(
             self: @ContractState,
             owner: ContractAddress, 

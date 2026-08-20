@@ -18,6 +18,7 @@ use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 use crate::utils::contract::{Context, get_context};
 use crate::utils::execution::create_execution;
 
+#[feature("safe_dispatcher")]
 fn refund_and_assert(
     context: Context,
     owner: ContractAddress,

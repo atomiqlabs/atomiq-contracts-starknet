@@ -25,6 +25,7 @@ use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
 const COOP_REFUND_BLOCK_NUMBER: u64 = 3876732256;
 
+#[feature("safe_dispatcher")]
 fn coop_refund_escrow(
     context: Context,
     escrow: structs::escrow::EscrowData,

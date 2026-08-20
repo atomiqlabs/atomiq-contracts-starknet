@@ -26,6 +26,7 @@ pub fn execute(dispatcher: IRefundHandlerDispatcher, refund_data: felt252, curre
     assert!(result==array![refund_data].span());
 }
 
+#[feature("safe_dispatcher")]
 pub fn execute_should_fail(dispatcher: IRefundHandlerDispatcher, refund_data: felt252, current_time: u64, panic_reason: felt252) {
     cheat_block_timestamp(dispatcher.contract_address, current_time, CheatSpan::Indefinite);
     let safe_dispatcher = IRefundHandlerSafeDispatcher { contract_address: dispatcher.contract_address };

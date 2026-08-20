@@ -20,6 +20,7 @@ use crate::utils::execution::create_execution;
 use crate::contracts::test_contract::{TestContract, TestEvent};
 use crate::utils::erc20;
 
+#[feature("safe_dispatcher")]
 fn execute_and_assert(
     context: Context,
     owner: ContractAddress,
