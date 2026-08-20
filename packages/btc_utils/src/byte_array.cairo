@@ -254,572 +254,595 @@ mod tests {
     fn test_random() {
         // Random test cases testing all the functionality
 
-        let mut serialized_byte_array = array![0x2, 0x90239d8b630591030c86e7ab106a4dc4b4e3d18a36a031e26bbc8ecbe6e685, 0x023d315a6b0067287cc438bdf3f5fea790292a2dc7b5475d59f56d137a8ac0, 0xf83da1a8f744cd5abff9be14fb61c137673073, 0x13].span();
+        let mut serialized_byte_array = array![0x3, 0xf70c6e43aa9ef2fb78eb07668e1f6fc378423ff0faa7b3a24e514490ce21fe, 0x3976e8c67c2931ace5a6844c54a8bb85cf1954c15aac0c90c49d06f10b705c, 0x2963337539902daddcbadec150f4560059a8f1d92ccc0aed2a02f302e3dd7c, 0xe861fd11d483d909bc9a, 0xa].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(56), 0x6df5);
-        assert_eq!(buffer.read_u32_le(21), 0x6be231a0);
-        assert_eq!(buffer.read_u64_le(0), 0x39105638b9d2390);
-        assert_eq!(buffer.read_u256(5), 0x0591030c86e7ab106a4dc4b4e3d18a36a031e26bbc8ecbe6e685023d315a6b00);
-        assert_eq!(buffer.read_bytes31(28), 0xe6e685023d315a6b0067287cc438bdf3f5fea790292a2dc7b5475d59f56d13);
-        assert_eq!(buffer.read_felt252(16), 0x4e3d18a36a0306c6bbc8ecbe6e685023d315a6b0067287cc438bdf3f5fea77a);
-        assert_eq!(buffer.read_partial_felt252(72, 1), 0xbe);
-        assert_eq!(buffer.read_partial_felt252(39, 2), 0x7cc4);
-        assert_eq!(buffer.read_partial_felt252(9, 3), 0x86e7ab);
-        assert_eq!(buffer.read_partial_felt252(15, 4), 0xc4b4e3d1);
-        assert_eq!(buffer.read_partial_felt252(16, 5), 0xb4e3d18a36);
-        assert_eq!(buffer.read_partial_felt252(51, 6), 0xc7b5475d59f5);
-        assert_eq!(buffer.read_partial_felt252(59, 7), 0x7a8ac0f83da1a8);
-        assert_eq!(buffer.read_partial_felt252(66, 8), 0xf744cd5abff9be14);
-        assert_eq!(buffer.read_partial_felt252(2, 9), 0x9d8b630591030c86e7);
-        assert_eq!(buffer.read_partial_felt252(13, 10), 0x6a4dc4b4e3d18a36a031);
-        assert_eq!(buffer.read_partial_felt252(23, 11), 0xe26bbc8ecbe6e685023d31);
-        assert_eq!(buffer.read_partial_felt252(30, 12), 0x85023d315a6b0067287cc438);
-        assert_eq!(buffer.read_partial_felt252(37, 13), 0x67287cc438bdf3f5fea790292a);
-        assert_eq!(buffer.read_partial_felt252(45, 14), 0xfea790292a2dc7b5475d59f56d13);
-        assert_eq!(buffer.read_partial_felt252(29, 15), 0xe685023d315a6b0067287cc438bdf3);
-        assert_eq!(buffer.read_partial_felt252(20, 16), 0x36a031e26bbc8ecbe6e685023d315a6b);
-        assert_eq!(buffer.read_partial_felt252(49, 17), 0x2a2dc7b5475d59f56d137a8ac0f83da1a8);
-        assert_eq!(buffer.read_partial_felt252(58, 18), 0x137a8ac0f83da1a8f744cd5abff9be14fb61);
-        assert_eq!(buffer.read_partial_felt252(2, 19), 0x9d8b630591030c86e7ab106a4dc4b4e3d18a36);
-        assert_eq!(buffer.read_partial_felt252(56, 20), 0xf56d137a8ac0f83da1a8f744cd5abff9be14fb61);
-        assert_eq!(buffer.read_partial_felt252(41, 21), 0x38bdf3f5fea790292a2dc7b5475d59f56d137a8ac0);
-        assert_eq!(buffer.read_partial_felt252(15, 22), 0xc4b4e3d18a36a031e26bbc8ecbe6e685023d315a6b00);
-        assert_eq!(buffer.read_partial_felt252(6, 23), 0x91030c86e7ab106a4dc4b4e3d18a36a031e26bbc8ecbe6);
-        assert_eq!(buffer.read_partial_felt252(46, 24), 0xa790292a2dc7b5475d59f56d137a8ac0f83da1a8f744cd5a);
-        assert_eq!(buffer.read_partial_felt252(24, 25), 0x6bbc8ecbe6e685023d315a6b0067287cc438bdf3f5fea79029);
-        assert_eq!(buffer.read_partial_felt252(47, 26), 0x90292a2dc7b5475d59f56d137a8ac0f83da1a8f744cd5abff9be);
-        assert_eq!(buffer.read_partial_felt252(16, 27), 0xb4e3d18a36a031e26bbc8ecbe6e685023d315a6b0067287cc438bd);
-        assert_eq!(buffer.read_partial_felt252(7, 28), 0x30c86e7ab106a4dc4b4e3d18a36a031e26bbc8ecbe6e685023d315a);
-        assert_eq!(buffer.read_partial_felt252(35, 29), 0x6b0067287cc438bdf3f5fea790292a2dc7b5475d59f56d137a8ac0f83d);
-        assert_eq!(buffer.read_partial_felt252(28, 30), 0xe6e685023d315a6b0067287cc438bdf3f5fea790292a2dc7b5475d59f56d);
-        assert_eq!(buffer.read_partial_felt252(39, 31), 0x7cc438bdf3f5fea790292a2dc7b5475d59f56d137a8ac0f83da1a8f744cd5a);
-        assert_eq!(buffer.read_partial_felt252(42, 32), 0x5f3f5fea79027a32dc7b5475d59f56d137a8ac0f83da1a8f744cd5abff9bdfd);
-        assert_eq!(buffer.hash_sha256(), [0xf18a184a, 0x3502d4a0, 0x4b79dee7, 0x3bc88088, 0xa039ee13, 0x41f25121, 0xb233e4d3, 0x1fff37eb]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x7b403d51, 0xa9c1cbfa, 0x832a33e9, 0xbbfa5db5, 0x1b510b5c, 0x63a4fcf8, 0xb7c617c6, 0xf260c47]);
-        assert_eq!(buffer.hash_poseidon_range(54, 73), 0x7b61f410ea95ed74f1982d61f1f4995022165fffc8ddb74ac569bb2909a1858);
-        assert_eq!(buffer.hash_poseidon_range(61, 61), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
-        assert_eq!(buffer.hash_poseidon_range(70, 79), 0x3ef0995919264cd22b6bd6b5b77595cb5943c8dc2c5cb97888e79b159a89a32);
-        assert_eq!(buffer.hash_poseidon_range(46, 80), 0x19b9351dbc9b183bd985866968ac4861d53d71e8d949975b7282060f8164ba6);
-        assert_eq!(buffer.hash_poseidon_range(51, 71), 0x67a6bf4799a7f4c50e069a8cd08926955249d18b8223c8fa08f5a55804f86f2);
+        assert_eq!(buffer.read_u16_le(90), 0xdde3);
+        assert_eq!(buffer.read_u32_le(75), 0x590056f4);
+        assert_eq!(buffer.read_u64_le(69), 0x56f450c1debadcad);
+        assert_eq!(buffer.read_u256(16), 0x78423ff0faa7b3a24e514490ce21fe3976e8c67c2931ace5a6844c54a8bb85cf);
+        assert_eq!(buffer.read_bytes31(10), 0x07668e1f6fc378423ff0faa7b3a24e514490ce21fe3976e8c67c2931ace5a6);
+        assert_eq!(buffer.read_felt252(23), 0x24e514490ce20aa3976e8c67c2931ace5a6844c54a8bb85cf1954c15aac0c7c);
+        assert_eq!(buffer.read_partial_felt252(86, 1), 0x2a);
+        assert_eq!(buffer.read_partial_felt252(71, 2), 0xbade);
+        assert_eq!(buffer.read_partial_felt252(47, 3), 0xcf1954);
+        assert_eq!(buffer.read_partial_felt252(74, 4), 0x50f45600);
+        assert_eq!(buffer.read_partial_felt252(31, 5), 0x3976e8c67c);
+        assert_eq!(buffer.read_partial_felt252(61, 6), 0x5c2963337539);
+        assert_eq!(buffer.read_partial_felt252(36, 7), 0x2931ace5a6844c);
+        assert_eq!(buffer.read_partial_felt252(27, 8), 0x90ce21fe3976e8c6);
+        assert_eq!(buffer.read_partial_felt252(36, 9), 0x2931ace5a6844c54a8);
+        assert_eq!(buffer.read_partial_felt252(39, 10), 0xe5a6844c54a8bb85cf19);
+        assert_eq!(buffer.read_partial_felt252(26, 11), 0x4490ce21fe3976e8c67c29);
+        assert_eq!(buffer.read_partial_felt252(17, 12), 0x423ff0faa7b3a24e514490ce);
+        assert_eq!(buffer.read_partial_felt252(40, 13), 0xa6844c54a8bb85cf1954c15aac);
+        assert_eq!(buffer.read_partial_felt252(18, 14), 0x3ff0faa7b3a24e514490ce21fe39);
+        assert_eq!(buffer.read_partial_felt252(43, 15), 0x54a8bb85cf1954c15aac0c90c49d06);
+        assert_eq!(buffer.read_partial_felt252(26, 16), 0x4490ce21fe3976e8c67c2931ace5a684);
+        assert_eq!(buffer.read_partial_felt252(38, 17), 0xace5a6844c54a8bb85cf1954c15aac0c90);
+        assert_eq!(buffer.read_partial_felt252(75, 18), 0xf4560059a8f1d92ccc0aed2a02f302e3dd7c);
+        assert_eq!(buffer.read_partial_felt252(48, 19), 0x1954c15aac0c90c49d06f10b705c2963337539);
+        assert_eq!(buffer.read_partial_felt252(45, 20), 0xbb85cf1954c15aac0c90c49d06f10b705c296333);
+        assert_eq!(buffer.read_partial_felt252(36, 21), 0x2931ace5a6844c54a8bb85cf1954c15aac0c90c49d);
+        assert_eq!(buffer.read_partial_felt252(61, 22), 0x5c2963337539902daddcbadec150f4560059a8f1d92c);
+        assert_eq!(buffer.read_partial_felt252(72, 23), 0xdec150f4560059a8f1d92ccc0aed2a02f302e3dd7ce861);
+        assert_eq!(buffer.read_partial_felt252(21, 24), 0xa7b3a24e514490ce21fe3976e8c67c2931ace5a6844c54a8);
+        assert_eq!(buffer.read_partial_felt252(37, 25), 0x31ace5a6844c54a8bb85cf1954c15aac0c90c49d06f10b705c);
+        assert_eq!(buffer.read_partial_felt252(21, 26), 0xa7b3a24e514490ce21fe3976e8c67c2931ace5a6844c54a8bb85);
+        assert_eq!(buffer.read_partial_felt252(55, 27), 0xc49d06f10b705c2963337539902daddcbadec150f4560059a8f1d9);
+        assert_eq!(buffer.read_partial_felt252(14, 28), 0x6fc378423ff0faa7b3a24e514490ce21fe3976e8c67c2931ace5a684);
+        assert_eq!(buffer.read_partial_felt252(33, 29), 0xe8c67c2931ace5a6844c54a8bb85cf1954c15aac0c90c49d06f10b705c);
+        assert_eq!(buffer.read_partial_felt252(36, 30), 0x2931ace5a6844c54a8bb85cf1954c15aac0c90c49d06f10b705c29633375);
+        assert_eq!(buffer.read_partial_felt252(52, 31), 0xac0c90c49d06f10b705c2963337539902daddcbadec150f4560059a8f1d92c);
+        assert_eq!(buffer.read_partial_felt252(8, 32), 0xeb07668e1f6ec478423ff0faa7b3a24e514490ce21fe3976e8c67c2931acd6);
+        assert_eq!(buffer.hash_sha256(), [0x6f9dd863, 0xe70ce644, 0xf3c4aa1e, 0xf3f90567, 0x547ec1b9, 0x972b5e3d, 0xcdef3976, 0x9319102d]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0x365b5f1c, 0x5fca64fd, 0xdeaffec4, 0x37a40389, 0xb191f580, 0x9bc824df, 0x368fc536, 0x7ce44d2f]);
+        assert_eq!(buffer.hash_poseidon_range(102, 102), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
+        assert_eq!(buffer.hash_poseidon_range(88, 99), 0x6f37bb6833875e0fbb66344b2748e0f6d8c582e8b6080f2e6dd4cdf3bd44f82);
+        assert_eq!(buffer.hash_poseidon_range(22, 47), 0x62fcadd11ab3d3464f3dc47f4d595e5197cb7ac48ac4a3e42f3188347f1e3af);
+        assert_eq!(buffer.hash_poseidon_range(86, 97), 0x46c29c067230cc4662357608a567f06a82afba19fd961e0b117433d08f22e41);
+        assert_eq!(buffer.hash_poseidon_range(62, 73), 0x5a5be8749a946c25596af0a5ec68be6c47095a9f9f731f89f8995587da209cf);
 
-        let mut serialized_byte_array = array![0x2, 0xab0b061732f63ab2eeb6bee9239ea45002e1751a2ae29b7fdf3019fac96198, 0x6f2dec8b70a669053c2537689c48259db1d9b0551562b0c038296b46a51dbb, 0x0bf7286f58f97cafb7c5ee632e371b9ed71f731e92cf, 0x16].span();
+        let mut serialized_byte_array = array![0x0, 0x63cc6e19549a103955b46998e6f9ab000a351a3806e4f76f61, 0x19].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(38), 0x3c05);
-        assert_eq!(buffer.read_u32_le(76), 0x1fd79e1b);
-        assert_eq!(buffer.read_u64_le(11), 0x75e10250a49e23e9);
-        assert_eq!(buffer.read_u256(45), 0x259db1d9b0551562b0c038296b46a51dbb0bf7286f58f97cafb7c5ee632e371b);
-        assert_eq!(buffer.read_bytes31(8), 0xeeb6bee9239ea45002e1751a2ae29b7fdf3019fac961986f2dec8b70a66905);
-        assert_eq!(buffer.read_felt252(11), 0x1239ea45002df881a2ae29b7fdf3019fac961986f2dec8b70a669053c25374b);
-        assert_eq!(buffer.read_partial_felt252(36, 1), 0xa6);
-        assert_eq!(buffer.read_partial_felt252(55, 2), 0x3829);
-        assert_eq!(buffer.read_partial_felt252(68, 3), 0x7cafb7);
-        assert_eq!(buffer.read_partial_felt252(50, 4), 0x551562b0);
-        assert_eq!(buffer.read_partial_felt252(41, 5), 0x37689c4825);
-        assert_eq!(buffer.read_partial_felt252(66, 6), 0x58f97cafb7c5);
-        assert_eq!(buffer.read_partial_felt252(55, 7), 0x38296b46a51dbb);
-        assert_eq!(buffer.read_partial_felt252(5, 8), 0xf63ab2eeb6bee923);
-        assert_eq!(buffer.read_partial_felt252(51, 9), 0x1562b0c038296b46a5);
-        assert_eq!(buffer.read_partial_felt252(38, 10), 0x53c2537689c48259db1);
-        assert_eq!(buffer.read_partial_felt252(4, 11), 0x32f63ab2eeb6bee9239ea4);
-        assert_eq!(buffer.read_partial_felt252(19, 12), 0x1a2ae29b7fdf3019fac96198);
-        assert_eq!(buffer.read_partial_felt252(19, 13), 0x1a2ae29b7fdf3019fac961986f);
-        assert_eq!(buffer.read_partial_felt252(31, 14), 0x6f2dec8b70a669053c2537689c48);
-        assert_eq!(buffer.read_partial_felt252(58, 15), 0x46a51dbb0bf7286f58f97cafb7c5ee);
-        assert_eq!(buffer.read_partial_felt252(7, 16), 0xb2eeb6bee9239ea45002e1751a2ae29b);
-        assert_eq!(buffer.read_partial_felt252(3, 17), 0x1732f63ab2eeb6bee9239ea45002e1751a);
-        assert_eq!(buffer.read_partial_felt252(50, 18), 0x551562b0c038296b46a51dbb0bf7286f58f9);
-        assert_eq!(buffer.read_partial_felt252(28, 19), 0xc961986f2dec8b70a669053c2537689c48259d);
-        assert_eq!(buffer.read_partial_felt252(20, 20), 0x2ae29b7fdf3019fac961986f2dec8b70a669053c);
-        assert_eq!(buffer.read_partial_felt252(2, 21), 0x61732f63ab2eeb6bee9239ea45002e1751a2ae29b);
-        assert_eq!(buffer.read_partial_felt252(32, 22), 0x2dec8b70a669053c2537689c48259db1d9b0551562b0);
-        assert_eq!(buffer.read_partial_felt252(11, 23), 0xe9239ea45002e1751a2ae29b7fdf3019fac961986f2dec);
-        assert_eq!(buffer.read_partial_felt252(21, 24), 0xe29b7fdf3019fac961986f2dec8b70a669053c2537689c48);
-        assert_eq!(buffer.read_partial_felt252(20, 25), 0x2ae29b7fdf3019fac961986f2dec8b70a669053c2537689c48);
-        assert_eq!(buffer.read_partial_felt252(3, 26), 0x1732f63ab2eeb6bee9239ea45002e1751a2ae29b7fdf3019fac9);
-        assert_eq!(buffer.read_partial_felt252(27, 27), 0xfac961986f2dec8b70a669053c2537689c48259db1d9b0551562b0);
-        assert_eq!(buffer.read_partial_felt252(8, 28), 0xeeb6bee9239ea45002e1751a2ae29b7fdf3019fac961986f2dec8b70);
-        assert_eq!(buffer.read_partial_felt252(22, 29), 0x9b7fdf3019fac961986f2dec8b70a669053c2537689c48259db1d9b055);
-        assert_eq!(buffer.read_partial_felt252(22, 30), 0x9b7fdf3019fac961986f2dec8b70a669053c2537689c48259db1d9b05515);
-        assert_eq!(buffer.read_partial_felt252(3, 31), 0x1732f63ab2eeb6bee9239ea45002e1751a2ae29b7fdf3019fac961986f2dec);
-        assert_eq!(buffer.read_partial_felt252(15, 32), 0x2e1751a2ae1f17fdf3019fac961986f2dec8b70a669053c2537689c482593);
-        assert_eq!(buffer.hash_sha256(), [0xcd10c0ba, 0x37494086, 0x576e97dc, 0xd84173bb, 0xd1d976ba, 0x1a3b1cc2, 0x86f9773b, 0xf979caaf]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x3328b318, 0x1a5959a2, 0xb166c715, 0x6baa3cc, 0xc8b0ee1a, 0xb03f6ab8, 0x5f82f807, 0xe92d47a]);
-        assert_eq!(buffer.hash_poseidon_range(58, 83), 0x6e9ce1136d9954a83a54fa803cea469075d416fcd14bd4c75ae9a566e7ba83f);
-        assert_eq!(buffer.hash_poseidon_range(34, 54), 0x347e863fb4d955f4bb3623c92c3f719b20bf1da70f41c01a05a6dcda644f0c2);
-        assert_eq!(buffer.hash_poseidon_range(54, 80), 0x71200a2e2f5fe042e3fa27f20bc33f72020c7f49943f5c94e0d7987ccc13b27);
-        assert_eq!(buffer.hash_poseidon_range(52, 80), 0x3e61aa8cbc9b96c5c3ea473588acd4360b6c39e721eb19aa9e087b82659ab04);
-        assert_eq!(buffer.hash_poseidon_range(82, 83), 0x7bc2504f7851185d36143396d0f8330a7f79ac615f445a5365b0bc5f932fc68);
+        assert_eq!(buffer.read_u16_le(15), 0xa00);
+        assert_eq!(buffer.read_u32_le(9), 0xe69869b4);
+        assert_eq!(buffer.read_u64_le(9), 0xa00abf9e69869b4);
+        assert_eq!(buffer.read_partial_felt252(16, 1), 0xa);
+        assert_eq!(buffer.read_partial_felt252(15, 2), 0xa);
+        assert_eq!(buffer.read_partial_felt252(12, 3), 0xe6f9ab);
+        assert_eq!(buffer.read_partial_felt252(12, 4), 0xe6f9ab00);
+        assert_eq!(buffer.read_partial_felt252(9, 5), 0xb46998e6f9);
+        assert_eq!(buffer.read_partial_felt252(14, 6), 0xab000a351a38);
+        assert_eq!(buffer.read_partial_felt252(10, 7), 0x6998e6f9ab000a);
+        assert_eq!(buffer.read_partial_felt252(3, 8), 0x19549a103955b469);
+        assert_eq!(buffer.read_partial_felt252(6, 9), 0x103955b46998e6f9ab);
+        assert_eq!(buffer.read_partial_felt252(11, 10), 0x98e6f9ab000a351a3806);
+        assert_eq!(buffer.read_partial_felt252(1, 11), 0xcc6e19549a103955b46998);
+        assert_eq!(buffer.read_partial_felt252(10, 12), 0x6998e6f9ab000a351a3806e4);
+        assert_eq!(buffer.read_partial_felt252(7, 13), 0x3955b46998e6f9ab000a351a38);
+        assert_eq!(buffer.read_partial_felt252(5, 14), 0x9a103955b46998e6f9ab000a351a);
+        assert_eq!(buffer.read_partial_felt252(4, 15), 0x549a103955b46998e6f9ab000a351a);
+        assert_eq!(buffer.read_partial_felt252(6, 16), 0x103955b46998e6f9ab000a351a3806e4);
+        assert_eq!(buffer.read_partial_felt252(4, 17), 0x549a103955b46998e6f9ab000a351a3806);
+        assert_eq!(buffer.read_partial_felt252(3, 18), 0x19549a103955b46998e6f9ab000a351a3806);
+        assert_eq!(buffer.read_partial_felt252(4, 19), 0x549a103955b46998e6f9ab000a351a3806e4f7);
+        assert_eq!(buffer.read_partial_felt252(1, 20), 0xcc6e19549a103955b46998e6f9ab000a351a3806);
+        assert_eq!(buffer.read_partial_felt252(2, 21), 0x6e19549a103955b46998e6f9ab000a351a3806e4f7);
+        assert_eq!(buffer.read_partial_felt252(1, 22), 0xcc6e19549a103955b46998e6f9ab000a351a3806e4f7);
+        assert_eq!(buffer.read_partial_felt252(1, 23), 0xcc6e19549a103955b46998e6f9ab000a351a3806e4f76f);
+        assert_eq!(buffer.read_partial_felt252(0, 24), 0x63cc6e19549a103955b46998e6f9ab000a351a3806e4f76f);
+        assert_eq!(buffer.read_partial_felt252(0, 25), 0x63cc6e19549a103955b46998e6f9ab000a351a3806e4f76f61);
+        assert_eq!(buffer.hash_sha256(), [0x6e716f9a, 0x752bdc8f, 0xe88784b1, 0xbc753662, 0xd5bb3c8e, 0x6be8355f, 0x978ddc08, 0xb2b0bb35]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0xa25e94c7, 0xac45f4ea, 0x631ca791, 0x119d13b3, 0x7518210f, 0x675c856d, 0x233a8ec3, 0x71ffcb99]);
+        assert_eq!(buffer.hash_poseidon_range(4, 6), 0x3d94e765dc57c3e1037907a974180a0969a0d3b9c65eeb9d5bb605ca034cf34);
+        assert_eq!(buffer.hash_poseidon_range(13, 13), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
+        assert_eq!(buffer.hash_poseidon_range(12, 13), 0x70f042691000e245a57458870e5c1505b1325a0dfba9d293dd5b1a4dd743eb1);
+        assert_eq!(buffer.hash_poseidon_range(10, 23), 0x667a0cc839e4d684b0cce6418602805ec1c3532c9415f370987750c1fc81bb4);
+        assert_eq!(buffer.hash_poseidon_range(12, 23), 0x6f2b42b016015ba49bfd2538c8b4145d5258511e1d616d5f80aacb510ba1c75);
 
-        let mut serialized_byte_array = array![0x0, 0xc61c5cb79c, 0x5].span();
+        let mut serialized_byte_array = array![0x2, 0xc1104a68efcd2827c7cb5aab75fd962cbca2ad98bbb6c1144fc8fc16f8e79b, 0x62970c8025b379e8ee824bf59a8880ae778aa2e16db45224a4110777fb3f38, 0x34cd891e84ac, 0x6].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(1), 0x5c1c);
-        assert_eq!(buffer.read_u32_le(0), 0xb75c1cc6);
-        assert_eq!(buffer.read_partial_felt252(0, 1), 0xc6);
-        assert_eq!(buffer.read_partial_felt252(2, 2), 0x5cb7);
-        assert_eq!(buffer.read_partial_felt252(0, 3), 0xc61c5c);
-        assert_eq!(buffer.read_partial_felt252(0, 4), 0xc61c5cb7);
-        assert_eq!(buffer.read_partial_felt252(0, 5), 0xc61c5cb79c);
-        assert_eq!(buffer.hash_sha256(), [0xdeb71a0d, 0x1e0e9c81, 0x958c1705, 0x3c0a1e57, 0xfbe9af6f, 0x399daca8, 0x9fd7849d, 0x2d5a564e]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x9b9244b0, 0x56d57705, 0x5d172ab9, 0x2b982491, 0x5f70ff6d, 0x4d04b4f6, 0x825b1bd3, 0xc3ab0bb0]);
-        assert_eq!(buffer.hash_poseidon_range(2, 2), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
-        assert_eq!(buffer.hash_poseidon_range(4, 4), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
-        assert_eq!(buffer.hash_poseidon_range(4, 4), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
-        assert_eq!(buffer.hash_poseidon_range(2, 4), 0xdf32b4199024331806740fcd41f364b6d89a9c782e46c898622d65fd1d85a9);
-        assert_eq!(buffer.hash_poseidon_range(2, 4), 0xdf32b4199024331806740fcd41f364b6d89a9c782e46c898622d65fd1d85a9);
+        assert_eq!(buffer.read_u16_le(2), 0x684a);
+        assert_eq!(buffer.read_u32_le(29), 0x97629be7);
+        assert_eq!(buffer.read_u64_le(55), 0x34383ffb770711a4);
+        assert_eq!(buffer.read_u256(28), 0xf8e79b62970c8025b379e8ee824bf59a8880ae778aa2e16db45224a4110777fb);
+        assert_eq!(buffer.read_bytes31(26), 0xfc16f8e79b62970c8025b379e8ee824bf59a8880ae778aa2e16db45224a411);
+        assert_eq!(buffer.read_felt252(30), 0x362970c8025b236e8ee824bf59a8880ae778aa2e16db45224a4110777fb3f25);
+        assert_eq!(buffer.read_partial_felt252(25, 1), 0xc8);
+        assert_eq!(buffer.read_partial_felt252(19, 2), 0x98bb);
+        assert_eq!(buffer.read_partial_felt252(0, 3), 0xc1104a);
+        assert_eq!(buffer.read_partial_felt252(42, 4), 0xf59a8880);
+        assert_eq!(buffer.read_partial_felt252(52, 5), 0xb45224a411);
+        assert_eq!(buffer.read_partial_felt252(31, 6), 0x62970c8025b3);
+        assert_eq!(buffer.read_partial_felt252(49, 7), 0xa2e16db45224a4);
+        assert_eq!(buffer.read_partial_felt252(8, 8), 0xc7cb5aab75fd962c);
+        assert_eq!(buffer.read_partial_felt252(6, 9), 0x2827c7cb5aab75fd96);
+        assert_eq!(buffer.read_partial_felt252(42, 10), 0xf59a8880ae778aa2e16d);
+        assert_eq!(buffer.read_partial_felt252(7, 11), 0x27c7cb5aab75fd962cbca2);
+        assert_eq!(buffer.read_partial_felt252(53, 12), 0x5224a4110777fb3f3834cd89);
+        assert_eq!(buffer.read_partial_felt252(42, 13), 0xf59a8880ae778aa2e16db45224);
+        assert_eq!(buffer.read_partial_felt252(40, 14), 0x824bf59a8880ae778aa2e16db452);
+        assert_eq!(buffer.read_partial_felt252(26, 15), 0xfc16f8e79b62970c8025b379e8ee82);
+        assert_eq!(buffer.read_partial_felt252(30, 16), 0x9b62970c8025b379e8ee824bf59a8880);
+        assert_eq!(buffer.read_partial_felt252(25, 17), 0xc8fc16f8e79b62970c8025b379e8ee824b);
+        assert_eq!(buffer.read_partial_felt252(29, 18), 0xe79b62970c8025b379e8ee824bf59a8880ae);
+        assert_eq!(buffer.read_partial_felt252(6, 19), 0x2827c7cb5aab75fd962cbca2ad98bbb6c1144f);
+        assert_eq!(buffer.read_partial_felt252(40, 20), 0x824bf59a8880ae778aa2e16db45224a4110777fb);
+        assert_eq!(buffer.read_partial_felt252(4, 21), 0xefcd2827c7cb5aab75fd962cbca2ad98bbb6c1144f);
+        assert_eq!(buffer.read_partial_felt252(14, 22), 0x962cbca2ad98bbb6c1144fc8fc16f8e79b62970c8025);
+        assert_eq!(buffer.read_partial_felt252(42, 23), 0xf59a8880ae778aa2e16db45224a4110777fb3f3834cd89);
+        assert_eq!(buffer.read_partial_felt252(39, 24), 0xee824bf59a8880ae778aa2e16db45224a4110777fb3f3834);
+        assert_eq!(buffer.read_partial_felt252(38, 25), 0xe8ee824bf59a8880ae778aa2e16db45224a4110777fb3f3834);
+        assert_eq!(buffer.read_partial_felt252(2, 26), 0x4a68efcd2827c7cb5aab75fd962cbca2ad98bbb6c1144fc8fc16);
+        assert_eq!(buffer.read_partial_felt252(26, 27), 0xfc16f8e79b62970c8025b379e8ee824bf59a8880ae778aa2e16db4);
+        assert_eq!(buffer.read_partial_felt252(20, 28), 0xbbb6c1144fc8fc16f8e79b62970c8025b379e8ee824bf59a8880ae77);
+        assert_eq!(buffer.read_partial_felt252(15, 29), 0x2cbca2ad98bbb6c1144fc8fc16f8e79b62970c8025b379e8ee824bf59a);
+        assert_eq!(buffer.read_partial_felt252(33, 30), 0xc8025b379e8ee824bf59a8880ae778aa2e16db45224a4110777fb3f3834);
+        assert_eq!(buffer.read_partial_felt252(3, 31), 0x68efcd2827c7cb5aab75fd962cbca2ad98bbb6c1144fc8fc16f8e79b62970c);
+        assert_eq!(buffer.read_partial_felt252(2, 32), 0x268efcd2827c7325aab75fd962cbca2ad98bbb6c1144fc8fc16f8e79b629703);
+        assert_eq!(buffer.hash_sha256(), [0x7270f50a, 0x4f4700f8, 0x300d5571, 0xa95c9156, 0x44950a16, 0x9cb426ca, 0x2c74789b, 0x6bc85db4]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0x4acbf262, 0xe48f1ca3, 0x1b868ad4, 0xac05ef21, 0x3918828c, 0x36592ed1, 0x336fb84d, 0x16f9439b]);
+        assert_eq!(buffer.hash_poseidon_range(35, 35), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
+        assert_eq!(buffer.hash_poseidon_range(6, 43), 0x777bb6756ebdb4da771b6c2a43daef602f4a6884ad92ab87fa1d87afaa53920);
+        assert_eq!(buffer.hash_poseidon_range(23, 34), 0x5566942e484674ab75338854735a7d761575df99cf5edf7fa449de29455d113);
+        assert_eq!(buffer.hash_poseidon_range(13, 36), 0x335be972c3206ac4e96a1c405ee38e12368f5a485735cf37e6e89b549fa91c5);
+        assert_eq!(buffer.hash_poseidon_range(38, 44), 0x294c7f867d4ae998cb82516cc46aec1e8a7131447752499dc21360b70df6a55);
 
-        let mut serialized_byte_array = array![0x1, 0xddf9790b8c3eeed56a5740c3ba840044f9e160ca63630deceeac9929fb6dd8, 0xb04773499fb6960f09363cb03733, 0xe].span();
+        let mut serialized_byte_array = array![0x1, 0xbb0f4cab360162d20c9e80c5a1d8f106c6bb5c9e85a20445de3ec3c6895e14, 0x2f0d2e8d1be78810c2ad6e4ed0ef42, 0xf].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(38), 0x90f);
-        assert_eq!(buffer.read_u32_le(23), 0x99aceeec);
-        assert_eq!(buffer.read_u64_le(22), 0x6dfb2999aceeec0d);
-        assert_eq!(buffer.read_u256(4), 0x8c3eeed56a5740c3ba840044f9e160ca63630deceeac9929fb6dd8b04773499f);
-        assert_eq!(buffer.read_bytes31(13), 0x840044f9e160ca63630deceeac9929fb6dd8b04773499fb6960f09363cb037);
-        assert_eq!(buffer.read_felt252(5), 0x6eed56a5740c343840044f9e160ca63630deceeac9929fb6dd8b04773499faf);
-        assert_eq!(buffer.read_partial_felt252(36, 1), 0xb6);
-        assert_eq!(buffer.read_partial_felt252(42, 2), 0xb037);
-        assert_eq!(buffer.read_partial_felt252(26, 3), 0x9929fb);
-        assert_eq!(buffer.read_partial_felt252(10, 4), 0x40c3ba84);
-        assert_eq!(buffer.read_partial_felt252(10, 5), 0x40c3ba8400);
-        assert_eq!(buffer.read_partial_felt252(16, 6), 0xf9e160ca6363);
-        assert_eq!(buffer.read_partial_felt252(6, 7), 0xeed56a5740c3ba);
-        assert_eq!(buffer.read_partial_felt252(12, 8), 0xba840044f9e160ca);
-        assert_eq!(buffer.read_partial_felt252(18, 9), 0x60ca63630deceeac99);
-        assert_eq!(buffer.read_partial_felt252(9, 10), 0x5740c3ba840044f9e160);
-        assert_eq!(buffer.read_partial_felt252(23, 11), 0xeceeac9929fb6dd8b04773);
-        assert_eq!(buffer.read_partial_felt252(31, 12), 0xb04773499fb6960f09363cb0);
-        assert_eq!(buffer.read_partial_felt252(2, 13), 0x790b8c3eeed56a5740c3ba8400);
-        assert_eq!(buffer.read_partial_felt252(29, 14), 0x6dd8b04773499fb6960f09363cb0);
-        assert_eq!(buffer.read_partial_felt252(24, 15), 0xeeac9929fb6dd8b04773499fb6960f);
-        assert_eq!(buffer.read_partial_felt252(27, 16), 0x29fb6dd8b04773499fb6960f09363cb0);
-        assert_eq!(buffer.read_partial_felt252(13, 17), 0x840044f9e160ca63630deceeac9929fb6d);
-        assert_eq!(buffer.read_partial_felt252(7, 18), 0xd56a5740c3ba840044f9e160ca63630decee);
-        assert_eq!(buffer.read_partial_felt252(16, 19), 0xf9e160ca63630deceeac9929fb6dd8b0477349);
-        assert_eq!(buffer.read_partial_felt252(14, 20), 0x44f9e160ca63630deceeac9929fb6dd8b04773);
-        assert_eq!(buffer.read_partial_felt252(17, 21), 0xe160ca63630deceeac9929fb6dd8b04773499fb696);
-        assert_eq!(buffer.read_partial_felt252(4, 22), 0x8c3eeed56a5740c3ba840044f9e160ca63630deceeac);
-        assert_eq!(buffer.read_partial_felt252(17, 23), 0xe160ca63630deceeac9929fb6dd8b04773499fb6960f09);
-        assert_eq!(buffer.read_partial_felt252(20, 24), 0x63630deceeac9929fb6dd8b04773499fb6960f09363cb037);
-        assert_eq!(buffer.read_partial_felt252(11, 25), 0xc3ba840044f9e160ca63630deceeac9929fb6dd8b04773499f);
-        assert_eq!(buffer.read_partial_felt252(5, 26), 0x3eeed56a5740c3ba840044f9e160ca63630deceeac9929fb6dd8);
-        assert_eq!(buffer.read_partial_felt252(13, 27), 0x840044f9e160ca63630deceeac9929fb6dd8b04773499fb6960f09);
-        assert_eq!(buffer.read_partial_felt252(2, 28), 0x790b8c3eeed56a5740c3ba840044f9e160ca63630deceeac9929fb6d);
-        assert_eq!(buffer.read_partial_felt252(15, 29), 0x44f9e160ca63630deceeac9929fb6dd8b04773499fb6960f09363cb037);
-        assert_eq!(buffer.read_partial_felt252(11, 30), 0xc3ba840044f9e160ca63630deceeac9929fb6dd8b04773499fb6960f0936);
-        assert_eq!(buffer.read_partial_felt252(10, 31), 0x40c3ba840044f9e160ca63630deceeac9929fb6dd8b04773499fb6960f0936);
-        assert_eq!(buffer.read_partial_felt252(2, 32), 0x10b8c3eeed5695840c3ba840044f9e160ca63630deceeac9929fb6dd8b04764);
-        assert_eq!(buffer.hash_sha256(), [0xcd597307, 0xf2867d84, 0xb4d69848, 0x5a75230f, 0x366e9bf3, 0x554c0d7e, 0x14a43f68, 0xf6a0dc4e]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x400df732, 0xab3d5815, 0x33d6af5d, 0xc076cd53, 0x4ca38341, 0xf898a0fd, 0x22af863, 0x7edc73c3]);
-        assert_eq!(buffer.hash_poseidon_range(43, 44), 0x83fccb86d32d4ffa0a8b729db8d136c2822a09cb2ccda6e69b510ef88c36a6);
-        assert_eq!(buffer.hash_poseidon_range(0, 38), 0x5e75cc9e55ec5f1890d1c8120d20dffa072c7bb02234f20bc0cf3a2143a4d11);
-        assert_eq!(buffer.hash_poseidon_range(27, 29), 0x4a7c9ce9e390c583559ecf4f0bc58abede0022ac8d04c74321341a98ddbcb37);
-        assert_eq!(buffer.hash_poseidon_range(1, 7), 0x11b8535ec502e1c07d4e6e5be4886b75e17f4a9929926e9ddff23017109a687);
-        assert_eq!(buffer.hash_poseidon_range(5, 34), 0x451ee9e4eee24ac90870ec9bc144fb16f2d03da74c6819a3982b152955f93a7);
+        assert_eq!(buffer.read_u16_le(35), 0xe71b);
+        assert_eq!(buffer.read_u32_le(27), 0x145e89c6);
+        assert_eq!(buffer.read_u64_le(20), 0xc6c33ede4504a285);
+        assert_eq!(buffer.read_u256(2), 0x4cab360162d20c9e80c5a1d8f106c6bb5c9e85a20445de3ec3c6895e142f0d2e);
+        assert_eq!(buffer.read_bytes31(12), 0xa1d8f106c6bb5c9e85a20445de3ec3c6895e142f0d2e8d1be78810c2ad6e4e);
+        assert_eq!(buffer.read_felt252(11), 0x5a1d8f106c6b9c49e85a20445de3ec3c6895e142f0d2e8d1be78810c2ad6e36);
+        assert_eq!(buffer.read_partial_felt252(38, 1), 0x10);
+        assert_eq!(buffer.read_partial_felt252(21, 2), 0xa204);
+        assert_eq!(buffer.read_partial_felt252(7, 3), 0xd20c9e);
+        assert_eq!(buffer.read_partial_felt252(7, 4), 0xd20c9e80);
+        assert_eq!(buffer.read_partial_felt252(29, 5), 0x5e142f0d2e);
+        assert_eq!(buffer.read_partial_felt252(16, 6), 0xc6bb5c9e85a2);
+        assert_eq!(buffer.read_partial_felt252(8, 7), 0xc9e80c5a1d8f1);
+        assert_eq!(buffer.read_partial_felt252(27, 8), 0xc6895e142f0d2e8d);
+        assert_eq!(buffer.read_partial_felt252(31, 9), 0x2f0d2e8d1be78810c2);
+        assert_eq!(buffer.read_partial_felt252(20, 10), 0x85a20445de3ec3c6895e);
+        assert_eq!(buffer.read_partial_felt252(13, 11), 0xd8f106c6bb5c9e85a20445);
+        assert_eq!(buffer.read_partial_felt252(17, 12), 0xbb5c9e85a20445de3ec3c689);
+        assert_eq!(buffer.read_partial_felt252(9, 13), 0x9e80c5a1d8f106c6bb5c9e85a2);
+        assert_eq!(buffer.read_partial_felt252(12, 14), 0xa1d8f106c6bb5c9e85a20445de3e);
+        assert_eq!(buffer.read_partial_felt252(3, 15), 0xab360162d20c9e80c5a1d8f106c6bb);
+        assert_eq!(buffer.read_partial_felt252(26, 16), 0xc3c6895e142f0d2e8d1be78810c2ad6e);
+        assert_eq!(buffer.read_partial_felt252(14, 17), 0xf106c6bb5c9e85a20445de3ec3c6895e14);
+        assert_eq!(buffer.read_partial_felt252(24, 18), 0xde3ec3c6895e142f0d2e8d1be78810c2ad6e);
+        assert_eq!(buffer.read_partial_felt252(7, 19), 0xd20c9e80c5a1d8f106c6bb5c9e85a20445de3e);
+        assert_eq!(buffer.read_partial_felt252(21, 20), 0xa20445de3ec3c6895e142f0d2e8d1be78810c2ad);
+        assert_eq!(buffer.read_partial_felt252(22, 21), 0x445de3ec3c6895e142f0d2e8d1be78810c2ad6e4e);
+        assert_eq!(buffer.read_partial_felt252(4, 22), 0x360162d20c9e80c5a1d8f106c6bb5c9e85a20445de3e);
+        assert_eq!(buffer.read_partial_felt252(2, 23), 0x4cab360162d20c9e80c5a1d8f106c6bb5c9e85a20445de);
+        assert_eq!(buffer.read_partial_felt252(8, 24), 0xc9e80c5a1d8f106c6bb5c9e85a20445de3ec3c6895e142f);
+        assert_eq!(buffer.read_partial_felt252(16, 25), 0xc6bb5c9e85a20445de3ec3c6895e142f0d2e8d1be78810c2ad);
+        assert_eq!(buffer.read_partial_felt252(12, 26), 0xa1d8f106c6bb5c9e85a20445de3ec3c6895e142f0d2e8d1be788);
+        assert_eq!(buffer.read_partial_felt252(2, 27), 0x4cab360162d20c9e80c5a1d8f106c6bb5c9e85a20445de3ec3c689);
+        assert_eq!(buffer.read_partial_felt252(3, 28), 0xab360162d20c9e80c5a1d8f106c6bb5c9e85a20445de3ec3c6895e14);
+        assert_eq!(buffer.read_partial_felt252(0, 29), 0xbb0f4cab360162d20c9e80c5a1d8f106c6bb5c9e85a20445de3ec3c689);
+        assert_eq!(buffer.read_partial_felt252(4, 30), 0x360162d20c9e80c5a1d8f106c6bb5c9e85a20445de3ec3c6895e142f0d2e);
+        assert_eq!(buffer.read_partial_felt252(8, 31), 0xc9e80c5a1d8f106c6bb5c9e85a20445de3ec3c6895e142f0d2e8d1be78810);
+        assert_eq!(buffer.read_partial_felt252(2, 32), 0x4ab360162d20c0580c5a1d8f106c6bb5c9e85a20445de3ec3c6895e142f0d25);
+        assert_eq!(buffer.hash_sha256(), [0xe67d4e28, 0x9f55d0d5, 0x10cd64a6, 0xf5ca022e, 0xaa7bb978, 0x13201906, 0xd16dc3f, 0x8ffdf787]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0x98c243a3, 0xb0f16e78, 0xd6ead23d, 0x32998295, 0xc19c297d, 0xca42db16, 0x762045d4, 0x6fd24c49]);
+        assert_eq!(buffer.hash_poseidon_range(44, 45), 0x32eb1ffee130ebdf618e7a53d99813f61346d94ae33e6d0fe0335efbea7db3f);
+        assert_eq!(buffer.hash_poseidon_range(0, 9), 0x57c41faf68a87a2dc66cdd785269176708182f4d5a7e760240f736bc28658f1);
+        assert_eq!(buffer.hash_poseidon_range(4, 20), 0x5647fa991df1f1e033bb2e004ca89dc9a8fe8cf715cd0dd536f3c58ad7df6d);
+        assert_eq!(buffer.hash_poseidon_range(38, 38), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
+        assert_eq!(buffer.hash_poseidon_range(45, 45), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
 
-        let mut serialized_byte_array = array![0x2, 0xf1d49aa2d964f1b2c3146190ecb35cac8167f381023405e97d6152a808dcea, 0x3526b044964660626ce4fac5abe027c5868d9548d80e551de3ce82b78410c1, 0xa816ca684dbd6c, 0x7].span();
+        let mut serialized_byte_array = array![0x3, 0x14491a0058cd739966cc2d1cc2739d6d29d19acccefd145edda72536059c28, 0xfd6c3fb472096f2e82b778f70d384e7d534aa2da9e21c1b4a4b53d4678afb1, 0xdd9366ed3eb1096ae6ec25df33621a7ac59893659d5773e440cf45f3098d8e, 0x6338cebf7d4fa7e846b99961ca512e90ecc408, 0x13].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(11), 0xec90);
-        assert_eq!(buffer.read_u32_le(10), 0xb3ec9061);
-        assert_eq!(buffer.read_u64_le(22), 0xdc08a852617de905);
-        assert_eq!(buffer.read_u256(27), 0xa808dcea3526b044964660626ce4fac5abe027c5868d9548d80e551de3ce82b7);
-        assert_eq!(buffer.read_bytes31(30), 0xea3526b044964660626ce4fac5abe027c5868d9548d80e551de3ce82b78410);
-        assert_eq!(buffer.read_felt252(15), 0x48167f3810232a0e97d6152a808dcea3526b044964660626ce4fac5abe027b0);
-        assert_eq!(buffer.read_partial_felt252(63, 1), 0x16);
-        assert_eq!(buffer.read_partial_felt252(10, 2), 0x6190);
-        assert_eq!(buffer.read_partial_felt252(30, 3), 0xea3526);
-        assert_eq!(buffer.read_partial_felt252(41, 4), 0xfac5abe0);
-        assert_eq!(buffer.read_partial_felt252(34, 5), 0x4496466062);
-        assert_eq!(buffer.read_partial_felt252(34, 6), 0x44964660626c);
-        assert_eq!(buffer.read_partial_felt252(46, 7), 0xc5868d9548d80e);
-        assert_eq!(buffer.read_partial_felt252(45, 8), 0x27c5868d9548d80e);
-        assert_eq!(buffer.read_partial_felt252(45, 9), 0x27c5868d9548d80e55);
-        assert_eq!(buffer.read_partial_felt252(55, 10), 0xe3ce82b78410c1a816ca);
-        assert_eq!(buffer.read_partial_felt252(34, 11), 0x44964660626ce4fac5abe0);
-        assert_eq!(buffer.read_partial_felt252(41, 12), 0xfac5abe027c5868d9548d80e);
-        assert_eq!(buffer.read_partial_felt252(44, 13), 0xe027c5868d9548d80e551de3ce);
-        assert_eq!(buffer.read_partial_felt252(21, 14), 0x3405e97d6152a808dcea3526b044);
-        assert_eq!(buffer.read_partial_felt252(7, 15), 0xb2c3146190ecb35cac8167f3810234);
-        assert_eq!(buffer.read_partial_felt252(7, 16), 0xb2c3146190ecb35cac8167f381023405);
-        assert_eq!(buffer.read_partial_felt252(51, 17), 0xd80e551de3ce82b78410c1a816ca684dbd);
-        assert_eq!(buffer.read_partial_felt252(37, 18), 0x60626ce4fac5abe027c5868d9548d80e551d);
-        assert_eq!(buffer.read_partial_felt252(49, 19), 0x9548d80e551de3ce82b78410c1a816ca684dbd);
-        assert_eq!(buffer.read_partial_felt252(1, 20), 0xd49aa2d964f1b2c3146190ecb35cac8167f38102);
-        assert_eq!(buffer.read_partial_felt252(42, 21), 0xc5abe027c5868d9548d80e551de3ce82b78410c1a8);
-        assert_eq!(buffer.read_partial_felt252(7, 22), 0xb2c3146190ecb35cac8167f381023405e97d6152a808);
-        assert_eq!(buffer.read_partial_felt252(13, 23), 0xb35cac8167f381023405e97d6152a808dcea3526b04496);
-        assert_eq!(buffer.read_partial_felt252(11, 24), 0x90ecb35cac8167f381023405e97d6152a808dcea3526b044);
-        assert_eq!(buffer.read_partial_felt252(42, 25), 0xc5abe027c5868d9548d80e551de3ce82b78410c1a816ca684d);
-        assert_eq!(buffer.read_partial_felt252(16, 26), 0x8167f381023405e97d6152a808dcea3526b044964660626ce4fa);
-        assert_eq!(buffer.read_partial_felt252(39, 27), 0x6ce4fac5abe027c5868d9548d80e551de3ce82b78410c1a816ca68);
-        assert_eq!(buffer.read_partial_felt252(30, 28), 0xea3526b044964660626ce4fac5abe027c5868d9548d80e551de3ce82);
-        assert_eq!(buffer.read_partial_felt252(27, 29), 0xa808dcea3526b044964660626ce4fac5abe027c5868d9548d80e551de3);
-        assert_eq!(buffer.read_partial_felt252(17, 30), 0x67f381023405e97d6152a808dcea3526b044964660626ce4fac5abe027c5);
-        assert_eq!(buffer.read_partial_felt252(2, 31), 0x9aa2d964f1b2c3146190ecb35cac8167f381023405e97d6152a808dcea3526);
-        assert_eq!(buffer.read_partial_felt252(29, 32), 0x4ea3526b044947b60626ce4fac5abe027c5868d9548d80e551de3ce82b783f5);
-        assert_eq!(buffer.hash_sha256(), [0x45061f15, 0x8d6a6b77, 0xcf33fa79, 0xe0363153, 0xaf688c46, 0xd8c73c7d, 0xf154269, 0x93a3eebc]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x12c0a174, 0xc5a034d2, 0x91707449, 0xadf25281, 0x5a2cc424, 0x61ded351, 0xb582b8e, 0xc1625616]);
-        assert_eq!(buffer.hash_poseidon_range(17, 42), 0x36de72ce76a99d0e4a2265fe43737490de9c8be6abda6169ff63abb9be4d020);
-        assert_eq!(buffer.hash_poseidon_range(35, 41), 0x2b9d3ad052695b0a36b86f1f756faa906a8ab7ee72a82eb78be696026d7aff3);
-        assert_eq!(buffer.hash_poseidon_range(58, 66), 0x3f2cfee6856a7abe0596664032a67785ff63d36e85b829939a2e2244d307ba4);
-        assert_eq!(buffer.hash_poseidon_range(18, 63), 0xea7ba91a033f7717348254fc516712ac01b18c5af6796337fa4525a3924e2f);
-        assert_eq!(buffer.hash_poseidon_range(27, 66), 0x70601eff17199c9dc22785b270c358fc0682fffd7fd994368a825fa90552fad);
+        assert_eq!(buffer.read_u16_le(50), 0x9eda);
+        assert_eq!(buffer.read_u32_le(58), 0xb1af7846);
+        assert_eq!(buffer.read_u64_le(1), 0x669973cd58001a49);
+        assert_eq!(buffer.read_u256(51), 0x9e21c1b4a4b53d4678afb1dd9366ed3eb1096ae6ec25df33621a7ac59893659d);
+        assert_eq!(buffer.read_bytes31(33), 0x3fb472096f2e82b778f70d384e7d534aa2da9e21c1b4a4b53d4678afb1dd93);
+        assert_eq!(buffer.read_felt252(18), 0x2cccefd145edc642536059c28fd6c3fb472096f2e82b778f70d384e7d534a8f);
+        assert_eq!(buffer.read_partial_felt252(43, 1), 0xd);
+        assert_eq!(buffer.read_partial_felt252(67, 2), 0xb109);
+        assert_eq!(buffer.read_partial_felt252(74, 3), 0x33621a);
+        assert_eq!(buffer.read_partial_felt252(39, 4), 0x82b778f7);
+        assert_eq!(buffer.read_partial_felt252(8, 5), 0x66cc2d1cc2);
+        assert_eq!(buffer.read_partial_felt252(102, 6), 0xb99961ca512e);
+        assert_eq!(buffer.read_partial_felt252(48, 7), 0x4aa2da9e21c1b4);
+        assert_eq!(buffer.read_partial_felt252(50, 8), 0xda9e21c1b4a4b53d);
+        assert_eq!(buffer.read_partial_felt252(55, 9), 0xa4b53d4678afb1dd93);
+        assert_eq!(buffer.read_partial_felt252(14, 10), 0x9d6d29d19acccefd145e);
+        assert_eq!(buffer.read_partial_felt252(45, 11), 0x4e7d534aa2da9e21c1b4a4);
+        assert_eq!(buffer.read_partial_felt252(86, 12), 0x40cf45f3098d8e6338cebf7d);
+        assert_eq!(buffer.read_partial_felt252(60, 13), 0xafb1dd9366ed3eb1096ae6ec25);
+        assert_eq!(buffer.read_partial_felt252(8, 14), 0x66cc2d1cc2739d6d29d19acccefd);
+        assert_eq!(buffer.read_partial_felt252(86, 15), 0x40cf45f3098d8e6338cebf7d4fa7e8);
+        assert_eq!(buffer.read_partial_felt252(62, 16), 0xdd9366ed3eb1096ae6ec25df33621a7a);
+        assert_eq!(buffer.read_partial_felt252(90, 17), 0x98d8e6338cebf7d4fa7e846b99961ca51);
+        assert_eq!(buffer.read_partial_felt252(0, 18), 0x14491a0058cd739966cc2d1cc2739d6d29d1);
+        assert_eq!(buffer.read_partial_felt252(52, 19), 0x21c1b4a4b53d4678afb1dd9366ed3eb1096ae6);
+        assert_eq!(buffer.read_partial_felt252(9, 20), 0xcc2d1cc2739d6d29d19acccefd145edda7253605);
+        assert_eq!(buffer.read_partial_felt252(87, 21), 0xcf45f3098d8e6338cebf7d4fa7e846b99961ca512e);
+        assert_eq!(buffer.read_partial_felt252(36, 22), 0x96f2e82b778f70d384e7d534aa2da9e21c1b4a4b53d);
+        assert_eq!(buffer.read_partial_felt252(58, 23), 0x4678afb1dd9366ed3eb1096ae6ec25df33621a7ac59893);
+        assert_eq!(buffer.read_partial_felt252(77, 24), 0x7ac59893659d5773e440cf45f3098d8e6338cebf7d4fa7e8);
+        assert_eq!(buffer.read_partial_felt252(49, 25), 0xa2da9e21c1b4a4b53d4678afb1dd9366ed3eb1096ae6ec25df);
+        assert_eq!(buffer.read_partial_felt252(4, 26), 0x58cd739966cc2d1cc2739d6d29d19acccefd145edda72536059c);
+        assert_eq!(buffer.read_partial_felt252(80, 27), 0x93659d5773e440cf45f3098d8e6338cebf7d4fa7e846b99961ca51);
+        assert_eq!(buffer.read_partial_felt252(0, 28), 0x14491a0058cd739966cc2d1cc2739d6d29d19acccefd145edda72536);
+        assert_eq!(buffer.read_partial_felt252(13, 29), 0x739d6d29d19acccefd145edda72536059c28fd6c3fb472096f2e82b778);
+        assert_eq!(buffer.read_partial_felt252(80, 30), 0x93659d5773e440cf45f3098d8e6338cebf7d4fa7e846b99961ca512e90ec);
+        assert_eq!(buffer.read_partial_felt252(10, 31), 0x2d1cc2739d6d29d19acccefd145edda72536059c28fd6c3fb472096f2e82b7);
+        assert_eq!(buffer.read_partial_felt252(70, 32), 0x6ec25df3362189ec59893659d5773e440cf45f3098d8e6338cebf7d4fa7e82a);
+        assert_eq!(buffer.hash_sha256(), [0xe86b4d42, 0x35c00838, 0xb607d1e5, 0x78f00f67, 0xec0cef1e, 0x4c29bfee, 0x64eb3638, 0xf98d3595]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0xd6b87d92, 0x247e3c54, 0x13e0b982, 0xeef22540, 0x82a7957e, 0x4326b8e3, 0x588b1a9f, 0x7f68317d]);
+        assert_eq!(buffer.hash_poseidon_range(97, 111), 0x68cd2f380ee8163e4ed1a35e51d980a3ef189830909336f973c4047b69cb7b3);
+        assert_eq!(buffer.hash_poseidon_range(110, 111), 0x753b730455eea53319bac1cd713fdd2c2a7b88d6670b5da7b349788eb7839cf);
+        assert_eq!(buffer.hash_poseidon_range(74, 100), 0x614f36d409ef8190645e54871b15820edc1497a26deab3667c986a0d1ac4b92);
+        assert_eq!(buffer.hash_poseidon_range(34, 78), 0x5cd5fc637fa28919b7189f674972ea793ddf4c30a26065ce4ceab3505fbeb0);
+        assert_eq!(buffer.hash_poseidon_range(31, 61), 0x3cdd6b71a63ae51e0cff48a12e567d924ddef1890ba960a71e7cc2a0aa830f1);
 
-        let mut serialized_byte_array = array![0x2, 0x9799ee64d7f86614599863f1d1ec065a32869576a6b0d36d93cfa53fed578c, 0xd1f23e65f8e7377147bb0e4e7824b5b260f90b0b53dc70fbdee0f7a252b2a6, 0x40d13ba46bfb47b01af8, 0xa].span();
+        let mut serialized_byte_array = array![0x2, 0x653007d471b5146b2669f54ab334099cc8e16f3f52e4f2ce22bed764a1bed7, 0xb1ac9475aa3bfb3a2ed08cf9f16c990985784dbd4b61bbb3d575032f755e20, 0xb7, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(15), 0x325a);
-        assert_eq!(buffer.read_u32_le(1), 0xd764ee99);
-        assert_eq!(buffer.read_u64_le(7), 0x6ecd1f163985914);
-        assert_eq!(buffer.read_u256(5), 0xf86614599863f1d1ec065a32869576a6b0d36d93cfa53fed578cd1f23e65f8e7);
-        assert_eq!(buffer.read_bytes31(21), 0xb0d36d93cfa53fed578cd1f23e65f8e7377147bb0e4e7824b5b260f90b0b53);
-        assert_eq!(buffer.read_felt252(16), 0x2869576a6b0d30793cfa53fed578cd1f23e65f8e7377147bb0e4e7824b5b25a);
-        assert_eq!(buffer.read_partial_felt252(36, 1), 0xe7);
-        assert_eq!(buffer.read_partial_felt252(50, 2), 0xb53);
-        assert_eq!(buffer.read_partial_felt252(32, 3), 0xf23e65);
-        assert_eq!(buffer.read_partial_felt252(3, 4), 0x64d7f866);
-        assert_eq!(buffer.read_partial_felt252(29, 5), 0x578cd1f23e);
-        assert_eq!(buffer.read_partial_felt252(61, 6), 0xa640d13ba46b);
-        assert_eq!(buffer.read_partial_felt252(14, 7), 0x65a32869576a6);
-        assert_eq!(buffer.read_partial_felt252(12, 8), 0xd1ec065a32869576);
-        assert_eq!(buffer.read_partial_felt252(12, 9), 0xd1ec065a32869576a6);
-        assert_eq!(buffer.read_partial_felt252(26, 10), 0xa53fed578cd1f23e65f8);
-        assert_eq!(buffer.read_partial_felt252(21, 11), 0xb0d36d93cfa53fed578cd1);
-        assert_eq!(buffer.read_partial_felt252(44, 12), 0x24b5b260f90b0b53dc70fbde);
-        assert_eq!(buffer.read_partial_felt252(50, 13), 0xb53dc70fbdee0f7a252b2a640);
-        assert_eq!(buffer.read_partial_felt252(47, 14), 0x60f90b0b53dc70fbdee0f7a252b2);
-        assert_eq!(buffer.read_partial_felt252(4, 15), 0xd7f86614599863f1d1ec065a328695);
-        assert_eq!(buffer.read_partial_felt252(16, 16), 0x32869576a6b0d36d93cfa53fed578cd1);
-        assert_eq!(buffer.read_partial_felt252(34, 17), 0x65f8e7377147bb0e4e7824b5b260f90b0b);
-        assert_eq!(buffer.read_partial_felt252(42, 18), 0x4e7824b5b260f90b0b53dc70fbdee0f7a252);
-        assert_eq!(buffer.read_partial_felt252(48, 19), 0xf90b0b53dc70fbdee0f7a252b2a640d13ba46b);
-        assert_eq!(buffer.read_partial_felt252(20, 20), 0xa6b0d36d93cfa53fed578cd1f23e65f8e7377147);
-        assert_eq!(buffer.read_partial_felt252(5, 21), 0xf86614599863f1d1ec065a32869576a6b0d36d93cf);
-        assert_eq!(buffer.read_partial_felt252(22, 22), 0xd36d93cfa53fed578cd1f23e65f8e7377147bb0e4e78);
-        assert_eq!(buffer.read_partial_felt252(6, 23), 0x6614599863f1d1ec065a32869576a6b0d36d93cfa53fed);
-        assert_eq!(buffer.read_partial_felt252(13, 24), 0xec065a32869576a6b0d36d93cfa53fed578cd1f23e65f8e7);
-        assert_eq!(buffer.read_partial_felt252(1, 25), 0x99ee64d7f86614599863f1d1ec065a32869576a6b0d36d93cf);
-        assert_eq!(buffer.read_partial_felt252(40, 26), 0xbb0e4e7824b5b260f90b0b53dc70fbdee0f7a252b2a640d13ba4);
-        assert_eq!(buffer.read_partial_felt252(6, 27), 0x6614599863f1d1ec065a32869576a6b0d36d93cfa53fed578cd1f2);
-        assert_eq!(buffer.read_partial_felt252(42, 28), 0x4e7824b5b260f90b0b53dc70fbdee0f7a252b2a640d13ba46bfb47b0);
-        assert_eq!(buffer.read_partial_felt252(1, 29), 0x99ee64d7f86614599863f1d1ec065a32869576a6b0d36d93cfa53fed57);
-        assert_eq!(buffer.read_partial_felt252(3, 30), 0x64d7f86614599863f1d1ec065a32869576a6b0d36d93cfa53fed578cd1f2);
-        assert_eq!(buffer.read_partial_felt252(40, 31), 0xbb0e4e7824b5b260f90b0b53dc70fbdee0f7a252b2a640d13ba46bfb47b01a);
-        assert_eq!(buffer.read_partial_felt252(32, 32), 0x23e65f8e7376f49bb0e4e7824b5b260f90b0b53dc70fbdee0f7a252b2a640b3);
-        assert_eq!(buffer.hash_sha256(), [0x5040cc71, 0x97a1f9bc, 0x4d175efa, 0xbfd4ba8e, 0xe8999d4e, 0x5ad93c1d, 0x18081f8f, 0x4544ec02]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x9e76cd5b, 0x37a06bbf, 0xf63dbf9f, 0x43ebb560, 0xe5e1811b, 0x487460aa, 0x255617e1, 0x589da221]);
-        assert_eq!(buffer.hash_poseidon_range(18, 36), 0x7800a4fe4830a4a74811a008a1b4766deb40072d08f1b988d2233d36d94227b);
-        assert_eq!(buffer.hash_poseidon_range(50, 66), 0x2bd5d5745e069dceb62bee440c3badf897fa67041d9d91761e14a67c23ddc5b);
-        assert_eq!(buffer.hash_poseidon_range(0, 40), 0x1b1ab2ad44041997dafd91fcb1afc8503864d758b725580a345d5608f3fd83e);
-        assert_eq!(buffer.hash_poseidon_range(59, 61), 0x495325266feec97b91af1d066515f1e00023e4879dd03c9a2d36be2fd680185);
-        assert_eq!(buffer.hash_poseidon_range(50, 51), 0x3e89a0e415c274c3afdfb531abeb1da734b4ed89aee261a2b1fe59778a98b57);
+        assert_eq!(buffer.read_u16_le(52), 0xbb61);
+        assert_eq!(buffer.read_u32_le(53), 0x75d5b3bb);
+        assert_eq!(buffer.read_u64_le(21), 0xa164d7be22cef2e4);
+        assert_eq!(buffer.read_u256(19), 0x3f52e4f2ce22bed764a1bed7b1ac9475aa3bfb3a2ed08cf9f16c990985784dbd);
+        assert_eq!(buffer.read_bytes31(1), 0x3007d471b5146b2669f54ab334099cc8e16f3f52e4f2ce22bed764a1bed7b1);
+        assert_eq!(buffer.read_felt252(7), 0x32669f54ab3332c9cc8e16f3f52e4f2ce22bed764a1bed7b1ac9475aa3bfb2d);
+        assert_eq!(buffer.read_partial_felt252(42, 1), 0xf9);
+        assert_eq!(buffer.read_partial_felt252(4, 2), 0x71b5);
+        assert_eq!(buffer.read_partial_felt252(16, 3), 0xc8e16f);
+        assert_eq!(buffer.read_partial_felt252(19, 4), 0x3f52e4f2);
+        assert_eq!(buffer.read_partial_felt252(3, 5), 0xd471b5146b);
+        assert_eq!(buffer.read_partial_felt252(12, 6), 0xb334099cc8e1);
+        assert_eq!(buffer.read_partial_felt252(3, 7), 0xd471b5146b2669);
+        assert_eq!(buffer.read_partial_felt252(30, 8), 0xd7b1ac9475aa3bfb);
+        assert_eq!(buffer.read_partial_felt252(17, 9), 0xe16f3f52e4f2ce22be);
+        assert_eq!(buffer.read_partial_felt252(10, 10), 0xf54ab334099cc8e16f3f);
+        assert_eq!(buffer.read_partial_felt252(46, 11), 0x985784dbd4b61bbb3d575);
+        assert_eq!(buffer.read_partial_felt252(5, 12), 0xb5146b2669f54ab334099cc8);
+        assert_eq!(buffer.read_partial_felt252(33, 13), 0x9475aa3bfb3a2ed08cf9f16c99);
+        assert_eq!(buffer.read_partial_felt252(48, 14), 0x784dbd4b61bbb3d575032f755e20);
+        assert_eq!(buffer.read_partial_felt252(19, 15), 0x3f52e4f2ce22bed764a1bed7b1ac94);
+        assert_eq!(buffer.read_partial_felt252(20, 16), 0x52e4f2ce22bed764a1bed7b1ac9475aa);
+        assert_eq!(buffer.read_partial_felt252(17, 17), 0xe16f3f52e4f2ce22bed764a1bed7b1ac94);
+        assert_eq!(buffer.read_partial_felt252(5, 18), 0xb5146b2669f54ab334099cc8e16f3f52e4f2);
+        assert_eq!(buffer.read_partial_felt252(28, 19), 0xa1bed7b1ac9475aa3bfb3a2ed08cf9f16c9909);
+        assert_eq!(buffer.read_partial_felt252(4, 20), 0x71b5146b2669f54ab334099cc8e16f3f52e4f2ce);
+        assert_eq!(buffer.read_partial_felt252(6, 21), 0x146b2669f54ab334099cc8e16f3f52e4f2ce22bed7);
+        assert_eq!(buffer.read_partial_felt252(30, 22), 0xd7b1ac9475aa3bfb3a2ed08cf9f16c990985784dbd4b);
+        assert_eq!(buffer.read_partial_felt252(23, 23), 0xce22bed764a1bed7b1ac9475aa3bfb3a2ed08cf9f16c99);
+        assert_eq!(buffer.read_partial_felt252(10, 24), 0xf54ab334099cc8e16f3f52e4f2ce22bed764a1bed7b1ac94);
+        assert_eq!(buffer.read_partial_felt252(10, 25), 0xf54ab334099cc8e16f3f52e4f2ce22bed764a1bed7b1ac9475);
+        assert_eq!(buffer.read_partial_felt252(34, 26), 0x75aa3bfb3a2ed08cf9f16c990985784dbd4b61bbb3d575032f75);
+        assert_eq!(buffer.read_partial_felt252(3, 27), 0xd471b5146b2669f54ab334099cc8e16f3f52e4f2ce22bed764a1be);
+        assert_eq!(buffer.read_partial_felt252(9, 28), 0x69f54ab334099cc8e16f3f52e4f2ce22bed764a1bed7b1ac9475aa3b);
+        assert_eq!(buffer.read_partial_felt252(4, 29), 0x71b5146b2669f54ab334099cc8e16f3f52e4f2ce22bed764a1bed7b1ac);
+        assert_eq!(buffer.read_partial_felt252(2, 30), 0x7d471b5146b2669f54ab334099cc8e16f3f52e4f2ce22bed764a1bed7b1);
+        assert_eq!(buffer.read_partial_felt252(2, 31), 0x7d471b5146b2669f54ab334099cc8e16f3f52e4f2ce22bed764a1bed7b1ac);
+        assert_eq!(buffer.read_partial_felt252(0, 32), 0x53007d471b5139f2669f54ab334099cc8e16f3f52e4f2ce22bed764a1bed7a5);
+        assert_eq!(buffer.hash_sha256(), [0x2af46a47, 0x140621f8, 0x10bb6e2a, 0x79a52a77, 0x6e0dddd0, 0xc4fff20, 0x865e3d5e, 0x93023dfa]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0x9313adb4, 0xa192a1bc, 0x2def5aaf, 0x5b28d632, 0x307293a6, 0xb45736ee, 0xe05d6d8, 0xe7899f75]);
+        assert_eq!(buffer.hash_poseidon_range(34, 53), 0x2e0aea6e34b93dfa537994ae132356722b4524aabac79a47a8fe23715b57bf5);
+        assert_eq!(buffer.hash_poseidon_range(32, 61), 0x5c74be2115e85b39244c4939f4751698c719734bd272f6b68155f6d80648099);
+        assert_eq!(buffer.hash_poseidon_range(41, 42), 0x4555631ccba4b6688859fe1e0558621485c9ed700fb9f2ef127f68d9eb27e52);
+        assert_eq!(buffer.hash_poseidon_range(55, 60), 0x71a57bb31455829e13842c876c7399f741daa1af30cfa760ddd046ff0f858);
+        assert_eq!(buffer.hash_poseidon_range(0, 37), 0x26a21d0649a1210ab6271d62b2d202cfc446ceef457bc38a1b29c746e5035eb);
 
-        let mut serialized_byte_array = array![0x3, 0x9f7d174a37ad5976059fc93514f47d6215c26b8eeaca4c3569a97aac047b9a, 0x7a7c2bf0005b02f3dbc06210851617e97c45a1cdfb05a4251cdf6ac389189e, 0x3e39ad1944ba439f823f6f8571e8abcb71e1a2ae56dddcbdbf37295906a489, 0xb7fb0012b0d3, 0x6].span();
+        let mut serialized_byte_array = array![0x2, 0xbae1510af3348e6ba824f76a2ec53b58cb42091685c409cb59e2ea32320cb5, 0x7aad475724b723d94da24fec6635c6e253da5fa108b50617f98eda24140767, 0x1cd23309ff66dac8c1ae344eabcd6624714b, 0x12].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(52), 0xa405);
-        assert_eq!(buffer.read_u32_le(41), 0x16851062);
-        assert_eq!(buffer.read_u64_le(26), 0x2b7c7a9a7b04ac7a);
-        assert_eq!(buffer.read_u256(20), 0xeaca4c3569a97aac047b9a7a7c2bf0005b02f3dbc06210851617e97c45a1cdfb);
-        assert_eq!(buffer.read_bytes31(9), 0x9fc93514f47d6215c26b8eeaca4c3569a97aac047b9a7a7c2bf0005b02f3db);
-        assert_eq!(buffer.read_felt252(42), 0x851617e97c457fcdfb05a4251cdf6ac389189e3e39ad1944ba439f823f6f83);
-        assert_eq!(buffer.read_partial_felt252(30, 1), 0x9a);
-        assert_eq!(buffer.read_partial_felt252(86, 2), 0xbf37);
-        assert_eq!(buffer.read_partial_felt252(49, 3), 0xa1cdfb);
-        assert_eq!(buffer.read_partial_felt252(66, 4), 0x44ba439f);
-        assert_eq!(buffer.read_partial_felt252(86, 5), 0xbf37295906);
-        assert_eq!(buffer.read_partial_felt252(12, 6), 0x14f47d6215c2);
-        assert_eq!(buffer.read_partial_felt252(66, 7), 0x44ba439f823f6f);
-        assert_eq!(buffer.read_partial_felt252(37, 8), 0x2f3dbc062108516);
-        assert_eq!(buffer.read_partial_felt252(9, 9), 0x9fc93514f47d6215c2);
-        assert_eq!(buffer.read_partial_felt252(25, 10), 0xa97aac047b9a7a7c2bf0);
-        assert_eq!(buffer.read_partial_felt252(44, 11), 0x1617e97c45a1cdfb05a425);
-        assert_eq!(buffer.read_partial_felt252(82, 12), 0x56dddcbdbf37295906a489b7);
-        assert_eq!(buffer.read_partial_felt252(42, 13), 0x10851617e97c45a1cdfb05a425);
-        assert_eq!(buffer.read_partial_felt252(7, 14), 0x76059fc93514f47d6215c26b8eea);
-        assert_eq!(buffer.read_partial_felt252(59, 15), 0x89189e3e39ad1944ba439f823f6f85);
-        assert_eq!(buffer.read_partial_felt252(24, 16), 0x69a97aac047b9a7a7c2bf0005b02f3db);
-        assert_eq!(buffer.read_partial_felt252(57, 17), 0x6ac389189e3e39ad1944ba439f823f6f85);
-        assert_eq!(buffer.read_partial_felt252(73, 18), 0x8571e8abcb71e1a2ae56dddcbdbf37295906);
-        assert_eq!(buffer.read_partial_felt252(49, 19), 0xa1cdfb05a4251cdf6ac389189e3e39ad1944ba);
-        assert_eq!(buffer.read_partial_felt252(25, 20), 0xa97aac047b9a7a7c2bf0005b02f3dbc062108516);
-        assert_eq!(buffer.read_partial_felt252(50, 21), 0xcdfb05a4251cdf6ac389189e3e39ad1944ba439f82);
-        assert_eq!(buffer.read_partial_felt252(37, 22), 0x2f3dbc06210851617e97c45a1cdfb05a4251cdf6ac3);
-        assert_eq!(buffer.read_partial_felt252(27, 23), 0xac047b9a7a7c2bf0005b02f3dbc06210851617e97c45a1);
-        assert_eq!(buffer.read_partial_felt252(26, 24), 0x7aac047b9a7a7c2bf0005b02f3dbc06210851617e97c45a1);
-        assert_eq!(buffer.read_partial_felt252(38, 25), 0xf3dbc06210851617e97c45a1cdfb05a4251cdf6ac389189e3e);
-        assert_eq!(buffer.read_partial_felt252(56, 26), 0xdf6ac389189e3e39ad1944ba439f823f6f8571e8abcb71e1a2ae);
-        assert_eq!(buffer.read_partial_felt252(52, 27), 0x5a4251cdf6ac389189e3e39ad1944ba439f823f6f8571e8abcb71);
-        assert_eq!(buffer.read_partial_felt252(29, 28), 0x7b9a7a7c2bf0005b02f3dbc06210851617e97c45a1cdfb05a4251cdf);
-        assert_eq!(buffer.read_partial_felt252(66, 29), 0x44ba439f823f6f8571e8abcb71e1a2ae56dddcbdbf37295906a489b7fb);
-        assert_eq!(buffer.read_partial_felt252(66, 30), 0x44ba439f823f6f8571e8abcb71e1a2ae56dddcbdbf37295906a489b7fb00);
-        assert_eq!(buffer.read_partial_felt252(18, 31), 0x6b8eeaca4c3569a97aac047b9a7a7c2bf0005b02f3dbc06210851617e97c45);
-        assert_eq!(buffer.read_partial_felt252(48, 32), 0x5a1cdfb05a42494df6ac389189e3e39ad1944ba439f823f6f8571e8abcb71d9);
-        assert_eq!(buffer.hash_sha256(), [0xfd54fda0, 0x9ccc2d37, 0xef83a4d8, 0xc16b57bf, 0xb1a1b790, 0x545ebb71, 0xea199f49, 0xeef7e17b]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x9ace9900, 0xcac95df7, 0x1eb1bf9e, 0x60691b02, 0xcac27e29, 0xd984ae9f, 0x512cca2b, 0xf8c8421]);
-        assert_eq!(buffer.hash_poseidon_range(89, 90), 0x661886120bab150fb19a50b36591b2566cb73a3ad4f39d4493b7d71bd8abbce);
-        assert_eq!(buffer.hash_poseidon_range(34, 95), 0x3b51c6b231005ca55029c7f85ba3c8b7990439416b8de107ba095e9b15345eb);
-        assert_eq!(buffer.hash_poseidon_range(42, 98), 0x54a61dfc1f7a621e944919a63de9cb980c42f6b2e8a14bfcfd0199d2fa833f1);
-        assert_eq!(buffer.hash_poseidon_range(52, 74), 0x6d40f691c63345dfda269da25d4cb155b7d1b50dd01a0afc9c3d68cdef92bf8);
-        assert_eq!(buffer.hash_poseidon_range(32, 63), 0x34b9b6d8002d58c8d8e9de61c19750c1b47944e451e0c729893355f02a048c0);
+        assert_eq!(buffer.read_u16_le(74), 0xcdab);
+        assert_eq!(buffer.read_u32_le(10), 0xc52e6af7);
+        assert_eq!(buffer.read_u64_le(33), 0xa24dd923b7245747);
+        assert_eq!(buffer.read_u256(28), 0x320cb57aad475724b723d94da24fec6635c6e253da5fa108b50617f98eda2414);
+        assert_eq!(buffer.read_bytes31(5), 0x348e6ba824f76a2ec53b58cb42091685c409cb59e2ea32320cb57aad475724);
+        assert_eq!(buffer.read_felt252(41), 0x7ec6635c6e253415fa108b50617f98eda241407671cd23309ff66dac8c1ae2b);
+        assert_eq!(buffer.read_partial_felt252(70, 1), 0xc1);
+        assert_eq!(buffer.read_partial_felt252(43, 2), 0x6635);
+        assert_eq!(buffer.read_partial_felt252(66, 3), 0xff66da);
+        assert_eq!(buffer.read_partial_felt252(2, 4), 0x510af334);
+        assert_eq!(buffer.read_partial_felt252(5, 5), 0x348e6ba824);
+        assert_eq!(buffer.read_partial_felt252(51, 6), 0x8b50617f98e);
+        assert_eq!(buffer.read_partial_felt252(34, 7), 0x5724b723d94da2);
+        assert_eq!(buffer.read_partial_felt252(29, 8), 0xcb57aad475724b7);
+        assert_eq!(buffer.read_partial_felt252(8, 9), 0xa824f76a2ec53b58cb);
+        assert_eq!(buffer.read_partial_felt252(60, 10), 0x7671cd23309ff66dac8);
+        assert_eq!(buffer.read_partial_felt252(21, 11), 0xc409cb59e2ea32320cb57a);
+        assert_eq!(buffer.read_partial_felt252(6, 12), 0x8e6ba824f76a2ec53b58cb42);
+        assert_eq!(buffer.read_partial_felt252(28, 13), 0x320cb57aad475724b723d94da2);
+        assert_eq!(buffer.read_partial_felt252(38, 14), 0xd94da24fec6635c6e253da5fa108);
+        assert_eq!(buffer.read_partial_felt252(60, 15), 0x7671cd23309ff66dac8c1ae344eab);
+        assert_eq!(buffer.read_partial_felt252(61, 16), 0x671cd23309ff66dac8c1ae344eabcd66);
+        assert_eq!(buffer.read_partial_felt252(8, 17), 0xa824f76a2ec53b58cb42091685c409cb59);
+        assert_eq!(buffer.read_partial_felt252(21, 18), 0xc409cb59e2ea32320cb57aad475724b723d9);
+        assert_eq!(buffer.read_partial_felt252(16, 19), 0xcb42091685c409cb59e2ea32320cb57aad4757);
+        assert_eq!(buffer.read_partial_felt252(18, 20), 0x91685c409cb59e2ea32320cb57aad475724b723);
+        assert_eq!(buffer.read_partial_felt252(15, 21), 0x58cb42091685c409cb59e2ea32320cb57aad475724);
+        assert_eq!(buffer.read_partial_felt252(42, 22), 0xec6635c6e253da5fa108b50617f98eda241407671cd2);
+        assert_eq!(buffer.read_partial_felt252(49, 23), 0x5fa108b50617f98eda241407671cd23309ff66dac8c1ae);
+        assert_eq!(buffer.read_partial_felt252(6, 24), 0x8e6ba824f76a2ec53b58cb42091685c409cb59e2ea32320c);
+        assert_eq!(buffer.read_partial_felt252(0, 25), 0xbae1510af3348e6ba824f76a2ec53b58cb42091685c409cb59);
+        assert_eq!(buffer.read_partial_felt252(8, 26), 0xa824f76a2ec53b58cb42091685c409cb59e2ea32320cb57aad47);
+        assert_eq!(buffer.read_partial_felt252(6, 27), 0x8e6ba824f76a2ec53b58cb42091685c409cb59e2ea32320cb57aad);
+        assert_eq!(buffer.read_partial_felt252(44, 28), 0x35c6e253da5fa108b50617f98eda241407671cd23309ff66dac8c1ae);
+        assert_eq!(buffer.read_partial_felt252(24, 29), 0x59e2ea32320cb57aad475724b723d94da24fec6635c6e253da5fa108b5);
+        assert_eq!(buffer.read_partial_felt252(0, 30), 0xbae1510af3348e6ba824f76a2ec53b58cb42091685c409cb59e2ea32320c);
+        assert_eq!(buffer.read_partial_felt252(38, 31), 0xd94da24fec6635c6e253da5fa108b50617f98eda241407671cd23309ff66da);
+        assert_eq!(buffer.read_partial_felt252(32, 32), 0x5475724b723d7e8a24fec6635c6e253da5fa108b50617f98eda241407671cbd);
+        assert_eq!(buffer.hash_sha256(), [0xf7eb92ac, 0x52e527c5, 0x5910c081, 0x18357f89, 0x75bdd538, 0xbe9d2102, 0xe56a64e, 0xea03a793]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0x122f43fd, 0x2808e439, 0xb5f0e862, 0xb820700d, 0xdcb20bdb, 0xb430466d, 0x3fa253f2, 0x33f4d862]);
+        assert_eq!(buffer.hash_poseidon_range(3, 31), 0x4bc5f0b2d0cfae8e894c9dcb512b3da4dc6fd942f2eb93ba8c10fe86892b2d7);
+        assert_eq!(buffer.hash_poseidon_range(74, 76), 0x128af579527bd346f3388e210627b02e169ba2910fd7a232cd3d35ee48eb953);
+        assert_eq!(buffer.hash_poseidon_range(52, 57), 0x64723dbd57be944cf8ce94d94c99b8d4c7051398327e1fdc60c648e2a94405c);
+        assert_eq!(buffer.hash_poseidon_range(25, 58), 0x2e03b6ceae0d7f70723749a8a28f0bd1935286136eba2a91740a6e9ddfc8444);
+        assert_eq!(buffer.hash_poseidon_range(47, 53), 0x414ffdc83fcfbded79614dec729ae79fbaed3dc550cff9370ea2dfe8089ef92);
 
-        let mut serialized_byte_array = array![0x3, 0xa6c4649106100b57d649f67bd92b32cbe756f67ef935e81b7920e4d4c4c3e2, 0x4b42240c187e6c4b0029cc297022f2b35e94251d0f0e8f8e8b7d2ede9f1348, 0x527b4814d7030c3f9950ed4b6bc5ebe8e98bff90fe3a3184bfc6964b47fbdb, 0x5e9a55b7439eb6e726bffde5c0b788cee64d, 0x12].span();
+        let mut serialized_byte_array = array![0x2, 0x0b6be3742e68b05b0a011f5ff041b9f3b43504b4dccf86ebf269bbf86404da, 0xce7bc101b04ff2726391764258c2a778559d72faba391d0daace3345aa6c92, 0x1b, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(42), 0x7029);
-        assert_eq!(buffer.read_u32_le(12), 0xcb322bd9);
-        assert_eq!(buffer.read_u64_le(23), 0xe2c3c4d4e420791b);
-        assert_eq!(buffer.read_u256(9), 0x49f67bd92b32cbe756f67ef935e81b7920e4d4c4c3e24b42240c187e6c4b0029);
-        assert_eq!(buffer.read_bytes31(59), 0x9f1348527b4814d7030c3f9950ed4b6bc5ebe8e98bff90fe3a3184bfc6964b);
-        assert_eq!(buffer.read_felt252(2), 0x49106100b57d57df67bd92b32cbe756f67ef935e81b7920e4d4c4c3e24b4218);
-        assert_eq!(buffer.read_partial_felt252(2, 1), 0x64);
-        assert_eq!(buffer.read_partial_felt252(66, 2), 0xd703);
-        assert_eq!(buffer.read_partial_felt252(91, 3), 0xfbdb5e);
-        assert_eq!(buffer.read_partial_felt252(86, 4), 0xbfc6964b);
-        assert_eq!(buffer.read_partial_felt252(32, 5), 0x42240c187e);
-        assert_eq!(buffer.read_partial_felt252(70, 6), 0x9950ed4b6bc5);
-        assert_eq!(buffer.read_partial_felt252(15, 7), 0xcbe756f67ef935);
-        assert_eq!(buffer.read_partial_felt252(55, 8), 0x8b7d2ede9f134852);
-        assert_eq!(buffer.read_partial_felt252(64, 9), 0x4814d7030c3f9950ed);
-        assert_eq!(buffer.read_partial_felt252(44, 10), 0x22f2b35e94251d0f0e8f);
-        assert_eq!(buffer.read_partial_felt252(88, 11), 0x964b47fbdb5e9a55b7439e);
-        assert_eq!(buffer.read_partial_felt252(3, 12), 0x9106100b57d649f67bd92b32);
-        assert_eq!(buffer.read_partial_felt252(36, 13), 0x7e6c4b0029cc297022f2b35e94);
-        assert_eq!(buffer.read_partial_felt252(24, 14), 0x7920e4d4c4c3e24b42240c187e6c);
-        assert_eq!(buffer.read_partial_felt252(10, 15), 0xf67bd92b32cbe756f67ef935e81b79);
-        assert_eq!(buffer.read_partial_felt252(60, 16), 0x1348527b4814d7030c3f9950ed4b6bc5);
-        assert_eq!(buffer.read_partial_felt252(25, 17), 0x20e4d4c4c3e24b42240c187e6c4b0029cc);
-        assert_eq!(buffer.read_partial_felt252(4, 18), 0x6100b57d649f67bd92b32cbe756f67ef935);
-        assert_eq!(buffer.read_partial_felt252(82, 19), 0xfe3a3184bfc6964b47fbdb5e9a55b7439eb6e7);
-        assert_eq!(buffer.read_partial_felt252(78, 20), 0xe98bff90fe3a3184bfc6964b47fbdb5e9a55b743);
-        assert_eq!(buffer.read_partial_felt252(88, 21), 0x964b47fbdb5e9a55b7439eb6e726bffde5c0b788ce);
-        assert_eq!(buffer.read_partial_felt252(41, 22), 0xcc297022f2b35e94251d0f0e8f8e8b7d2ede9f134852);
-        assert_eq!(buffer.read_partial_felt252(19, 23), 0x7ef935e81b7920e4d4c4c3e24b42240c187e6c4b0029cc);
-        assert_eq!(buffer.read_partial_felt252(63, 24), 0x7b4814d7030c3f9950ed4b6bc5ebe8e98bff90fe3a3184bf);
-        assert_eq!(buffer.read_partial_felt252(59, 25), 0x9f1348527b4814d7030c3f9950ed4b6bc5ebe8e98bff90fe3a);
-        assert_eq!(buffer.read_partial_felt252(52, 26), 0xe8f8e8b7d2ede9f1348527b4814d7030c3f9950ed4b6bc5ebe8);
-        assert_eq!(buffer.read_partial_felt252(31, 27), 0x4b42240c187e6c4b0029cc297022f2b35e94251d0f0e8f8e8b7d2e);
-        assert_eq!(buffer.read_partial_felt252(82, 28), 0xfe3a3184bfc6964b47fbdb5e9a55b7439eb6e726bffde5c0b788cee6);
-        assert_eq!(buffer.read_partial_felt252(47, 29), 0x5e94251d0f0e8f8e8b7d2ede9f1348527b4814d7030c3f9950ed4b6bc5);
-        assert_eq!(buffer.read_partial_felt252(72, 30), 0xed4b6bc5ebe8e98bff90fe3a3184bfc6964b47fbdb5e9a55b7439eb6e726);
-        assert_eq!(buffer.read_partial_felt252(50, 31), 0x1d0f0e8f8e8b7d2ede9f1348527b4814d7030c3f9950ed4b6bc5ebe8e98bff);
-        assert_eq!(buffer.read_partial_felt252(44, 32), 0x2f2b35e94251ccb0e8f8e8b7d2ede9f1348527b4814d7030c3f9950ed4b6bc1);
-        assert_eq!(buffer.hash_sha256(), [0x74ebca90, 0x5717c18b, 0xe7d32e6f, 0x75e7d3ab, 0xa0d3e637, 0x62c18366, 0xa74e76d8, 0xbd2528a2]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x4b741931, 0x586aa788, 0x6c5b4762, 0xfc9fbe9c, 0x16e20759, 0x3f4a8268, 0xc4e44ea4, 0xb3176077]);
-        assert_eq!(buffer.hash_poseidon_range(10, 33), 0x2a8889fa5578e5375618fff7da160b7ab766f3c5fba7a1f18401dc5b1c9088d);
-        assert_eq!(buffer.hash_poseidon_range(33, 109), 0xc633a4670c5e9c39ee1bcaea798950988db5741d3e34448e7541cda8b55ea1);
-        assert_eq!(buffer.hash_poseidon_range(70, 110), 0x4d0bb08a7a8b1d22a70a16647eb5317b99e05b9d64a63b418a4c52214de2a97);
-        assert_eq!(buffer.hash_poseidon_range(107, 108), 0x55b35ae26ccc5a56e415a9c2c5187d0597f0997474075d01f93bd16c83e7b28);
-        assert_eq!(buffer.hash_poseidon_range(28, 76), 0x3a2e3e74b4e6b496dbab651c251ec2a2ef29d300768d973fa5013b88097032b);
+        assert_eq!(buffer.read_u16_le(46), 0x5578);
+        assert_eq!(buffer.read_u32_le(25), 0x64f8bb69);
+        assert_eq!(buffer.read_u64_le(48), 0xaa0d1d39bafa729d);
+        assert_eq!(buffer.read_u256(18), 0x04b4dccf86ebf269bbf86404dace7bc101b04ff2726391764258c2a778559d72);
+        assert_eq!(buffer.read_bytes31(24), 0xf269bbf86404dace7bc101b04ff2726391764258c2a778559d72faba391d0d);
+        assert_eq!(buffer.read_felt252(20), 0x4cf86ebf269ba2d6404dace7bc101b04ff2726391764258c2a778559d72fa9f);
+        assert_eq!(buffer.read_partial_felt252(22, 1), 0x86);
+        assert_eq!(buffer.read_partial_felt252(28, 2), 0x6404);
+        assert_eq!(buffer.read_partial_felt252(17, 3), 0x3504b4);
+        assert_eq!(buffer.read_partial_felt252(25, 4), 0x69bbf864);
+        assert_eq!(buffer.read_partial_felt252(28, 5), 0x6404dace7b);
+        assert_eq!(buffer.read_partial_felt252(35, 6), 0xb04ff2726391);
+        assert_eq!(buffer.read_partial_felt252(51, 7), 0xba391d0daace33);
+        assert_eq!(buffer.read_partial_felt252(32, 8), 0x7bc101b04ff27263);
+        assert_eq!(buffer.read_partial_felt252(23, 9), 0xebf269bbf86404dace);
+        assert_eq!(buffer.read_partial_felt252(33, 10), 0xc101b04ff27263917642);
+        assert_eq!(buffer.read_partial_felt252(24, 11), 0xf269bbf86404dace7bc101);
+        assert_eq!(buffer.read_partial_felt252(41, 12), 0x764258c2a778559d72faba39);
+        assert_eq!(buffer.read_partial_felt252(37, 13), 0xf2726391764258c2a778559d72);
+        assert_eq!(buffer.read_partial_felt252(12, 14), 0xf041b9f3b43504b4dccf86ebf269);
+        assert_eq!(buffer.read_partial_felt252(44, 15), 0xc2a778559d72faba391d0daace3345);
+        assert_eq!(buffer.read_partial_felt252(27, 16), 0xf86404dace7bc101b04ff27263917642);
+        assert_eq!(buffer.read_partial_felt252(31, 17), 0xce7bc101b04ff2726391764258c2a77855);
+        assert_eq!(buffer.read_partial_felt252(33, 18), 0xc101b04ff2726391764258c2a778559d72fa);
+        assert_eq!(buffer.read_partial_felt252(10, 19), 0x1f5ff041b9f3b43504b4dccf86ebf269bbf864);
+        assert_eq!(buffer.read_partial_felt252(34, 20), 0x1b04ff2726391764258c2a778559d72faba391d);
+        assert_eq!(buffer.read_partial_felt252(30, 21), 0xdace7bc101b04ff2726391764258c2a778559d72fa);
+        assert_eq!(buffer.read_partial_felt252(29, 22), 0x4dace7bc101b04ff2726391764258c2a778559d72fa);
+        assert_eq!(buffer.read_partial_felt252(9, 23), 0x11f5ff041b9f3b43504b4dccf86ebf269bbf86404dace);
+        assert_eq!(buffer.read_partial_felt252(33, 24), 0xc101b04ff2726391764258c2a778559d72faba391d0daace);
+        assert_eq!(buffer.read_partial_felt252(3, 25), 0x742e68b05b0a011f5ff041b9f3b43504b4dccf86ebf269bbf8);
+        assert_eq!(buffer.read_partial_felt252(18, 26), 0x4b4dccf86ebf269bbf86404dace7bc101b04ff2726391764258);
+        assert_eq!(buffer.read_partial_felt252(19, 27), 0xb4dccf86ebf269bbf86404dace7bc101b04ff2726391764258c2a7);
+        assert_eq!(buffer.read_partial_felt252(18, 28), 0x4b4dccf86ebf269bbf86404dace7bc101b04ff2726391764258c2a7);
+        assert_eq!(buffer.read_partial_felt252(11, 29), 0x5ff041b9f3b43504b4dccf86ebf269bbf86404dace7bc101b04ff27263);
+        assert_eq!(buffer.read_partial_felt252(12, 30), 0xf041b9f3b43504b4dccf86ebf269bbf86404dace7bc101b04ff272639176);
+        assert_eq!(buffer.read_partial_felt252(9, 31), 0x11f5ff041b9f3b43504b4dccf86ebf269bbf86404dace7bc101b04ff27263);
+        assert_eq!(buffer.read_partial_felt252(23, 32), 0x3f269bbf86402edce7bc101b04ff2726391764258c2a778559d72faba391cf0);
+        assert_eq!(buffer.hash_sha256(), [0x403d7c22, 0x59644db, 0xcd2a67b9, 0xed29ef1d, 0x73580be6, 0x76616441, 0x7c2dcb3e, 0x110acb24]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0x96315a93, 0xb6f02ca8, 0x1ebe78df, 0x3a8f747a, 0xd9f26842, 0x7d51fb2d, 0xad177ac8, 0xcf5f62f5]);
+        assert_eq!(buffer.hash_poseidon_range(39, 39), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
+        assert_eq!(buffer.hash_poseidon_range(24, 62), 0xf0ab26472a21ab9ab57635aa6b3bdf85b45defb27638aae76ac852543fee40);
+        assert_eq!(buffer.hash_poseidon_range(26, 31), 0x2c01aad5500c3f6b2e5e7132144663f218e1a587793252e89e8446745eb3ec6);
+        assert_eq!(buffer.hash_poseidon_range(51, 62), 0x3d431069dc539cc9cfe0d9472d8a547bd2ac042115906040e24c0b6005a976e);
+        assert_eq!(buffer.hash_poseidon_range(20, 60), 0xa22d9f6fd74878252194308ba42b69d25d574e7eeff11d64ebefab08ba301a);
 
-        let mut serialized_byte_array = array![0x3, 0x61d4b7372e6dd2c57cdc9377a168f461f0253b229cca408d4eb0129ea6f9eb, 0x343404d848c1c6018e7b2b53178c0cca4194efea712c629e0522520d3fd44e, 0xc446e5bb8c1b00eabce27d90712c86996610f4321cfa2bf8cdeaa3c1678bef, 0xee9ce400c9abbb60a5, 0x9].span();
+        let mut serialized_byte_array = array![0x2, 0xcd1bcbae01b77aa47a1f93f0faa427761738622ed756b9d6bfecd6a8febb41, 0x9b1c2588a05ecb09ae0dbb0dad81b354ed6e454fbdc2ff75628f38d761bb62, 0x4e84f71bd602591f7f4e820afc8f74b025cb590bd68e65d181804f71e179, 0x1e].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(56), 0x5222);
-        assert_eq!(buffer.read_u32_le(12), 0x61f468a1);
-        assert_eq!(buffer.read_u64_le(9), 0xf061f468a17793dc);
-        assert_eq!(buffer.read_u256(46), 0xca4194efea712c629e0522520d3fd44ec446e5bb8c1b00eabce27d90712c8699);
-        assert_eq!(buffer.read_bytes31(34), 0xd848c1c6018e7b2b53178c0cca4194efea712c629e0522520d3fd44ec446e5);
-        assert_eq!(buffer.read_felt252(7), 0x57cdc9377a1675c61f0253b229cca408d4eb0129ea6f9eb343404d848c1c5e9);
-        assert_eq!(buffer.read_partial_felt252(88, 1), 0xa3);
-        assert_eq!(buffer.read_partial_felt252(57, 2), 0x520d);
-        assert_eq!(buffer.read_partial_felt252(2, 3), 0xb7372e);
-        assert_eq!(buffer.read_partial_felt252(70, 4), 0xbce27d90);
-        assert_eq!(buffer.read_partial_felt252(91, 5), 0x8befee9ce4);
-        assert_eq!(buffer.read_partial_felt252(48, 6), 0x94efea712c62);
-        assert_eq!(buffer.read_partial_felt252(61, 7), 0x4ec446e5bb8c1b);
-        assert_eq!(buffer.read_partial_felt252(40, 8), 0x7b2b53178c0cca41);
-        assert_eq!(buffer.read_partial_felt252(53, 9), 0x629e0522520d3fd44e);
-        assert_eq!(buffer.read_partial_felt252(3, 10), 0x372e6dd2c57cdc9377a1);
-        assert_eq!(buffer.read_partial_felt252(57, 11), 0x520d3fd44ec446e5bb8c1b);
-        assert_eq!(buffer.read_partial_felt252(45, 12), 0xcca4194efea712c629e0522);
-        assert_eq!(buffer.read_partial_felt252(76, 13), 0x86996610f4321cfa2bf8cdeaa3);
-        assert_eq!(buffer.read_partial_felt252(71, 14), 0xe27d90712c86996610f4321cfa2b);
-        assert_eq!(buffer.read_partial_felt252(85, 15), 0xf8cdeaa3c1678befee9ce400c9abbb);
-        assert_eq!(buffer.read_partial_felt252(48, 16), 0x94efea712c629e0522520d3fd44ec446);
-        assert_eq!(buffer.read_partial_felt252(46, 17), 0xca4194efea712c629e0522520d3fd44ec4);
-        assert_eq!(buffer.read_partial_felt252(79, 18), 0x10f4321cfa2bf8cdeaa3c1678befee9ce400);
-        assert_eq!(buffer.read_partial_felt252(37, 19), 0xc6018e7b2b53178c0cca4194efea712c629e05);
-        assert_eq!(buffer.read_partial_felt252(22, 20), 0x408d4eb0129ea6f9eb343404d848c1c6018e7b2b);
-        assert_eq!(buffer.read_partial_felt252(64, 21), 0xe5bb8c1b00eabce27d90712c86996610f4321cfa2b);
-        assert_eq!(buffer.read_partial_felt252(30, 22), 0xeb343404d848c1c6018e7b2b53178c0cca4194efea71);
-        assert_eq!(buffer.read_partial_felt252(25, 23), 0xb0129ea6f9eb343404d848c1c6018e7b2b53178c0cca41);
-        assert_eq!(buffer.read_partial_felt252(44, 24), 0x8c0cca4194efea712c629e0522520d3fd44ec446e5bb8c1b);
-        assert_eq!(buffer.read_partial_felt252(30, 25), 0xeb343404d848c1c6018e7b2b53178c0cca4194efea712c629e);
-        assert_eq!(buffer.read_partial_felt252(31, 26), 0x343404d848c1c6018e7b2b53178c0cca4194efea712c629e0522);
-        assert_eq!(buffer.read_partial_felt252(5, 27), 0x6dd2c57cdc9377a168f461f0253b229cca408d4eb0129ea6f9eb34);
-        assert_eq!(buffer.read_partial_felt252(0, 28), 0x61d4b7372e6dd2c57cdc9377a168f461f0253b229cca408d4eb0129e);
-        assert_eq!(buffer.read_partial_felt252(25, 29), 0xb0129ea6f9eb343404d848c1c6018e7b2b53178c0cca4194efea712c62);
-        assert_eq!(buffer.read_partial_felt252(9, 30), 0xdc9377a168f461f0253b229cca408d4eb0129ea6f9eb343404d848c1c601);
-        assert_eq!(buffer.read_partial_felt252(59, 31), 0x3fd44ec446e5bb8c1b00eabce27d90712c86996610f4321cfa2bf8cdeaa3c1);
-        assert_eq!(buffer.read_partial_felt252(45, 32), 0x4ca4194efea711b629e0522520d3fd44ec446e5bb8c1b00eabce27d90712c85);
-        assert_eq!(buffer.hash_sha256(), [0x52aad9d2, 0xbe2ad340, 0x21d3347c, 0x3430c4e5, 0x501ab66f, 0x535f79a1, 0x74dbcc10, 0xb43a8a06]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0xc391addd, 0x24d41e19, 0x1ce74dba, 0x43ef58fd, 0x11c6ce39, 0x9297f4ea, 0x105a31cc, 0x276b8223]);
-        assert_eq!(buffer.hash_poseidon_range(8, 56), 0x803dcd5a60cb8523fad6cbd52413acb48e4a7f885915276fd2b7f0a38891c5);
-        assert_eq!(buffer.hash_poseidon_range(71, 91), 0x7a16487b62f28fe34a01e920bd47d4fbe119b5926e0ce06224ec54e66db57d4);
-        assert_eq!(buffer.hash_poseidon_range(101, 101), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
-        assert_eq!(buffer.hash_poseidon_range(59, 71), 0x72b32d51372700b88fc414645cf58cf31fceabfa335d455b48fd06dc270861);
-        assert_eq!(buffer.hash_poseidon_range(78, 100), 0x520537fe601b5ba0f33ee18e4a560dd3c9124dd3ff85ec978017d0493f6b1ce);
+        assert_eq!(buffer.read_u16_le(14), 0x7627);
+        assert_eq!(buffer.read_u32_le(50), 0xffc2bd4f);
+        assert_eq!(buffer.read_u64_le(29), 0x5ea088251c9b41bb);
+        assert_eq!(buffer.read_u256(11), 0xf0faa427761738622ed756b9d6bfecd6a8febb419b1c2588a05ecb09ae0dbb0d);
+        assert_eq!(buffer.read_bytes31(17), 0x38622ed756b9d6bfecd6a8febb419b1c2588a05ecb09ae0dbb0dad81b354ed);
+        assert_eq!(buffer.read_felt252(45), 0x354ed6e454fbc4cff75628f38d761bb624e84f71bd602591f7f4e820afc8f5e);
+        assert_eq!(buffer.read_partial_felt252(84, 1), 0x65);
+        assert_eq!(buffer.read_partial_felt252(81, 2), 0xbd6);
+        assert_eq!(buffer.read_partial_felt252(35, 3), 0xa05ecb);
+        assert_eq!(buffer.read_partial_felt252(2, 4), 0xcbae01b7);
+        assert_eq!(buffer.read_partial_felt252(81, 5), 0xbd68e65d1);
+        assert_eq!(buffer.read_partial_felt252(75, 6), 0x8f74b025cb59);
+        assert_eq!(buffer.read_partial_felt252(61, 7), 0x624e84f71bd602);
+        assert_eq!(buffer.read_partial_felt252(34, 8), 0x88a05ecb09ae0dbb);
+        assert_eq!(buffer.read_partial_felt252(72, 9), 0x820afc8f74b025cb59);
+        assert_eq!(buffer.read_partial_felt252(50, 10), 0x4fbdc2ff75628f38d761);
+        assert_eq!(buffer.read_partial_felt252(68, 11), 0x591f7f4e820afc8f74b025);
+        assert_eq!(buffer.read_partial_felt252(42, 12), 0xdad81b354ed6e454fbdc2ff);
+        assert_eq!(buffer.read_partial_felt252(27, 13), 0xa8febb419b1c2588a05ecb09ae);
+        assert_eq!(buffer.read_partial_felt252(44, 14), 0x81b354ed6e454fbdc2ff75628f38);
+        assert_eq!(buffer.read_partial_felt252(39, 15), 0xae0dbb0dad81b354ed6e454fbdc2ff);
+        assert_eq!(buffer.read_partial_felt252(22, 16), 0xb9d6bfecd6a8febb419b1c2588a05ecb);
+        assert_eq!(buffer.read_partial_felt252(0, 17), 0xcd1bcbae01b77aa47a1f93f0faa4277617);
+        assert_eq!(buffer.read_partial_felt252(46, 18), 0x54ed6e454fbdc2ff75628f38d761bb624e84);
+        assert_eq!(buffer.read_partial_felt252(49, 19), 0x454fbdc2ff75628f38d761bb624e84f71bd602);
+        assert_eq!(buffer.read_partial_felt252(5, 20), 0xb77aa47a1f93f0faa427761738622ed756b9d6bf);
+        assert_eq!(buffer.read_partial_felt252(66, 21), 0xd602591f7f4e820afc8f74b025cb590bd68e65d181);
+        assert_eq!(buffer.read_partial_felt252(48, 22), 0x6e454fbdc2ff75628f38d761bb624e84f71bd602591f);
+        assert_eq!(buffer.read_partial_felt252(53, 23), 0xff75628f38d761bb624e84f71bd602591f7f4e820afc8f);
+        assert_eq!(buffer.read_partial_felt252(29, 24), 0xbb419b1c2588a05ecb09ae0dbb0dad81b354ed6e454fbdc2);
+        assert_eq!(buffer.read_partial_felt252(38, 25), 0x9ae0dbb0dad81b354ed6e454fbdc2ff75628f38d761bb624e);
+        assert_eq!(buffer.read_partial_felt252(42, 26), 0xdad81b354ed6e454fbdc2ff75628f38d761bb624e84f71bd602);
+        assert_eq!(buffer.read_partial_felt252(20, 27), 0xd756b9d6bfecd6a8febb419b1c2588a05ecb09ae0dbb0dad81b354);
+        assert_eq!(buffer.read_partial_felt252(31, 28), 0x9b1c2588a05ecb09ae0dbb0dad81b354ed6e454fbdc2ff75628f38d7);
+        assert_eq!(buffer.read_partial_felt252(4, 29), 0x1b77aa47a1f93f0faa427761738622ed756b9d6bfecd6a8febb419b1c);
+        assert_eq!(buffer.read_partial_felt252(25, 30), 0xecd6a8febb419b1c2588a05ecb09ae0dbb0dad81b354ed6e454fbdc2ff75);
+        assert_eq!(buffer.read_partial_felt252(44, 31), 0x81b354ed6e454fbdc2ff75628f38d761bb624e84f71bd602591f7f4e820afc);
+        assert_eq!(buffer.read_partial_felt252(10, 32), 0x3f0faa427761606622ed756b9d6bfecd6a8febb419b1c2588a05ecb09ae0da9);
+        assert_eq!(buffer.hash_sha256(), [0x4d9c3a70, 0x9ec7e883, 0x448a188a, 0xf6d6a7cc, 0x828f377a, 0x956bd926, 0x81d038dd, 0xe5bf71e3]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0xfa0a71c7, 0x641c0cad, 0xa68577bf, 0xb1b5ffb5, 0x9bc14bcf, 0x4e3608fe, 0xa377cb94, 0x3da58c04]);
+        assert_eq!(buffer.hash_poseidon_range(9, 17), 0x73bfacf5b42345a5818545085424791601e22bc59575656e5af4fd9a780909f);
+        assert_eq!(buffer.hash_poseidon_range(85, 86), 0x6d110c10299262e80a97be439bd4cc5a92626b0aa45bed80dd514c215d7026a);
+        assert_eq!(buffer.hash_poseidon_range(59, 71), 0x1c972f2a720eb20b5d45ddbb2b277e01b5572b4c546c8e36ec0b7bde949171a);
+        assert_eq!(buffer.hash_poseidon_range(17, 58), 0x6164f27b5ee8c9a40908cb716edd7ccd2b660d71b1c13c08d512b13df91c0ab);
+        assert_eq!(buffer.hash_poseidon_range(33, 36), 0x706238fd4c85b785775dd2909078b0e73f0d178d86eca26c2be9ba66e5907a2);
 
-        let mut serialized_byte_array = array![0x2, 0xd0e74d9c7b85ddeb1e02cdb2cca7773970abb8bb318fcff3f5f78d8bc5c87a, 0xc163f25c1261df70b14d48879b0ad788d645c2610955f2650293284c4868f4, 0x534513411e197843b93f751ae97d0b3e87c6406a50, 0x15].span();
+        let mut serialized_byte_array = array![0x0, 0x8a1b82d81c871b9a823f72dffa4a6127f02d91d2471371506bda2d56fe8c, 0x1e].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u16_le(39), 0x4db1);
-        assert_eq!(buffer.read_u32_le(23), 0x8df7f5f3);
-        assert_eq!(buffer.read_u64_le(71), 0x873e0b7de91a753f);
-        assert_eq!(buffer.read_u256(14), 0x773970abb8bb318fcff3f5f78d8bc5c87ac163f25c1261df70b14d48879b0ad7);
-        assert_eq!(buffer.read_bytes31(9), 0x02cdb2cca7773970abb8bb318fcff3f5f78d8bc5c87ac163f25c1261df70b1);
-        assert_eq!(buffer.read_felt252(20), 0x18fcff3f5f78d25c5c87ac163f25c1261df70b14d48879b0ad788d645c26103);
-        assert_eq!(buffer.read_partial_felt252(51, 1), 0x9);
-        assert_eq!(buffer.read_partial_felt252(54, 2), 0x6502);
-        assert_eq!(buffer.read_partial_felt252(53, 3), 0xf26502);
-        assert_eq!(buffer.read_partial_felt252(24, 4), 0xf5f78d8b);
-        assert_eq!(buffer.read_partial_felt252(23, 5), 0xf3f5f78d8b);
-        assert_eq!(buffer.read_partial_felt252(15, 6), 0x3970abb8bb31);
-        assert_eq!(buffer.read_partial_felt252(56, 7), 0x93284c4868f453);
-        assert_eq!(buffer.read_partial_felt252(28, 8), 0xc5c87ac163f25c12);
-        assert_eq!(buffer.read_partial_felt252(24, 9), 0xf5f78d8bc5c87ac163);
-        assert_eq!(buffer.read_partial_felt252(45, 10), 0xd788d645c2610955f265);
-        assert_eq!(buffer.read_partial_felt252(45, 11), 0xd788d645c2610955f26502);
-        assert_eq!(buffer.read_partial_felt252(4, 12), 0x7b85ddeb1e02cdb2cca77739);
-        assert_eq!(buffer.read_partial_felt252(14, 13), 0x773970abb8bb318fcff3f5f78d);
-        assert_eq!(buffer.read_partial_felt252(8, 14), 0x1e02cdb2cca7773970abb8bb318f);
-        assert_eq!(buffer.read_partial_felt252(55, 15), 0x293284c4868f4534513411e197843);
-        assert_eq!(buffer.read_partial_felt252(64, 16), 0x13411e197843b93f751ae97d0b3e87c6);
-        assert_eq!(buffer.read_partial_felt252(58, 17), 0x4c4868f4534513411e197843b93f751ae9);
-        assert_eq!(buffer.read_partial_felt252(12, 18), 0xcca7773970abb8bb318fcff3f5f78d8bc5c8);
-        assert_eq!(buffer.read_partial_felt252(40, 19), 0x4d48879b0ad788d645c2610955f2650293284c);
-        assert_eq!(buffer.read_partial_felt252(38, 20), 0x70b14d48879b0ad788d645c2610955f265029328);
-        assert_eq!(buffer.read_partial_felt252(30, 21), 0x7ac163f25c1261df70b14d48879b0ad788d645c261);
-        assert_eq!(buffer.read_partial_felt252(48, 22), 0x45c2610955f2650293284c4868f4534513411e197843);
-        assert_eq!(buffer.read_partial_felt252(19, 23), 0xbb318fcff3f5f78d8bc5c87ac163f25c1261df70b14d48);
-        assert_eq!(buffer.read_partial_felt252(18, 24), 0xb8bb318fcff3f5f78d8bc5c87ac163f25c1261df70b14d48);
-        assert_eq!(buffer.read_partial_felt252(40, 25), 0x4d48879b0ad788d645c2610955f2650293284c4868f4534513);
-        assert_eq!(buffer.read_partial_felt252(37, 26), 0xdf70b14d48879b0ad788d645c2610955f2650293284c4868f453);
-        assert_eq!(buffer.read_partial_felt252(15, 27), 0x3970abb8bb318fcff3f5f78d8bc5c87ac163f25c1261df70b14d48);
-        assert_eq!(buffer.read_partial_felt252(7, 28), 0xeb1e02cdb2cca7773970abb8bb318fcff3f5f78d8bc5c87ac163f25c);
-        assert_eq!(buffer.read_partial_felt252(34, 29), 0x5c1261df70b14d48879b0ad788d645c2610955f2650293284c4868f453);
-        assert_eq!(buffer.read_partial_felt252(25, 30), 0xf78d8bc5c87ac163f25c1261df70b14d48879b0ad788d645c2610955f265);
-        assert_eq!(buffer.read_partial_felt252(27, 31), 0x8bc5c87ac163f25c1261df70b14d48879b0ad788d645c2610955f265029328);
-        assert_eq!(buffer.read_partial_felt252(49, 32), 0x2610955f26500fb284c4868f4534513411e197843b93f751ae97d0b3e87c628);
-        assert_eq!(buffer.hash_sha256(), [0x49b46f76, 0x4b5cceb6, 0x1954f93b, 0x19682f01, 0x60954a7f, 0xa56b11cf, 0x824cc7e8, 0x40ee471e]);
-        assert_eq!(buffer.hash_dbl_sha256(), [0x59245637, 0xf46956c6, 0xad1e6e58, 0xa40c2b13, 0xa684960d, 0x89fc877c, 0xfcaf4b5a, 0x22acaa18]);
-        assert_eq!(buffer.hash_poseidon_range(18, 75), 0x20de2ce3546221669ed0e4b9bf2dfe2c68152de1cc616aadcad03819d76fd66);
-        assert_eq!(buffer.hash_poseidon_range(38, 56), 0x7bd6f91555b2d7e7901b78e4ba6e23396ee937cd1d28b3738d98514bd8c36cb);
-        assert_eq!(buffer.hash_poseidon_range(13, 40), 0x5c72375c40ef1a7763d32a42256ded0462bdd379be0c8e0d037f1a06bcc0b44);
-        assert_eq!(buffer.hash_poseidon_range(36, 58), 0x5a9433db88b1c5fecff1eb844398f6065cdadad123f7a78c942ed7415142659);
-        assert_eq!(buffer.hash_poseidon_range(45, 49), 0x13762c3a49fea1e669eb489ee094a1dad6b05be3f89cb94fe8c1170c002096a);
+        assert_eq!(buffer.read_u16_le(19), 0x47d2);
+        assert_eq!(buffer.read_u32_le(0), 0xd8821b8a);
+        assert_eq!(buffer.read_u64_le(10), 0x2df027614afadf72);
+        assert_eq!(buffer.read_partial_felt252(7, 1), 0x9a);
+        assert_eq!(buffer.read_partial_felt252(1, 2), 0x1b82);
+        assert_eq!(buffer.read_partial_felt252(6, 3), 0x1b9a82);
+        assert_eq!(buffer.read_partial_felt252(13, 4), 0x4a6127f0);
+        assert_eq!(buffer.read_partial_felt252(23, 5), 0x506bda2d56);
+        assert_eq!(buffer.read_partial_felt252(14, 6), 0x6127f02d91d2);
+        assert_eq!(buffer.read_partial_felt252(16, 7), 0xf02d91d2471371);
+        assert_eq!(buffer.read_partial_felt252(12, 8), 0xfa4a6127f02d91d2);
+        assert_eq!(buffer.read_partial_felt252(6, 9), 0x1b9a823f72dffa4a61);
+        assert_eq!(buffer.read_partial_felt252(4, 10), 0x1c871b9a823f72dffa4a);
+        assert_eq!(buffer.read_partial_felt252(14, 11), 0x6127f02d91d2471371506b);
+        assert_eq!(buffer.read_partial_felt252(13, 12), 0x4a6127f02d91d2471371506b);
+        assert_eq!(buffer.read_partial_felt252(0, 13), 0x8a1b82d81c871b9a823f72dffa);
+        assert_eq!(buffer.read_partial_felt252(1, 14), 0x1b82d81c871b9a823f72dffa4a61);
+        assert_eq!(buffer.read_partial_felt252(4, 15), 0x1c871b9a823f72dffa4a6127f02d91);
+        assert_eq!(buffer.read_partial_felt252(8, 16), 0x823f72dffa4a6127f02d91d247137150);
+        assert_eq!(buffer.read_partial_felt252(1, 17), 0x1b82d81c871b9a823f72dffa4a6127f02d);
+        assert_eq!(buffer.read_partial_felt252(3, 18), 0xd81c871b9a823f72dffa4a6127f02d91d247);
+        assert_eq!(buffer.read_partial_felt252(8, 19), 0x823f72dffa4a6127f02d91d2471371506bda2d);
+        assert_eq!(buffer.read_partial_felt252(6, 20), 0x1b9a823f72dffa4a6127f02d91d2471371506bda);
+        assert_eq!(buffer.read_partial_felt252(3, 21), 0xd81c871b9a823f72dffa4a6127f02d91d247137150);
+        assert_eq!(buffer.read_partial_felt252(1, 22), 0x1b82d81c871b9a823f72dffa4a6127f02d91d2471371);
+        assert_eq!(buffer.read_partial_felt252(1, 23), 0x1b82d81c871b9a823f72dffa4a6127f02d91d247137150);
+        assert_eq!(buffer.read_partial_felt252(0, 24), 0x8a1b82d81c871b9a823f72dffa4a6127f02d91d247137150);
+        assert_eq!(buffer.read_partial_felt252(1, 25), 0x1b82d81c871b9a823f72dffa4a6127f02d91d2471371506bda);
+        assert_eq!(buffer.read_partial_felt252(1, 26), 0x1b82d81c871b9a823f72dffa4a6127f02d91d2471371506bda2d);
+        assert_eq!(buffer.read_partial_felt252(0, 27), 0x8a1b82d81c871b9a823f72dffa4a6127f02d91d2471371506bda2d);
+        assert_eq!(buffer.read_partial_felt252(0, 28), 0x8a1b82d81c871b9a823f72dffa4a6127f02d91d2471371506bda2d56);
+        assert_eq!(buffer.read_partial_felt252(0, 29), 0x8a1b82d81c871b9a823f72dffa4a6127f02d91d2471371506bda2d56fe);
+        assert_eq!(buffer.read_partial_felt252(0, 30), 0x8a1b82d81c871b9a823f72dffa4a6127f02d91d2471371506bda2d56fe8c);
+        assert_eq!(buffer.hash_sha256(), [0xac75f1ae, 0x6da8e1e6, 0x8ee90f71, 0x75e92ba9, 0x3321ffc3, 0xe790acd6, 0x706bd829, 0x45c3ead5]);
+        assert_eq!(buffer.hash_dbl_sha256(), [0x40c340d5, 0x4d2eef3, 0x8acdb17e, 0x72c48e30, 0x4f12a70d, 0x1f0e28e8, 0x22f002ce, 0x4c27c722]);
+        assert_eq!(buffer.hash_poseidon_range(20, 20), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
+        assert_eq!(buffer.hash_poseidon_range(0, 19), 0x4f9e0b8f678ba4ea50019282b422adb2b2e1102663a69e08a1fc11a8162386);
+        assert_eq!(buffer.hash_poseidon_range(17, 27), 0x5b459b6ab4695b890cafcd344352f1f7ff13adae80f7076c9708f69acb108cb);
+        assert_eq!(buffer.hash_poseidon_range(21, 21), 0x545d6f7d28a8a398e543948be5a026af60c4dea482867a6eeb2525b35d1e1e1);
+        assert_eq!(buffer.hash_poseidon_range(18, 28), 0x2bb3ced5a0fc7f39ab61e46d59a7c0db2b7cc38bd6ebeabbe07976586669b40);
 
 
         // Random access test cases testing random reads
 
-        let mut serialized_byte_array = array![0x2, 0xe9c28342352d18a1875b96c0a3d90447d0851ab32e2cb048f9a6c8ce6e1ba0, 0x4789e867dc45f1cba3f4d669c6052901305699c1e6ebb2bd9c049811b9fa93, 0x008ec53b5e, 0x5].span();
+        let mut serialized_byte_array = array![0x3, 0x5b87d895f62bc686ddcf4fab41df196ad98a5abc83db78026fa83c377676d2, 0xee148374f13ac79d32d1a77698dec9cdad3b74e0b57592b6f61cb516765314, 0x87abab734a174ab18b1c6bf3aedf63fc6c3f931e6454541c182587e44f8af0, 0x1d442eebbc7bc355b5aaa7765c67b5e1e60acdc434c26b65df5e, 0x1a].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(24, 25), 0xf9a6c8ce6e1ba04789e867dc45f1cba3f4d669c60529013056);
-        assert_eq!(buffer.read_u64_le(18), 0xa6f948b02c2eb31a);
-        assert_eq!(buffer.read_partial_felt252(30, 21), 0xa04789e867dc45f1cba3f4d669c6052901305699c1);
-        assert_eq!(buffer.read_u64_le(1), 0x87a1182d354283c2);
-        assert_eq!(buffer.read_partial_felt252(46, 16), 0x1305699c1e6ebb2bd9c049811b9fa93);
-        assert_eq!(buffer.read_partial_felt252(42, 19), 0x69c6052901305699c1e6ebb2bd9c049811b9fa);
-        assert_eq!(buffer.read_u64_le(16), 0x48b02c2eb31a85d0);
-        assert_eq!(buffer.read_partial_felt252(28, 10), 0x6e1ba04789e867dc45f1);
-        assert_eq!(buffer.read_partial_felt252(42, 11), 0x69c6052901305699c1e6eb);
-        assert_eq!(buffer.read_partial_felt252(8, 29), 0x875b96c0a3d90447d0851ab32e2cb048f9a6c8ce6e1ba04789e867dc45);
+        assert_eq!(buffer.read_u32_le(93), 0xeb2e441d);
+        assert_eq!(buffer.read_partial_felt252(10, 16), 0x4fab41df196ad98a5abc83db78026fa8);
+        assert_eq!(buffer.read_partial_felt252(15, 6), 0x6ad98a5abc83);
+        assert_eq!(buffer.read_partial_felt252(66, 16), 0x4a174ab18b1c6bf3aedf63fc6c3f931e);
+        assert_eq!(buffer.hash_poseidon_range(12, 118), 0x3127e39c24ba8442852c45e302bafb81b63a3e1e35b2413848ee2dc9004a03d);
+        assert_eq!(buffer.read_u256(52), 0x7592b6f61cb51676531487abab734a174ab18b1c6bf3aedf63fc6c3f931e6454);
+        assert_eq!(buffer.read_partial_felt252(42, 4), 0x7698dec9);
+        assert_eq!(buffer.read_partial_felt252(41, 4), 0xa77698de);
+        assert_eq!(buffer.read_partial_felt252(76, 17), 0x63fc6c3f931e6454541c182587e44f8af0);
+        assert_eq!(buffer.read_partial_felt252(70, 12), 0x8b1c6bf3aedf63fc6c3f931e);
 
-        let mut serialized_byte_array = array![0x3, 0x0456e56ac08eda45811c8b0fe20f8352c59d9c36f0b53c687216c3ee96462b, 0x74c437dcc830109591e2ddff1d8378b3f9f4000601cac009ae213025d8e70e, 0xe2b311cc90a6cd51cbe8fc6525564caff5dc9aba31b8f1769c38a57f7274fe, 0x44f5cf6a652305e4b906cb5469a72164aac10d424947374b512c539e2c781a, 0x1f].span();
+        let mut serialized_byte_array = array![0x3, 0x493c3961ab2b2669861b4ce4b3937a25d466bac13fe7a44b5857cb0ce2c126, 0xd8c1d93c0174bdd283140017be738464797131a310ce65e6f2347c7bc88743, 0x712be4d093cbf3324e0dc91d568deb0ff76f6da62b1e116278171d6bf756d7, 0x4f, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(110, 3), 0xc10d42);
-        assert_eq!(buffer.read_u16_le(27), 0x96ee);
-        assert_eq!(buffer.read_u64_le(95), 0x6b9e40523656acf);
-        assert_eq!(buffer.read_partial_felt252(98, 20), 0x2305e4b906cb5469a72164aac10d424947374b51);
-        assert_eq!(buffer.hash_poseidon_range(81, 115), 0x5bcbcdfbc648fe3f8fc4f1795a0e9c30f8cbb6bb57107634dfd361af05649b6);
-        assert_eq!(buffer.read_partial_felt252(46, 30), 0xb3f9f4000601cac009ae213025d8e70ee2b311cc90a6cd51cbe8fc652556);
-        assert_eq!(buffer.read_partial_felt252(21, 16), 0xb53c687216c3ee96462b74c437dcc830);
-        assert_eq!(buffer.read_partial_felt252(46, 20), 0xb3f9f4000601cac009ae213025d8e70ee2b311cc);
-        assert_eq!(buffer.read_partial_felt252(91, 27), 0x74fe44f5cf6a652305e4b906cb5469a72164aac10d424947374b51);
-        assert_eq!(buffer.read_partial_felt252(31, 28), 0x74c437dcc830109591e2ddff1d8378b3f9f4000601cac009ae213025);
+        assert_eq!(buffer.read_partial_felt252(78, 14), 0xf76f6da62b1e116278171d6bf756);
+        assert_eq!(buffer.read_partial_felt252(58, 31), 0x7bc88743712be4d093cbf3324e0dc91d568deb0ff76f6da62b1e116278171d);
+        assert_eq!(buffer.read_partial_felt252(57, 32), 0x47bc88743712ae5d093cbf3324e0dc91d568deb0ff76f6da62b1e116278170e);
+        assert_eq!(buffer.read_partial_felt252(35, 18), 0x174bdd283140017be738464797131a310ce);
+        assert_eq!(buffer.read_partial_felt252(71, 3), 0xdc91d);
+        assert_eq!(buffer.read_partial_felt252(39, 30), 0x83140017be738464797131a310ce65e6f2347c7bc88743712be4d093cbf3);
+        assert_eq!(buffer.read_partial_felt252(11, 17), 0xe4b3937a25d466bac13fe7a44b5857cb0c);
+        assert_eq!(buffer.read_partial_felt252(61, 22), 0x43712be4d093cbf3324e0dc91d568deb0ff76f6da62b);
+        assert_eq!(buffer.read_partial_felt252(56, 12), 0x347c7bc88743712be4d093cb);
+        assert_eq!(buffer.read_partial_felt252(32, 29), 0xc1d93c0174bdd283140017be738464797131a310ce65e6f2347c7bc887);
 
-        let mut serialized_byte_array = array![0x3, 0xcf2143982648cded784b3a9891860497cfe5a0f7df7727b2a7069cff3e8c92, 0x085acc4dc0469303fcf4884fdb752c901f433dd5f9bcccb08666c8701442f3, 0xd92b46eafc5667b54a7d0ee7d89e364feb31f9bd7ee4504895492b5d1c9579, 0xa4905978e493b5c93621d42d8b47cbf71caf, 0x12].span();
+        let mut serialized_byte_array = array![0x0, 0xfe81849be83b5376, 0x8].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u256(30), 0x92085acc4dc0469303fcf4884fdb752c901f433dd5f9bcccb08666c8701442f3);
-        assert_eq!(buffer.read_partial_felt252(71, 21), 0x7d0ee7d89e364feb31f9bd7ee4504895492b5d1c95);
-        assert_eq!(buffer.read_partial_felt252(19, 21), 0xf7df7727b2a7069cff3e8c92085acc4dc0469303fc);
-        assert_eq!(buffer.read_partial_felt252(1, 12), 0x2143982648cded784b3a9891);
-        assert_eq!(buffer.read_partial_felt252(54, 30), 0xb08666c8701442f3d92b46eafc5667b54a7d0ee7d89e364feb31f9bd7ee4);
-        assert_eq!(buffer.read_partial_felt252(39, 15), 0xfcf4884fdb752c901f433dd5f9bccc);
-        assert_eq!(buffer.read_partial_felt252(38, 24), 0x3fcf4884fdb752c901f433dd5f9bcccb08666c8701442f3);
-        assert_eq!(buffer.read_partial_felt252(47, 3), 0x1f433d);
-        assert_eq!(buffer.read_partial_felt252(15, 14), 0x97cfe5a0f7df7727b2a7069cff3e);
-        assert_eq!(buffer.read_partial_felt252(20, 8), 0xdf7727b2a7069cff);
+        assert_eq!(buffer.read_partial_felt252(0, 6), 0xfe81849be83b);
+        assert_eq!(buffer.read_partial_felt252(1, 6), 0x81849be83b53);
+        assert_eq!(buffer.read_partial_felt252(3, 2), 0x9be8);
 
-        let mut serialized_byte_array = array![0x1, 0x9fee9ae5b61596c7034edf8da6eb804505c34863ea8de095faedb75378c9a6, 0x56f79f53b1866b8a3098cb276015a72f26d69cc5861994a4c6, 0x19].span();
+        let mut serialized_byte_array = array![0x1, 0xebb5fd319521ec2b01edb575c870295f585892f5406e3abc165eab834b9043, 0xd7d611c0e65d351505, 0x9].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(41, 13), 0xcb276015a72f26d69cc5861994);
-        assert_eq!(buffer.read_partial_felt252(1, 3), 0xee9ae5);
-        assert_eq!(buffer.read_bytes31(19), 0x63ea8de095faedb75378c9a656f79f53b1866b8a3098cb276015a72f26d69c);
-        assert_eq!(buffer.read_partial_felt252(43, 9), 0x6015a72f26d69cc586);
-        assert_eq!(buffer.read_u256(15), 0x4505c34863ea8de095faedb75378c9a656f79f53b1866b8a3098cb276015a72f);
-        assert_eq!(buffer.read_u64_le(20), 0x53b7edfa95e08dea);
-        assert_eq!(buffer.read_partial_felt252(11, 23), 0x8da6eb804505c34863ea8de095faedb75378c9a656f79f);
-        assert_eq!(buffer.read_partial_felt252(17, 29), 0xc34863ea8de095faedb75378c9a656f79f53b1866b8a3098cb276015a7);
-        assert_eq!(buffer.read_partial_felt252(17, 31), 0xc34863ea8de095faedb75378c9a656f79f53b1866b8a3098cb276015a72f26);
-        assert_eq!(buffer.read_partial_felt252(39, 15), 0x3098cb276015a72f26d69cc5861994);
+        assert_eq!(buffer.read_partial_felt252(4, 31), 0x9521ec2b01edb575c870295f585892f5406e3abc165eab834b9043d7d611c0);
+        assert_eq!(buffer.read_u16_le(3), 0x9531);
+        assert_eq!(buffer.read_partial_felt252(17, 2), 0x5892);
+        assert_eq!(buffer.read_partial_felt252(7, 2), 0x2b01);
+        assert_eq!(buffer.read_partial_felt252(10, 14), 0xb575c870295f585892f5406e3abc);
+        assert_eq!(buffer.read_partial_felt252(5, 30), 0x21ec2b01edb575c870295f585892f5406e3abc165eab834b9043d7d611c0);
+        assert_eq!(buffer.read_partial_felt252(13, 17), 0x70295f585892f5406e3abc165eab834b90);
+        assert_eq!(buffer.read_u64_le(15), 0x3a6e40f59258585f);
+        assert_eq!(buffer.read_bytes31(2), 0xfd319521ec2b01edb575c870295f585892f5406e3abc165eab834b9043d7d6);
+        assert_eq!(buffer.read_u16_le(35), 0x5de6);
 
-        let mut serialized_byte_array = array![0x1, 0xe2385e4b836f409502f6fe43f0db7654b1cc7bd0bb53db1e0ade9840a63160, 0x2e6faf878b, 0x5].span();
+        let mut serialized_byte_array = array![0x3, 0x97018e01a968c06e09e81ce53289379b57450f7e4d36dcee88cafa30886731, 0x018f7f8aa445d4c602f08a7e857d36efb1c88ad39f336d1a6ab80f360e6b48, 0xd83481b97f0fb03a5e0c4f0902245dd8bc97abee2d714b2865f4c02a43b1d6, 0xe6b4f1b42f2c9931c7d565b01f0fe74796dbc7f56b0d43, 0x17].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(9, 22), 0xf6fe43f0db7654b1cc7bd0bb53db1e0ade9840a63160);
-        assert_eq!(buffer.read_partial_felt252(8, 8), 0x2f6fe43f0db7654);
-        assert_eq!(buffer.read_partial_felt252(0, 31), 0xe2385e4b836f409502f6fe43f0db7654b1cc7bd0bb53db1e0ade9840a63160);
-        assert_eq!(buffer.read_partial_felt252(0, 28), 0xe2385e4b836f409502f6fe43f0db7654b1cc7bd0bb53db1e0ade9840);
-        assert_eq!(buffer.read_partial_felt252(8, 23), 0x2f6fe43f0db7654b1cc7bd0bb53db1e0ade9840a63160);
-        assert_eq!(buffer.read_partial_felt252(0, 24), 0xe2385e4b836f409502f6fe43f0db7654b1cc7bd0bb53db1e);
-        assert_eq!(buffer.read_partial_felt252(6, 17), 0x409502f6fe43f0db7654b1cc7bd0bb53db);
-        assert_eq!(buffer.read_partial_felt252(14, 6), 0x7654b1cc7bd0);
-        assert_eq!(buffer.read_partial_felt252(4, 23), 0x836f409502f6fe43f0db7654b1cc7bd0bb53db1e0ade98);
-        assert_eq!(buffer.read_u256(2), 0x5e4b836f409502f6fe43f0db7654b1cc7bd0bb53db1e0ade9840a631602e6faf);
+        assert_eq!(buffer.read_partial_felt252(69, 24), 0x3a5e0c4f0902245dd8bc97abee2d714b2865f4c02a43b1d6);
+        assert_eq!(buffer.read_partial_felt252(67, 24), 0xfb03a5e0c4f0902245dd8bc97abee2d714b2865f4c02a43);
+        assert_eq!(buffer.read_partial_felt252(52, 2), 0x336d);
+        assert_eq!(buffer.read_partial_felt252(28, 23), 0x886731018f7f8aa445d4c602f08a7e857d36efb1c88ad3);
+        assert_eq!(buffer.read_partial_felt252(38, 27), 0xc602f08a7e857d36efb1c88ad39f336d1a6ab80f360e6b48d83481);
+        assert_eq!(buffer.read_partial_felt252(37, 29), 0xd4c602f08a7e857d36efb1c88ad39f336d1a6ab80f360e6b48d83481b9);
+        assert_eq!(buffer.read_partial_felt252(23, 29), 0xee88cafa30886731018f7f8aa445d4c602f08a7e857d36efb1c88ad39f);
+        assert_eq!(buffer.read_partial_felt252(78, 21), 0xbc97abee2d714b2865f4c02a43b1d6e6b4f1b42f2c);
+        assert_eq!(buffer.read_partial_felt252(94, 14), 0xb4f1b42f2c9931c7d565b01f0fe7);
+        assert_eq!(buffer.read_partial_felt252(85, 16), 0x2865f4c02a43b1d6e6b4f1b42f2c9931);
 
-        let mut serialized_byte_array = array![0x3, 0xff2498683d4e703a7b7215bb2e5a2f3b0f0152e689a02a7a826f606cfde90f, 0x8e5110bdcf10cfd569b729d7b68ac0a0a6c3f116bf03fc0eddae0cde38209d, 0x52140fb867ed88912e19c1c572be498912d2ea41f91840aad613c37a8298ad, 0x17afbeb026f076ba, 0x8].span();
+        let mut serialized_byte_array = array![0x2, 0x0100b298eccabded5f70e1c3eac0bf81d48e664ca87e9099a2f1e1b9e307c6, 0x8ee358bbfbf11da53f1db95af60c84a0f3187eb61080ffc0c81905e5844dae, 0x3754f72b363b0b78e75e, 0xa].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(76, 21), 0x498912d2ea41f91840aad613c37a8298ad17afbeb0);
-        assert_eq!(buffer.read_partial_felt252(16, 11), 0xf0152e689a02a7a826f60);
-        assert_eq!(buffer.read_partial_felt252(30, 29), 0xf8e5110bdcf10cfd569b729d7b68ac0a0a6c3f116bf03fc0eddae0cde);
-        assert_eq!(buffer.read_partial_felt252(57, 5), 0xcde38209d);
-        assert_eq!(buffer.read_partial_felt252(44, 21), 0x8ac0a0a6c3f116bf03fc0eddae0cde38209d52140f);
-        assert_eq!(buffer.read_partial_felt252(67, 15), 0xed88912e19c1c572be498912d2ea41);
-        assert_eq!(buffer.read_partial_felt252(39, 24), 0x69b729d7b68ac0a0a6c3f116bf03fc0eddae0cde38209d52);
-        assert_eq!(buffer.read_partial_felt252(34, 20), 0xbdcf10cfd569b729d7b68ac0a0a6c3f116bf03fc);
-        assert_eq!(buffer.read_partial_felt252(57, 8), 0xcde38209d52140f);
-        assert_eq!(buffer.read_partial_felt252(30, 1), 0xf);
+        assert_eq!(buffer.read_partial_felt252(13, 30), 0xc0bf81d48e664ca87e9099a2f1e1b9e307c68ee358bbfbf11da53f1db95a);
+        assert_eq!(buffer.read_partial_felt252(14, 27), 0xbf81d48e664ca87e9099a2f1e1b9e307c68ee358bbfbf11da53f1d);
+        assert_eq!(buffer.read_partial_felt252(41, 18), 0xb95af60c84a0f3187eb61080ffc0c81905e5);
+        assert_eq!(buffer.read_partial_felt252(54, 16), 0xc0c81905e5844dae3754f72b363b0b78);
+        assert_eq!(buffer.read_partial_felt252(35, 29), 0xfbf11da53f1db95af60c84a0f3187eb61080ffc0c81905e5844dae3754);
+        assert_eq!(buffer.read_partial_felt252(39, 23), 0x3f1db95af60c84a0f3187eb61080ffc0c81905e5844dae);
+        assert_eq!(buffer.read_partial_felt252(0, 4), 0x100b298);
+        assert_eq!(buffer.read_partial_felt252(7, 21), 0xed5f70e1c3eac0bf81d48e664ca87e9099a2f1e1b9);
+        assert_eq!(buffer.read_bytes31(2), 0xb298eccabded5f70e1c3eac0bf81d48e664ca87e9099a2f1e1b9e307c68ee3);
+        assert_eq!(buffer.read_partial_felt252(23, 15), 0x99a2f1e1b9e307c68ee358bbfbf11d);
 
-        let mut serialized_byte_array = array![0x0, 0x5326e373b771f6167b318e88, 0xc].span();
+        let mut serialized_byte_array = array![0x4, 0x067c4ee1f0caf9c45719f5c894dd82e9658db3a4e40bdaa2daf878f605fabb, 0xa1331df10774f2789e52d760ad28199c1bc17701399f655d97c1e06f4a1f39, 0x3609e6ac04d9ed8f3c9038174c597e8667be65c36583a34f1d3e35920a4f30, 0x96494cc4a0c6e5c9b3d0362010174906866275d22c5df30d391e5ce152e776, 0x053b58, 0x3].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_u32_le(5), 0x7b16f671);
-        assert_eq!(buffer.read_partial_felt252(0, 12), 0x5326e373b771f6167b318e88);
-        assert_eq!(buffer.read_partial_felt252(0, 11), 0x5326e373b771f6167b318e);
+        assert_eq!(buffer.read_partial_felt252(63, 17), 0x9e6ac04d9ed8f3c9038174c597e8667be);
+        assert_eq!(buffer.read_partial_felt252(85, 4), 0x4f1d3e35);
+        assert_eq!(buffer.read_partial_felt252(74, 12), 0x4c597e8667be65c36583a34f);
+        assert_eq!(buffer.read_partial_felt252(11, 14), 0xc894dd82e9658db3a4e40bdaa2da);
+        assert_eq!(buffer.read_partial_felt252(71, 3), 0x903817);
+        assert_eq!(buffer.read_partial_felt252(35, 28), 0x774f2789e52d760ad28199c1bc17701399f655d97c1e06f4a1f3936);
+        assert_eq!(buffer.hash_poseidon_range(18, 116), 0x24d0b16af1704c8db26f57d5d309439972fcc29c174d5a1733885932d9b7d6);
+        assert_eq!(buffer.read_partial_felt252(108, 7), 0x6866275d22c5d);
+        assert_eq!(buffer.read_partial_felt252(55, 2), 0x97c1);
+        assert_eq!(buffer.read_partial_felt252(3, 18), 0xe1f0caf9c45719f5c894dd82e9658db3a4e4);
 
-        let mut serialized_byte_array = array![0x3, 0x0a34194bc0de6f804f7d450edda55c7fd23c92c4ec8630f02868a1e69132e9, 0x3d970ffb6a213ad2909cee6fdffded5f4df191d5e83ddfe3b096b8498ce577, 0x0896f1011f9ca99b62722988d112b122c1db6667f6daa42a755ac10875d2d8, 0x22, 0x1].span();
+        let mut serialized_byte_array = array![0x1, 0x516f570bd4b1dcc57ca1406a9b7545cd2d6afb787449005b024c7ae90270be, 0x8c184ed7d6731cf0b1da81fc6f7884f4a2dfeb27aba757, 0x17].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(4, 14), 0xc0de6f804f7d450edda55c7fd23c);
-        assert_eq!(buffer.read_partial_felt252(17, 9), 0x3c92c4ec8630f02868);
-        assert_eq!(buffer.read_felt252(17), 0x492c4ec8630efb168a1e69132e93d970ffb6a213ad2909cee6fdffded5f4dea);
-        assert_eq!(buffer.read_partial_felt252(40, 22), 0x9cee6fdffded5f4df191d5e83ddfe3b096b8498ce577);
-        assert_eq!(buffer.read_partial_felt252(39, 6), 0x909cee6fdffd);
-        assert_eq!(buffer.read_partial_felt252(83, 2), 0xdaa4);
-        assert_eq!(buffer.hash_poseidon_range(35, 87), 0x3362ebc61d7bb7d8a13d5cd3ee7d2859d6df27ea8fda500ed2aaa312cd64dca);
-        assert_eq!(buffer.read_partial_felt252(26, 14), 0xa1e69132e93d970ffb6a213ad290);
-        assert_eq!(buffer.read_partial_felt252(39, 30), 0x909cee6fdffded5f4df191d5e83ddfe3b096b8498ce5770896f1011f9ca9);
-        assert_eq!(buffer.read_partial_felt252(56, 27), 0x96b8498ce5770896f1011f9ca99b62722988d112b122c1db6667f6);
+        assert_eq!(buffer.read_partial_felt252(16, 31), 0x2d6afb787449005b024c7ae90270be8c184ed7d6731cf0b1da81fc6f7884f4);
+        assert_eq!(buffer.read_partial_felt252(49, 2), 0xeb27);
+        assert_eq!(buffer.read_partial_felt252(24, 8), 0x24c7ae90270be8c);
+        assert_eq!(buffer.read_partial_felt252(24, 16), 0x24c7ae90270be8c184ed7d6731cf0b1);
+        assert_eq!(buffer.read_partial_felt252(18, 22), 0xfb787449005b024c7ae90270be8c184ed7d6731cf0b1);
+        assert_eq!(buffer.read_partial_felt252(34, 8), 0xd7d6731cf0b1da81);
+        assert_eq!(buffer.read_partial_felt252(4, 27), 0xd4b1dcc57ca1406a9b7545cd2d6afb787449005b024c7ae90270be);
+        assert_eq!(buffer.read_partial_felt252(0, 25), 0x516f570bd4b1dcc57ca1406a9b7545cd2d6afb787449005b02);
+        assert_eq!(buffer.read_partial_felt252(18, 32), 0x3787449005b003d7ae90270be8c184ed7d6731cf0b1da81fc6f7884f4a2dfcc);
+        assert_eq!(buffer.read_partial_felt252(5, 1), 0xb1);
 
-        let mut serialized_byte_array = array![0x0, 0xef64675d, 0x4].span();
+        let mut serialized_byte_array = array![0x0, 0x6001c947f5a085461295922bc4ffd829a6c6ea3e6fd7257333, 0x19].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(0, 3), 0xef6467);
-        assert_eq!(buffer.hash_poseidon_range(1, 3), 0x190da4970e4c85c882f44358ed8479853ad6ffb161a9d19efac464737c1c8e5);
+        assert_eq!(buffer.read_partial_felt252(5, 17), 0xa085461295922bc4ffd829a6c6ea3e6fd7);
+        assert_eq!(buffer.read_u32_le(8), 0x2b929512);
+        assert_eq!(buffer.read_u64_le(0), 0x4685a0f547c90160);
+        assert_eq!(buffer.read_partial_felt252(2, 22), 0xc947f5a085461295922bc4ffd829a6c6ea3e6fd72573);
+        assert_eq!(buffer.read_partial_felt252(0, 24), 0x6001c947f5a085461295922bc4ffd829a6c6ea3e6fd72573);
+        assert_eq!(buffer.read_partial_felt252(1, 19), 0x1c947f5a085461295922bc4ffd829a6c6ea3e);
+        assert_eq!(buffer.read_partial_felt252(14, 1), 0xd8);
+        assert_eq!(buffer.read_partial_felt252(1, 6), 0x1c947f5a085);
+        assert_eq!(buffer.read_partial_felt252(5, 7), 0xa085461295922b);
 
-        let mut serialized_byte_array = array![0x1, 0xdcaef252dc79f362875d0def09d22c270be93e6be0f079ae34b785a21fb396, 0x4fc8a0b9c8a684b4b0c2436bee157b60382716748e42ab37ca0dd050719c, 0x1e].span();
+        let mut serialized_byte_array = array![0x3, 0x65e1be12287e05685c6eeda74ddc47e17678989b5cd4f752b6d1200ed2a226, 0x1d7b6f18d99ee79ee3d2bf28858e8bdf6c6b32423c803b5ea54fddfc5a2712, 0x990f2076a41199027e50229c658e9fd8243eb8641b062951b917a73c4ad5d1, 0xd8, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        assert_eq!(buffer.read_partial_felt252(48, 12), 0x2716748e42ab37ca0dd05071);
-        assert_eq!(buffer.read_partial_felt252(6, 9), 0xf362875d0def09d22c);
-        assert_eq!(buffer.read_partial_felt252(29, 17), 0xb3964fc8a0b9c8a684b4b0c2436bee157b);
-        assert_eq!(buffer.read_partial_felt252(21, 25), 0xf079ae34b785a21fb3964fc8a0b9c8a684b4b0c2436bee157b);
-        assert_eq!(buffer.read_partial_felt252(3, 21), 0x52dc79f362875d0def09d22c270be93e6be0f079ae);
-        assert_eq!(buffer.read_partial_felt252(17, 4), 0xe93e6be0);
-        assert_eq!(buffer.read_u16_le(52), 0xab42);
-        assert_eq!(buffer.read_partial_felt252(2, 5), 0xf252dc79f3);
-        assert_eq!(buffer.read_partial_felt252(17, 3), 0xe93e6b);
-        assert_eq!(buffer.read_partial_felt252(36, 21), 0xa684b4b0c2436bee157b60382716748e42ab37ca0d);
+        assert_eq!(buffer.read_bytes31(6), 0x05685c6eeda74ddc47e17678989b5cd4f752b6d1200ed2a2261d7b6f18d99e);
+        assert_eq!(buffer.read_felt252(19), 0x35cd4f752b6cfdd0ed2a2261d7b6f18d99ee79ee3d2bf28858e8bdf6c6b322f);
+        assert_eq!(buffer.read_partial_felt252(60, 32), 0x712990f2076a3cd99027e50229c658e9fd8243eb8641b062951b917a73c4ad1);
+        assert_eq!(buffer.read_partial_felt252(39, 22), 0xe3d2bf28858e8bdf6c6b32423c803b5ea54fddfc5a27);
+        assert_eq!(buffer.read_partial_felt252(79, 10), 0x3eb8641b062951b917a7);
+        assert_eq!(buffer.read_partial_felt252(53, 3), 0x3b5ea5);
+        assert_eq!(buffer.read_partial_felt252(73, 14), 0x9c658e9fd8243eb8641b062951b9);
+        assert_eq!(buffer.read_partial_felt252(19, 17), 0x9b5cd4f752b6d1200ed2a2261d7b6f18d9);
+        assert_eq!(buffer.read_partial_felt252(26, 14), 0x200ed2a2261d7b6f18d99ee79ee3);
+        assert_eq!(buffer.read_partial_felt252(30, 21), 0x261d7b6f18d99ee79ee3d2bf28858e8bdf6c6b3242);
     }
     
     // Random access out of bounds reads
@@ -827,305 +850,305 @@ mod tests {
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_u16_le() {
-        let mut serialized_byte_array = array![0x0, 0xf364fa2ed6e10d03cee012e570c424cb8753a19e, 0x14].span();
+        let mut serialized_byte_array = array![0x0, 0x33f4ef37a29b81344226, 0xa].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_u16_le(20);
+        buffer.read_u16_le(9);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_u32_le() {
-        let mut serialized_byte_array = array![0x0, 0x9753924bfe4e856cdf15133e77c8, 0xe].span();
+        let mut serialized_byte_array = array![0x0, 0x5bb2cac083, 0x5].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_u32_le(12);
+        buffer.read_u32_le(5);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_u64_le() {
-        let mut serialized_byte_array = array![0x0, 0x95f8ae8ad85ec36a311f0e7a432e00f42430480444f5eb0d, 0x18].span();
+        let mut serialized_byte_array = array![0x0, 0x20075b5c4550642ce3386e5bcb786a528b85d0, 0x13].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_u64_le(22);
+        buffer.read_u64_le(12);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_u256() {
-        let mut serialized_byte_array = array![0x1, 0x0f11955497e293aec55d08e81e4b9e7091620ccca507a6665a8bf4826a4b8a, 0xedb956b9cbeacf53620fc2272eb931ff848efcf9fefb, 0x16].span();
+        let mut serialized_byte_array = array![0x1, 0xe18ea402f7aa50305c68d440d88021ad216c6dfdfaab1b9b92381802396da3, 0x92, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_u256(47);
+        buffer.read_u256(18);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_bytes31() {
-        let mut serialized_byte_array = array![0x1, 0x4f41de3a93e80d7399ab5fce674a89f3d72c05a2f66ee966509e0f270037f6, 0xc919879811e3, 0x6].span();
+        let mut serialized_byte_array = array![0x1, 0xb2a7c6ef45bfde3f3caf560d2351f2e7892f23b54313fc640358e0bf9199cd, 0xd04df8e8c73ec7fa90923d6a88f2371d984c3910ccdf72168683447e, 0x1c].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_bytes31(34);
+        buffer.read_bytes31(32);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252() {
-        let mut serialized_byte_array = array![0x1, 0x1c06167e74a6a3ddb26a582b4af3b5e21cf18333b03877d60c6a67ed661c3e, 0x3e9a67a525b87272228f279558af4f7d80ba37d90f93da16adc61a7707ac7b, 0x1f].span();
+        let mut serialized_byte_array = array![0x1, 0xb29faeb097cde2c6e76c67d748ab52574ee2707e858daf6f574f43be462538, 0x16e7e87f314077b093f2ef, 0xb].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_felt252(39);
+        buffer.read_felt252(42);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_1b() {
-        let mut serialized_byte_array = array![0x0, 0xd626a767251ada587b63e18e, 0xc].span();
+        let mut serialized_byte_array = array![0x0, 0x3220fb1beb35d244473c9f7b54c94d, 0xf].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(12, 1);
+        buffer.read_partial_felt252(15, 1);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_2b() {
-        let mut serialized_byte_array = array![0x0, 0x44a06c05106bec3408bd5d51e584afa415ff77670c738be899f8, 0x1a].span();
+        let mut serialized_byte_array = array![0x0, 0x7d479f6df6259c58b58428a610a3, 0xe].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(26, 2);
+        buffer.read_partial_felt252(14, 2);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_3b() {
-        let mut serialized_byte_array = array![0x0, 0xb8afb0a561, 0x5].span();
+        let mut serialized_byte_array = array![0x0, 0x793af4144cf205fa6b8b1cb839b60df228, 0x11].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(4, 3);
+        buffer.read_partial_felt252(15, 3);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_4b() {
-        let mut serialized_byte_array = array![0x0, 0x4ef44a2b9536139539c5ed9f6a7bf664a02c4afd473ab8782f988e1606, 0x1d].span();
+        let mut serialized_byte_array = array![0x1, 0xdf8d39e83d89cef378df1551c5ec7d89d1c22e25bf1c62e76edab856dab30d, 0x13, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(28, 4);
+        buffer.read_partial_felt252(29, 4);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_5b() {
-        let mut serialized_byte_array = array![0x0, 0x70367345bd4b6b2f244ee2, 0xb].span();
+        let mut serialized_byte_array = array![0x0, 0xc8f7f0000ce9a2ec52e222400e6c9262697a18086c5402daa89272, 0x1b].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(7, 5);
+        buffer.read_partial_felt252(24, 5);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_6b() {
-        let mut serialized_byte_array = array![0x0, 0xa8971891ea74c4, 0x7].span();
+        let mut serialized_byte_array = array![0x0, 0xc17f27bcf75515, 0x7].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(5, 6);
+        buffer.read_partial_felt252(3, 6);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_7b() {
-        let mut serialized_byte_array = array![0x0, 0x85aa0aca7e91a4992e6a15173e59d1874351a7b801db9226, 0x18].span();
+        let mut serialized_byte_array = array![0x0, 0x69df53c59eed540cac6215a6ca, 0xd].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(23, 7);
+        buffer.read_partial_felt252(7, 7);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_8b() {
-        let mut serialized_byte_array = array![0x1, 0x47336a50a95c0c94b2aa3e54482c7b6954300ca4a2bd465c1acb2b16a3b4b3, 0x5d7016da09, 0x5].span();
+        let mut serialized_byte_array = array![0x1, 0x248f08f845c245f6366987830d949f2d5f93741c30a87fcbfbb2148e5a2626, 0x59be10, 0x3].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(32, 8);
+        buffer.read_partial_felt252(28, 8);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_9b() {
-        let mut serialized_byte_array = array![0x1, 0x84b9c21714b22062e2d906f49645e6f44f034b44c6b08f679a635020967e6d, 0xab957f, 0x3].span();
+        let mut serialized_byte_array = array![0x1, 0x59b84d924bd0342b38a3a97570da45dcbffc0f3876559b926cca3df77d5fa8, 0xdde8c7ce8ff5, 0x6].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(29, 9);
+        buffer.read_partial_felt252(30, 9);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_10b() {
-        let mut serialized_byte_array = array![0x0, 0xaf2f744d28748adf2e9452055141477d1b0d63c862596d50fb56a59703, 0x1d].span();
+        let mut serialized_byte_array = array![0x1, 0x6d95e59c737a86026b2970bebdfdc7ba6e58fa1f6b356d01f3844b31095fc3, 0x3ecef8c37164f94a25, 0x9].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(23, 10);
+        buffer.read_partial_felt252(38, 10);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_11b() {
-        let mut serialized_byte_array = array![0x0, 0x2304a9cfdbb98fef07f5, 0xa].span();
+        let mut serialized_byte_array = array![0x0, 0x27a6c1ca8aba6a45fa62b4862be082e27c26, 0x12].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(5, 11);
+        buffer.read_partial_felt252(8, 11);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_12b() {
-        let mut serialized_byte_array = array![0x0, 0xe57d8ebb0ca31439eae422fe, 0xc].span();
+        let mut serialized_byte_array = array![0x0, 0x5753f6ec8df677a44a0395044f, 0xd].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(8, 12);
+        buffer.read_partial_felt252(12, 12);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_13b() {
-        let mut serialized_byte_array = array![0x1, 0x684704736657a9d32c01195d35b9292ab68527ca42be5897a64a795bc399ed, 0xa5a73f3c4140b4cc36452b66, 0xc].span();
+        let mut serialized_byte_array = array![0x0, 0x00a20c1d1d0b657281b786223705aec2637549ca87, 0x15].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(38, 13);
+        buffer.read_partial_felt252(12, 13);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_14b() {
-        let mut serialized_byte_array = array![0x0, 0xe19a28b6e197a25490e8b87ae36d689bc0129446, 0x14].span();
+        let mut serialized_byte_array = array![0x0, 0x07636c036697ab037b50393f94efbf54ca9d4b8811bd9e, 0x17].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(12, 14);
+        buffer.read_partial_felt252(22, 14);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_15b() {
-        let mut serialized_byte_array = array![0x1, 0x2cf5b3d47c82f3f445e4395ff9ce6482ee29b5a072416b58617b473b7c8511, 0xe32202e9df, 0x5].span();
+        let mut serialized_byte_array = array![0x0, 0x869a56cca854f8a7a609f41a7dbfdd2d62, 0x11].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(32, 15);
+        buffer.read_partial_felt252(5, 15);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_16b() {
-        let mut serialized_byte_array = array![0x1, 0x4aa1776b4853b54bf563f436aec797a7d0d9cc0cbd8a0a5e0e6efc2d03ba7d, 0x7dc0baedc2bf53e63f, 0x9].span();
+        let mut serialized_byte_array = array![0x1, 0x94572b7108c13178435ff9e6bcc4f7da26172b51fc9c01d2f0aad827145198, 0x188e03064b, 0x5].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(37, 16);
+        buffer.read_partial_felt252(28, 16);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_17b() {
-        let mut serialized_byte_array = array![0x0, 0xfabebe40d54c30329bbacc1ea35888333edd3ab6d4e0f7dac5d28a, 0x1b].span();
+        let mut serialized_byte_array = array![0x1, 0x43d3d62cf4a79d79cf5e49e46f14d7f8c3ed0f34dc1b0b1a9e0caee3fc1358, 0xd96d, 0x2].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(15, 17);
+        buffer.read_partial_felt252(21, 17);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_18b() {
-        let mut serialized_byte_array = array![0x0, 0xd3ebd88cf77410a217537f666f508bec36c36e873dc0513f9b3333cb, 0x1c].span();
+        let mut serialized_byte_array = array![0x0, 0x9bc4fa33e5069f6fc727a9733b4d355eccec9ca52ab1ccc448677d5fba6a, 0x1e].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(23, 18);
+        buffer.read_partial_felt252(17, 18);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_19b() {
-        let mut serialized_byte_array = array![0x1, 0xed66a584ab83411d0e813b6c9a0515e4f83c101d5ee846dfe35cbd1fa50574, 0xdd06d85ad10a759638c2ffe15068, 0xe].span();
+        let mut serialized_byte_array = array![0x1, 0x7bb62fa16bf3129b0be5d52b058c0a781911a5bb12a83a08a107498b289e3b, 0xb0, 0x1].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(42, 19);
+        buffer.read_partial_felt252(25, 19);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_20b() {
-        let mut serialized_byte_array = array![0x1, 0x1614ba1ea43e23c7e50b2acc58f3cb52b2f1cdd6eca252c62127ed3eaaf0f1, 0xaf5368c11a8a8dab382140529488e2772a06c7, 0x13].span();
+        let mut serialized_byte_array = array![0x0, 0x71a758f00789b81f833c1ad04e4b2a028ae794ef, 0x14].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(48, 20);
+        buffer.read_partial_felt252(6, 20);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_21b() {
-        let mut serialized_byte_array = array![0x0, 0x9536230a47d4d8d639e2c850a0faff370e82bcc815fc1877319992563248, 0x1e].span();
+        let mut serialized_byte_array = array![0x1, 0xdb5bb035874d89568c32e02151f2210056bf6dcae21e2d5918cfeaf070bdf9, 0x89e12ec6482034a0d91378, 0xb].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(10, 21);
+        buffer.read_partial_felt252(27, 21);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_22b() {
-        let mut serialized_byte_array = array![0x0, 0x5d859408d59c8973c3d59f16871330a2c29d554d37a7de9c8294d611c963, 0x1e].span();
+        let mut serialized_byte_array = array![0x0, 0xe83bc576bda0669aa195ec1eae4b8509138b845cfaaab1283b4cd8, 0x1b].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(10, 22);
+        buffer.read_partial_felt252(15, 22);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_23b() {
-        let mut serialized_byte_array = array![0x1, 0xe5edfa65a18cf3583e4b0aeaef8c8affaaf10c7e21166f6bbafed1a8130ef3, 0xaabecaa7757201fced42, 0xa].span();
+        let mut serialized_byte_array = array![0x1, 0x626db5558dbd2723a92f23c70718b7c9aeb6c0a839a94c1a384111edbc922a, 0x1a776ee437cb0df2145098f9919e65765acd1a03ff7e, 0x16].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(26, 23);
+        buffer.read_partial_felt252(40, 23);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_24b() {
-        let mut serialized_byte_array = array![0x0, 0xbb8625234af506f9d8276d33787178be30f4a64641d963e48e3b91114647b7, 0x1f].span();
+        let mut serialized_byte_array = array![0x0, 0x9f5faef48a53fa015f4ae0c59f5a0bbec5f80b30ffe0a28f, 0x18].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(25, 24);
+        buffer.read_partial_felt252(10, 24);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_25b() {
-        let mut serialized_byte_array = array![0x0, 0xa22b088b08a510ff047b80d49de16b72923fe4bde86aa005, 0x18].span();
+        let mut serialized_byte_array = array![0x1, 0x01eb3b2085d06f787855699ff10390be5dafec0d834ef15e8d45b2e7d8b26a, 0x7a18b3697ee14450519465a9e1fcf64070b421, 0x13].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(13, 25);
+        buffer.read_partial_felt252(38, 25);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_26b() {
-        let mut serialized_byte_array = array![0x1, 0x92c17ac3f9e794f28bd3fac6cb2aa757f44bd3f474ac5b46f10f8064f35098, 0x18e880bf2268088c74d1dbca, 0xc].span();
+        let mut serialized_byte_array = array![0x0, 0x199e570f4a0a6721243d490b1c92efd5f3dcadb700f9ee94d14b48c2f2, 0x1d].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(24, 26);
+        buffer.read_partial_felt252(12, 26);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_27b() {
-        let mut serialized_byte_array = array![0x1, 0xcd4428512273c5db6a0198a047a1573c0981f46e85a0b955d5eb3211cf436d, 0x1de6f91183e651fa07a43700bf50d0dde6, 0x11].span();
+        let mut serialized_byte_array = array![0x1, 0xa1d2e411f4ff37febe51adb026b54013febd7126975df2da632f212584265b, 0xdd0b7c23f53c20cdd13168adc42efe38955349f4cb, 0x15].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(33, 27);
+        buffer.read_partial_felt252(39, 27);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_28b() {
-        let mut serialized_byte_array = array![0x0, 0x98d073b50c2d5cd0edd962b513a0686d95e39bf357112fc885ef18, 0x1b].span();
+        let mut serialized_byte_array = array![0x1, 0x2c320205d46c222cfd466a9fd70c6e58bca720750acc13d71addb701efd14b, 0xb115df811a9d31a109f81eebb1b04e86967f, 0x12].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(1, 28);
+        buffer.read_partial_felt252(27, 28);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_29b() {
-        let mut serialized_byte_array = array![0x0, 0xf6bb9894d92f3e8ed7d56fc107c3b732493503a09b6dafca8479ed45aca0, 0x1e].span();
+        let mut serialized_byte_array = array![0x1, 0x9de1e5ce96d5f5f0523a38e15fda48992f7846c2a8995e036b5464b70ac5df, 0x180bb547, 0x4].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(12, 29);
+        buffer.read_partial_felt252(24, 29);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_30b() {
-        let mut serialized_byte_array = array![0x1, 0xd8181f03b7f85793c5b1090d59ca912e397bab1c0339c4cdd1d9c662251e24, 0xb660ce81cc5bffa86ff6f6f4710fe41ec3e9a366a78da25079fa360139, 0x1d].span();
+        let mut serialized_byte_array = array![0x1, 0x56823143ae3bc833b24b7526406bd96d3da10f7260486dca47c2deef3d9398, 0xb3b486c5d9338ef6161ce3a4a663ba, 0xf].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(34, 30);
+        buffer.read_partial_felt252(32, 30);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_31b() {
-        let mut serialized_byte_array = array![0x1, 0x4be3994ee087a7d517b0c116f8eaad9ed07e814360c536f378bac01383778f, 0x240e0104c5ab2126c313d33e8dae2388260c, 0x12].span();
+        let mut serialized_byte_array = array![0x1, 0x025bef3cd5f8d2a4373d673d0278c8de4c032eb93ca6874f89d6a51ad4694d, 0xe92b7c54c0a9be, 0x7].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(38, 31);
+        buffer.read_partial_felt252(32, 31);
     }
 
     #[test]
     #[should_panic(expected: 'Array index out of bounds')]
     fn test_invalid_felt252_32b() {
-        let mut serialized_byte_array = array![0x1, 0xce1f6399b6e81b45a7cfdcf3b2cc09edc61ae66b0bb9d268d9bd7e80a73492, 0xd55002e3f1dcd611e15442da, 0xc].span();
+        let mut serialized_byte_array = array![0x1, 0x622467b9b4128b63491235b0c6aa054a7a3c1647ff9df4d3731213cc9c4313, 0xcdc575f8d2664c3f0f750e8d3fe91389a7b97ac4e655ace570f165, 0x1b].span();
         let buffer = Serde::<ByteArray>::deserialize(ref serialized_byte_array).unwrap();
-        buffer.read_partial_felt252(34, 32);
+        buffer.read_partial_felt252(47, 32);
     }
 
 }
