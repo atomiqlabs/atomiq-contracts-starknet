@@ -2,7 +2,7 @@ use snforge_std::{
     cheat_caller_address, CheatSpan
 };
 
-use starknet::contract_address::contract_address_const;
+use starknet::contract_address::ContractAddress;
 
 use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
@@ -15,8 +15,8 @@ use crate::utils::execution::create_and_assert;
 fn valid_create() {
     let context = get_context();
 
-    let funder = contract_address_const::<'funder'>();
-    let owner = contract_address_const::<'owner'>();
+    let funder: ContractAddress = 'funder'.try_into().unwrap();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     
@@ -33,8 +33,8 @@ fn valid_create() {
 fn invalid_execution_hash_0() {
     let context = get_context();
 
-    let funder = contract_address_const::<'funder'>();
-    let owner = contract_address_const::<'owner'>();
+    let funder: ContractAddress = 'funder'.try_into().unwrap();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     
@@ -51,8 +51,8 @@ fn invalid_execution_hash_0() {
 fn invalid_execution_already_initiated() {
     let context = get_context();
 
-    let funder = contract_address_const::<'funder'>();
-    let owner = contract_address_const::<'owner'>();
+    let funder: ContractAddress = 'funder'.try_into().unwrap();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     
@@ -70,8 +70,8 @@ fn invalid_execution_already_initiated() {
 fn invalid_execution_not_enough_funds() {
     let context = get_context();
 
-    let funder = contract_address_const::<'funder'>();
-    let owner = contract_address_const::<'owner'>();
+    let funder: ContractAddress = 'funder'.try_into().unwrap();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     
@@ -88,8 +88,8 @@ fn invalid_execution_not_enough_funds() {
 fn invalid_execution_not_enough_allowance() {
     let context = get_context();
 
-    let funder = contract_address_const::<'funder'>();
-    let owner = contract_address_const::<'owner'>();
+    let funder: ContractAddress = 'funder'.try_into().unwrap();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     

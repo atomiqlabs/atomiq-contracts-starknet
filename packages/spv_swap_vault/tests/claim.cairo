@@ -1,5 +1,5 @@
 use spv_swap_vault::utils::U32ArrayToU256ParserTrait;
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use spv_swap_vault::structs::{BitcoinVaultTransactionDataImpl, BitcoinVaultTransactionData};
 
@@ -18,7 +18,7 @@ fn test_create_and_claim(
     front: bool
 ) {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
     let token_0_multiplier: felt252 = 643523;
@@ -26,12 +26,12 @@ fn test_create_and_claim(
     let raw_amount_0: u64 = 123123;
     let raw_amount_1: u64 = 4848;
 
-    let fronter = if front {
-        contract_address_const::<'fronter'>()
+    let fronter: ContractAddress = if front {
+        'fronter'.try_into().unwrap()
     } else {
         0.try_into().unwrap()
     };
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let caller_fee_u20 = 2312;
     let fronting_fee_u20 = 1245;
@@ -88,14 +88,14 @@ fn valid_claim_fronted() {
 #[should_panic(expected: 'claim: vault closed')]
 fn invalid_closed_vault() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let token_0_multiplier: felt252 = 643523;
     let token_1_multiplier: felt252 = 5322;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -130,7 +130,7 @@ fn invalid_closed_vault() {
 #[should_panic(expected: 'claim: empty inputs')]
 fn invalid_btc_tx_empty_inputs() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -140,7 +140,7 @@ fn invalid_btc_tx_empty_inputs() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
 
     let (raw_tx, btc_tx) = get_btc_tx((0, 0), array![], array!["\x6a", "\x6a"], 132831812);
 
@@ -157,7 +157,7 @@ fn invalid_btc_tx_empty_inputs() {
 #[should_panic(expected: 'claim: incorrect in_0 utxo')]
 fn invalid_btc_tx_in_0_utxo() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     //Correct utxo
     let utxo: (u256, u32) = (1, 1);
@@ -168,7 +168,7 @@ fn invalid_btc_tx_in_0_utxo() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -202,7 +202,7 @@ fn invalid_btc_tx_in_0_utxo() {
 #[should_panic(expected: 'merkle_tree: verify failed')]
 fn invalid_btc_tx_merkle_proof() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -212,7 +212,7 @@ fn invalid_btc_tx_merkle_proof() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -250,7 +250,7 @@ fn invalid_btc_tx_merkle_proof() {
 #[should_panic(expected: 'claim: confirmations')]
 fn invalid_btc_tx_confirmations() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     //Required number of confirmations set to 3
@@ -261,7 +261,7 @@ fn invalid_btc_tx_confirmations() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -295,7 +295,7 @@ fn invalid_btc_tx_confirmations() {
 #[test]
 fn close_btc_output_1_not_found() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -305,7 +305,7 @@ fn close_btc_output_1_not_found() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
 
     let (raw_tx, btc_tx) = get_btc_tx(
         (1, 1),
@@ -326,7 +326,7 @@ fn close_btc_output_1_not_found() {
 #[test]
 fn close_btc_output_1_empty_script() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -336,7 +336,7 @@ fn close_btc_output_1_empty_script() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
 
     let (raw_tx, btc_tx) = get_btc_tx((1, 1), array![1, 2], array![
         "\x6a",
@@ -355,7 +355,7 @@ fn close_btc_output_1_empty_script() {
 #[test]
 fn close_btc_output_1_not_opreturn() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -365,7 +365,7 @@ fn close_btc_output_1_not_opreturn() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
 
     let (raw_tx, btc_tx) = get_btc_tx((1, 1), array![1, 2], array![
         "\x6a",
@@ -384,7 +384,7 @@ fn close_btc_output_1_not_opreturn() {
 #[test]
 fn close_btc_input_1_notfound() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -394,7 +394,7 @@ fn close_btc_input_1_notfound() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
 
     let (raw_tx, btc_tx) = get_btc_tx(
         (1, 1), 
@@ -415,7 +415,7 @@ fn close_btc_input_1_notfound() {
 #[test]
 fn close_btc_output_1_length() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -425,7 +425,7 @@ fn close_btc_output_1_length() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
 
     let (raw_tx, btc_tx) = get_btc_tx((1, 1), array![1, 2], array![
         "\x6a",
@@ -444,7 +444,7 @@ fn close_btc_output_1_length() {
 #[test]
 fn close_btc_invalid_recipient() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -454,7 +454,7 @@ fn close_btc_invalid_recipient() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -487,7 +487,7 @@ fn close_btc_invalid_recipient() {
 #[test]
 fn close_caller_fee_0_overflow() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -497,7 +497,7 @@ fn close_caller_fee_0_overflow() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 0xFFFFFFFFFFFFFFFF; //Use maximum value for withdrawal
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -530,7 +530,7 @@ fn close_caller_fee_0_overflow() {
 #[test]
 fn close_fronting_fee_0_overflow() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -540,7 +540,7 @@ fn close_fronting_fee_0_overflow() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 0xFFFFFFFFFFFFFFFF; //Use maximum value for withdrawal
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -573,7 +573,7 @@ fn close_fronting_fee_0_overflow() {
 #[test]
 fn close_execution_fee_0_overflow() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -583,7 +583,7 @@ fn close_execution_fee_0_overflow() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 0xFFFFFFFFFFFFFFFF; //Use maximum value for withdrawal
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -616,7 +616,7 @@ fn close_execution_fee_0_overflow() {
 #[test]
 fn close_caller_fee_1_overflow() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -626,7 +626,7 @@ fn close_caller_fee_1_overflow() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 123132; 
     let raw_withdraw_amount_1: Option<u64> = Option::Some(0xFFFFFFFFFFFFFFFF); //Use maximum value for withdrawal
     let execution_hash: Option<felt252> = Option::None;
@@ -659,7 +659,7 @@ fn close_caller_fee_1_overflow() {
 #[test]
 fn close_fronting_fee_1_overflow() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -669,7 +669,7 @@ fn close_fronting_fee_1_overflow() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 123132; 
     let raw_withdraw_amount_1: Option<u64> = Option::Some(0xFFFFFFFFFFFFFFFF); //Use maximum value for withdrawal
     let execution_hash: Option<felt252> = Option::None;
@@ -702,7 +702,7 @@ fn close_fronting_fee_1_overflow() {
 #[test]
 fn close_amounts_overflow_0_0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -712,7 +712,7 @@ fn close_amounts_overflow_0_0() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 0x9FFFFFFFFFFFFFFF; //Use high amount for withdrawal
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -745,7 +745,7 @@ fn close_amounts_overflow_0_0() {
 #[test]
 fn close_amounts_overflow_0_1() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -755,7 +755,7 @@ fn close_amounts_overflow_0_1() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 0x9FFFFFFFFFFFFFFF; //Use high amount for withdrawal
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -788,7 +788,7 @@ fn close_amounts_overflow_0_1() {
 #[test]
 fn close_amounts_overflow_0_2() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -798,7 +798,7 @@ fn close_amounts_overflow_0_2() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 0x9FFFFFFFFFFFFFFF; //Use high amount for withdrawal
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1232);
     let execution_hash: Option<felt252> = Option::None;
@@ -831,7 +831,7 @@ fn close_amounts_overflow_0_2() {
 #[test]
 fn close_amounts_overflow_1_0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -841,7 +841,7 @@ fn close_amounts_overflow_1_0() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 231234; 
     let raw_withdraw_amount_1: Option<u64> = Option::Some(0x9FFFFFFFFFFFFFFF); //Use high amount for withdrawal
     let execution_hash: Option<felt252> = Option::None;
@@ -874,7 +874,7 @@ fn close_amounts_overflow_1_0() {
 #[test]
 fn close_amounts_overflow_1_1() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -884,7 +884,7 @@ fn close_amounts_overflow_1_1() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 231234; 
     let raw_withdraw_amount_1: Option<u64> = Option::Some(0x9FFFFFFFFFFFFFFF); //Use high amount for withdrawal
     let execution_hash: Option<felt252> = Option::None;
@@ -917,7 +917,7 @@ fn close_amounts_overflow_1_1() {
 #[test]
 fn close_withdraw_too_much_token0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -927,7 +927,7 @@ fn close_withdraw_too_much_token0() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 845414; //Use higher amount thant what is in the vault
     let raw_withdraw_amount_1: Option<u64> = Option::Some(1213);
     let execution_hash: Option<felt252> = Option::None;
@@ -960,7 +960,7 @@ fn close_withdraw_too_much_token0() {
 #[test]
 fn close_withdraw_too_much_token1() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -970,7 +970,7 @@ fn close_withdraw_too_much_token1() {
     let raw_amount_1: u64 = 4848;
 
     let fronter = 0.try_into().unwrap();
-    let recipient = contract_address_const::<'recipient'>();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 5342;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(634523523); //Use higher amount than what is in the vault
     let execution_hash: Option<felt252> = Option::None;
@@ -1008,7 +1008,7 @@ fn close_withdraw_too_much_token1() {
 #[test]
 fn exploit_malicous_claim_execution_fronting() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
     let token_0_multiplier: felt252 = 643523;
@@ -1016,8 +1016,8 @@ fn exploit_malicous_claim_execution_fronting() {
     let raw_amount_0: u64 = 123123;
     let raw_amount_1: u64 = 4848;
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let caller_fee_u20 = 2312;
     let fronting_fee_u20 = 1245;

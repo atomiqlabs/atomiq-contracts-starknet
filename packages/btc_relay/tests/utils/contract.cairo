@@ -4,7 +4,7 @@ use snforge_std::{
     cheat_block_timestamp, cheat_caller_address, CheatSpan, load,
     map_entry_address
 };
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use btc_relay::{
     IBtcRelayDispatcher, IBtcRelayDispatcherTrait, BtcRelay,
@@ -71,7 +71,7 @@ pub fn submit_short_fork_and_assert(
     fork_stored_blockheaders: Span<StoredBlockHeader>,
     cheat_timestamp: u64
 ) {
-    let fork_submitter = contract_address_const::<'short fork submitter'>();
+    let fork_submitter: ContractAddress = 'short fork submitter'.try_into().unwrap();
     cheat_caller_address(contract_address, fork_submitter, CheatSpan::Indefinite);
 
     cheat_block_timestamp(contract_address, cheat_timestamp, CheatSpan::Indefinite);
@@ -241,7 +241,7 @@ pub fn submit_long_fork_and_assert(
     cheat_timestamp: u64,
     should_reorg: bool
 ) {
-    let fork_submitter = contract_address_const::<'long fork submitter'>();
+    let fork_submitter: ContractAddress = 'long fork submitter'.try_into().unwrap();
     cheat_caller_address(contract_address, fork_submitter, CheatSpan::Indefinite);
 
     cheat_block_timestamp(contract_address, cheat_timestamp, CheatSpan::Indefinite);

@@ -14,7 +14,7 @@ use snforge_std::{
     cheat_caller_address, CheatSpan, spy_events, EventSpyAssertionsTrait
 };
 
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use crate::utils::contract::{Context};
 use crate::utils::erc20;
@@ -275,7 +275,7 @@ pub fn claim_and_assert(
     position: u32,
     close_err: felt252
 ) -> Result<(), felt252> {
-    let caller: ContractAddress = contract_address_const::<'caller'>();
+    let caller: ContractAddress = 'caller'.try_into().unwrap();
 
     let mut spy = spy_events();
 

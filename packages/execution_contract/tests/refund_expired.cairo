@@ -11,7 +11,7 @@ use snforge_std::{
     cheat_caller_address, CheatSpan, spy_events, EventSpyAssertionsTrait, cheat_block_timestamp
 };
 
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
@@ -29,7 +29,7 @@ fn refund_and_assert(
     clear_all: bool,
     current_time: u64
 ) {
-    let executor = contract_address_const::<'executor'>();
+    let executor: ContractAddress = 'executor'.try_into().unwrap();
     let execution_hash = PoseidonTrait::new().update_with(calls).update_with(drain_tokens).finalize();
 
     let balance_erc20_executor = context.token0.balance_of(executor);
@@ -80,7 +80,7 @@ fn refund_and_assert(
 fn valid_refund() {
     let context = get_context();
 
-    let owner = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     let creator_salt = 0;
@@ -103,7 +103,7 @@ fn valid_refund() {
 fn invalid_not_initiated() {
     let context = get_context();
 
-    let owner = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     let salt = 0;
@@ -122,7 +122,7 @@ fn invalid_not_initiated() {
 fn invalid_already_processed() {
     let context = get_context();
 
-    let owner = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     let creator_salt = 0;
@@ -143,7 +143,7 @@ fn invalid_already_processed() {
 fn invalid_not_expired() {
     let context = get_context();
 
-    let owner = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let amount = 1000;
     let fee = 100;
     let creator_salt = 0;

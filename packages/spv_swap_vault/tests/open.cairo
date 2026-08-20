@@ -1,4 +1,4 @@
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use crate::utils::contract::{Context, get_context};
 use crate::utils::btc_relay::get_btc_relay_with_txs;
@@ -7,7 +7,7 @@ use crate::utils::spv_vault::create_spv_vault;
 #[test]
 fn valid_create() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -22,7 +22,7 @@ fn valid_create() {
 #[should_panic(expected: 'open: already opened')]
 fn invalid_already_opened() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -38,7 +38,7 @@ fn invalid_already_opened() {
 #[should_panic(expected: 'utxo is zero')]
 fn invalid_zero_utxo() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (0, 0);
