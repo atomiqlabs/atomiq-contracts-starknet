@@ -27,13 +27,14 @@ pub fn execute(dispatcher: IClaimHandlerDispatcher, hash: felt252, secret: [u32;
     assert!(result==secret_arr_span);
 }
 
+#[feature("safe_dispatcher")]
 pub fn execute_should_fail(dispatcher: IClaimHandlerDispatcher, hash: felt252, secret: [u32; 8], panic_reason: felt252) {
     let safe_dispatcher = IClaimHandlerSafeDispatcher { contract_address: dispatcher.contract_address };
     let mut secret_arr = array![];
     secret.serialize(ref secret_arr);
     let result = safe_dispatcher.claim(hash, secret_arr);
     let error = result.unwrap_err();
-    assert!(error==array![panic_reason]);
+    assert(*error[0]==panic_reason, *error[0]);
 }
 
 pub fn deploy_and_execute(hash: felt252, secret: [u32; 8]) {

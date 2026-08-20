@@ -11,7 +11,7 @@ use snforge_std::{
     cheat_caller_address, CheatSpan, spy_events, EventSpyAssertionsTrait
 };
 
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
@@ -28,7 +28,7 @@ pub fn create_execution(
     calls: Span<ContractCall>,
     drain_tokens: Span<ContractAddress>
 ) -> felt252 {
-    let funder = contract_address_const::<'funder'>();
+    let funder: ContractAddress = 'funder'.try_into().unwrap();
 
     erc20::mint(context.token0, funder, amount + fee);
     cheat_caller_address(context.token0.contract_address, funder, CheatSpan::TargetCalls(1));
@@ -39,6 +39,7 @@ pub fn create_execution(
     create_and_assert(context, funder, owner, amount, fee, execution_hash, expiry, creator_salt)
 }
 
+#[feature("safe_dispatcher")]
 pub fn create_and_assert(
     context: Context,
     funder: ContractAddress,

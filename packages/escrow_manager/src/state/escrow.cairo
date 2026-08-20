@@ -1,4 +1,4 @@
-use core::starknet::storage_access::StorePacking;
+use starknet::storage_access::StorePacking;
 
 pub const STATE_NOT_COMMITTED: u8 = 0;
 pub const STATE_COMMITTED: u8 = 1;

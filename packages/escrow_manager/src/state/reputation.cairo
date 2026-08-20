@@ -1,4 +1,4 @@
-use core::starknet::storage_access::StorePacking;
+use starknet::storage_access::StorePacking;
 use core::num::traits::SaturatingAdd;
 
 //On-chain saved reputation state

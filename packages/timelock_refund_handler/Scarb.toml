@@ -19,7 +19,7 @@ assert_macros.workspace = true
 snforge_std.workspace = true
 
 [scripts]
-test = "node scripts/generate_test_data.js; snforge test"
+test = "snforge test"
 
 [features]
 fuzzing = []

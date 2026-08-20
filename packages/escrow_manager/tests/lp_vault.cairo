@@ -1,7 +1,7 @@
 use snforge_std::{
     cheat_caller_address, CheatSpan
 };
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use escrow_manager::components::lp_vault::{ILPVaultDispatcher, ILPVaultDispatcherTrait};
 
@@ -11,7 +11,7 @@ use crate::utils::erc20;
 use openzeppelin_token::erc20::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
 
 fn deploy_all(mint_amount: u256) -> (ContractAddress, ContractAddress, ERC20ABIDispatcher) {
-    let user = contract_address_const::<'depositor'>();
+    let user: ContractAddress = 'depositor'.try_into().unwrap();
 
     let contract_address = get_context().contract_address;
     let erc20_dispatcher = erc20::deploy_mint_and_assert(user, mint_amount);
@@ -89,7 +89,7 @@ fn valid_withdraw_full() {
 fn valid_withdraw_partial_external() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
     deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
-    let external = contract_address_const::<'external'>();
+    let external: ContractAddress = 'external'.try_into().unwrap();
 
     ILPVaultDispatcher{contract_address}.withdraw(erc20_dispatcher.contract_address, 25, external);
     assert_eq!(erc20_dispatcher.balance_of(user), 50);
@@ -102,7 +102,7 @@ fn valid_withdraw_partial_external() {
 fn valid_withdraw_full_external() {
     let (user, contract_address, erc20_dispatcher) = deploy_all(100);
     deposit_and_assert(user, contract_address, erc20_dispatcher, 50);
-    let external = contract_address_const::<'external'>();
+    let external: ContractAddress = 'external'.try_into().unwrap();
 
     ILPVaultDispatcher{contract_address}.withdraw(erc20_dispatcher.contract_address, 50, external);
     assert_eq!(erc20_dispatcher.balance_of(user), 50);

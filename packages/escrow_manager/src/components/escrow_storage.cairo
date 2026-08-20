@@ -14,10 +14,10 @@ pub trait IEscrowStorage<TContractState> {
 #[starknet::component]
 pub mod escrow_storage {
     use super::IEscrowStorage;
-    use core::starknet::storage::{
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
-    use core::starknet::get_block_number;
+    use starknet::get_block_number;
     use crate::structs::escrow::{EscrowData, EscrowDataImpl};
     use crate::state::escrow::{
         EscrowState, EscrowStateStorePacking, STATE_NOT_COMMITTED, 

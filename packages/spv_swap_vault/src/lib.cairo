@@ -7,6 +7,8 @@ use starknet::{ContractAddress};
 use btc_utils::byte_array::ByteArrayReader;
 use btc_relay::structs::stored_blockheader::StoredBlockHeader;
 
+use openzeppelin_security::ReentrancyGuardComponent;
+
 use crate::state::{SpvVaultStateStorePacking, SpvVaultState, SpvVaultImplTrait};
 use crate::structs::{BitcoinVaultTransactionData};
 
@@ -65,12 +67,11 @@ pub trait ISpvVaultManagerReadOnly<TContractState> {
 pub mod SpvVaultManager {
     use starknet::SyscallResultTrait;
     use super::structs::BitcoinVaultTransactionDataTrait;
-    use super::SpvVaultImplTrait;
     use core::num::traits::Zero;
 
-    use core::starknet::{get_caller_address, ContractAddress, SyscallResult};
-    use core::starknet::storage::{
-        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map, StoragePath, Mutable
+    use starknet::{get_caller_address, ContractAddress, SyscallResult};
+    use starknet::storage::{
+        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     use core::hash::{HashStateTrait};
     use core::poseidon::PoseidonTrait;
@@ -84,6 +85,12 @@ pub mod SpvVaultManager {
     use crate::structs::{BitcoinVaultTransactionDataImpl};
     use super::*;
 
+    component!(
+        path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent
+    );
+
+    impl InternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
+
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
@@ -91,14 +98,20 @@ pub mod SpvVaultManager {
         Deposited: events::Deposited,
         Claimed: events::Claimed,
         Fronted: events::Fronted,
-        Closed: events::Closed
+        Closed: events::Closed,
+    
+        #[flat]
+        ReentrancyGuardEvent: ReentrancyGuardComponent::Event
     }
 
     #[storage]
     struct Storage {
         execution_contract: ContractAddress,
         vaults: Map<ContractAddress, Map<felt252, SpvVaultState>>,
-        liquidity_fronts: Map<ContractAddress, Map<felt252, Map<felt252, ContractAddress>>>
+        liquidity_fronts: Map<ContractAddress, Map<felt252, Map<felt252, ContractAddress>>>,
+
+        #[substorage(v0)]
+        reentrancy_guard: ReentrancyGuardComponent::Storage
     }
 
     #[constructor]
@@ -114,6 +127,8 @@ pub mod SpvVaultManager {
             relay_contract: ContractAddress, utxo: (u256, u32), confirmations: u8,
             token_0: ContractAddress, token_1: ContractAddress, token_0_multiplier: felt252, token_1_multiplier: felt252
         ) {
+            self.reentrancy_guard.start();
+
             assert(utxo != (0, 0), 'utxo is zero');
 
             //Check vault is not opened
@@ -146,6 +161,8 @@ pub mod SpvVaultManager {
                 vault_id: vault_id,
                 vout: vout
             });
+
+            self.reentrancy_guard.end();
         }
 
         //Deposits funds into the specific vault
@@ -153,6 +170,8 @@ pub mod SpvVaultManager {
             ref self: ContractState, owner: ContractAddress, vault_id: felt252, 
             raw_token_0_amount: u64, raw_token_1_amount: u64
         ) {
+            self.reentrancy_guard.start();
+
             //Check vault is opened
             let storage_ptr = self.vaults.entry(owner).entry(vault_id);
             let mut current_state = storage_ptr.read();
@@ -174,6 +193,8 @@ pub mod SpvVaultManager {
                 amounts: (raw_token_0_amount, raw_token_1_amount),
                 deposit_count: current_state.deposit_count
             });
+            
+            self.reentrancy_guard.end();
         }
 
         //Fronts the liquidity for a specific withdrawal bitcoin transaction
@@ -181,6 +202,8 @@ pub mod SpvVaultManager {
             ref self: ContractState, owner: ContractAddress, vault_id: felt252,
             withdraw_sequence: u32, btc_tx_hash: u256, data: BitcoinVaultTransactionData
         ) {
+            self.reentrancy_guard.start();
+
             let caller = get_caller_address();
 
             //Check vault is opened
@@ -228,6 +251,8 @@ pub mod SpvVaultManager {
                 caller: caller,
                 amounts: raw_amount
             });
+
+            self.reentrancy_guard.end();
         }
 
         //Claim funds from the vault, given a proper bitcoin transaction as verified through the relay contract
@@ -235,6 +260,8 @@ pub mod SpvVaultManager {
             ref self: ContractState, owner: ContractAddress, vault_id: felt252,
             transaction: ByteArray, blockheader: StoredBlockHeader, merkle_proof: Span<[u32; 8]>, position: u32
         ) {
+            self.reentrancy_guard.start();
+            
             let caller = get_caller_address();
 
             //Check vault is opened
@@ -248,10 +275,6 @@ pub mod SpvVaultManager {
             
             //Make sure the transaction properly spends last vault UTXO
             assert(result.get_in(0).expect('claim: empty inputs').unbox().get_utxo()==current_state.utxo, 'claim: incorrect in_0 utxo');
-
-            //Verify blockheader against the light client
-            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: current_state.relay_contract}.verify_blockheader(blockheader);
-            assert(block_confirmations>=current_state.confirmations.into(), 'claim: confirmations');
 
             let transaction_hash = result.get_hash();
 
@@ -276,62 +299,87 @@ pub mod SpvVaultManager {
             //NOTE: Also verifies that full amounts are in bounds of u256 integer, such that we can use
             // .unwrap() on all .from_raw() calculations
             let withdrawal_result = current_state.parse_and_withdraw(btc_tx_hash_u256, @result);
-            if withdrawal_result.is_err() {
-                self._close(owner, vault_id, btc_tx_hash_u256, ref current_state, storage_ptr, withdrawal_result.unwrap_err());
-                return;
-            }
-            let (total_raw_amounts, tx_data) = withdrawal_result.unwrap();
+            match withdrawal_result {
+                Result::Err(err) => {
+                    //Close the vault and return all the funds to owner
+                    let amounts = current_state.from_raw((current_state.token_0_amount, current_state.token_1_amount)).unwrap();
+                    current_state.close();
 
-            //Save state
-            storage_ptr.write(current_state);
+                    //Save state
+                    storage_ptr.write(current_state);
 
-            //Check if this was already fronted
-            let fronting_id = tx_data.get_hash(btc_tx_hash_u256);
-            let fronting_address: ContractAddress = self.liquidity_fronts.entry(owner).entry(vault_id).entry(fronting_id).read();
-            if !fronting_address.is_zero() {
-                //Transfer funds to caller
-                self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(tx_data.caller_fee).unwrap(), caller);
+                    //Payout funds back to owner
+                    self._transfer_out((current_state.token_0, current_state.token_1), amounts, owner);
 
-                let fronting_amounts = tx_data.amount + tx_data.fronting_fee + (tx_data.execution_handler_fee_amount_0, 0);
-                //Transfer funds to the account that fronted
-                self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(fronting_amounts).unwrap(), fronting_address);
-            } else {
-                //Transfer caller fee + fronting fee to caller
-                //NOTE: The reason we are also sending fronting fee to the caller here is that even if we wouldn't an
-                // economically rational caller would just do a multical with front() & claim() in a single transaction
-                // essentially claiming both fees anyway, we therefore align this functionality with the economically
-                // rational behaviour of the caller
-                self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(tx_data.caller_fee + tx_data.fronting_fee).unwrap(), caller);
-                
-                if tx_data.execution_hash == 0 {
-                    //Payout the whole amount to the recipient
-                    let payout_amounts = tx_data.amount + (tx_data.execution_handler_fee_amount_0, 0);
-                    self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(payout_amounts).unwrap(), tx_data.recipient);
-                } else {
-                    let (amount_raw_0, amount_raw_1) = tx_data.amount;
-                    //Pay out the gas token straight to recipient
-                    if amount_raw_1 != 0 {
-                        erc20_utils::transfer_out(current_state.token_1, tx_data.recipient, current_state.from_raw_token1(amount_raw_1).unwrap());
+                    self.emit(events::Closed {
+                        btc_tx_hash: btc_tx_hash_u256,
+                        owner: owner,
+                        vault_id: vault_id,
+                        error: err
+                    });
+                },
+                Result::Ok((total_raw_amounts, tx_data)) => {
+                    //Save state
+                    storage_ptr.write(current_state);
+
+                    //Check if this was already fronted
+                    let fronting_id = tx_data.get_hash(btc_tx_hash_u256);
+                    let fronting_address: ContractAddress = self.liquidity_fronts.entry(owner).entry(vault_id).entry(fronting_id).read();
+                    if !fronting_address.is_zero() {
+                        //Transfer funds to caller
+                        self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(tx_data.caller_fee).unwrap(), caller);
+
+                        let fronting_amounts = tx_data.amount + tx_data.fronting_fee + (tx_data.execution_handler_fee_amount_0, 0);
+                        //Transfer funds to the account that fronted
+                        self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(fronting_amounts).unwrap(), fronting_address);
+                    } else {
+                        //Transfer caller fee + fronting fee to caller
+                        //NOTE: The reason we are also sending fronting fee to the caller here is that even if we wouldn't an
+                        // economically rational caller would just do a multical with front() & claim() in a single transaction
+                        // essentially claiming both fees anyway, we therefore align this functionality with the economically
+                        // rational behaviour of the caller
+                        self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(tx_data.caller_fee + tx_data.fronting_fee).unwrap(), caller);
+                        
+                        if tx_data.execution_hash == 0 {
+                            //Payout the whole amount to the recipient
+                            let payout_amounts = tx_data.amount + (tx_data.execution_handler_fee_amount_0, 0);
+                            self._transfer_out((current_state.token_0, current_state.token_1), current_state.from_raw(payout_amounts).unwrap(), tx_data.recipient);
+                        } else {
+                            let (amount_raw_0, amount_raw_1) = tx_data.amount;
+                            //Pay out the gas token straight to recipient
+                            if amount_raw_1 != 0 {
+                                erc20_utils::transfer_out(current_state.token_1, tx_data.recipient, current_state.from_raw_token1(amount_raw_1).unwrap());
+                            }
+                            //Try instantiate the execution contract
+                            if self._to_execution_contract(owner, vault_id, fronting_id, current_state, tx_data).is_err() {
+                                //If failed just transfer the tokens directly
+                                erc20_utils::transfer_out(current_state.token_0, tx_data.recipient, current_state.from_raw_token0(amount_raw_0 + tx_data.execution_handler_fee_amount_0).unwrap());
+                            }
+                        }
                     }
-                    //Try instantiate the execution contract
-                    if self._to_execution_contract(owner, vault_id, fronting_id, current_state, tx_data).is_err() {
-                        //If failed just transfer the tokens directly
-                        erc20_utils::transfer_out(current_state.token_0, tx_data.recipient, current_state.from_raw_token0(amount_raw_0 + tx_data.execution_handler_fee_amount_0).unwrap());
-                    }
+
+                    self.emit(events::Claimed {
+                        owner: owner,
+                        vault_id: vault_id,
+                        recipient: tx_data.recipient,
+                        execution_hash: tx_data.execution_hash,
+                        btc_tx_hash: btc_tx_hash_u256,
+                        caller: caller,
+                        amounts: total_raw_amounts,
+                        fronting_address: fronting_address,
+                        withdraw_count: current_state.withdraw_count
+                    });
                 }
             }
+            
+            //IMPORTANT NOTE: This is actually an `effect` not a `check` in the check-state-effects flow. Starknet's runtime
+            // doesn't differentiate between view-only and state-mutating calls, hence this can reenter!
+            //PS: This is retarded, IK
+            //Verify blockheader against the light client
+            let block_confirmations = IBtcRelayReadOnlyDispatcher{contract_address: current_state.relay_contract}.verify_blockheader(blockheader);
+            assert(block_confirmations>=current_state.confirmations.into(), 'claim: confirmations');
 
-            self.emit(events::Claimed {
-                owner: owner,
-                vault_id: vault_id,
-                recipient: tx_data.recipient,
-                execution_hash: tx_data.execution_hash,
-                btc_tx_hash: btc_tx_hash_u256,
-                caller: caller,
-                amounts: total_raw_amounts,
-                fronting_address: fronting_address,
-                withdraw_count: current_state.withdraw_count
-            });
+            self.reentrancy_guard.end();
         }
     }
 
@@ -375,25 +423,6 @@ pub mod SpvVaultManager {
     #[generate_trait]
     impl SpvVaultManagerPriv of SpvVaultManagerPrivTrait {
 
-        //Close the vault and return all the funds to owner
-        fn _close(ref self: ContractState, owner: ContractAddress, vault_id: felt252, btc_tx_hash: u256, ref current_state: SpvVaultState, storage_ptr: StoragePath<Mutable<SpvVaultState>>, err: felt252) {
-            let amounts = current_state.from_raw((current_state.token_0_amount, current_state.token_1_amount)).unwrap();
-            current_state.close();
-
-            //Save state
-            storage_ptr.write(current_state);
-
-            //Payout funds back to owner
-            self._transfer_out((current_state.token_0, current_state.token_1), amounts, owner);
-
-            self.emit(events::Closed {
-                btc_tx_hash: btc_tx_hash,
-                owner: owner,
-                vault_id: vault_id,
-                error: err
-            });
-        }
-
         fn _transfer_in(self: @ContractState, tokens: (ContractAddress, ContractAddress), amounts: (u256, u256)) {
             let caller = get_caller_address();
             let (token_0, token_1) = tokens;
@@ -422,6 +451,7 @@ pub mod SpvVaultManager {
         }
 
         //Create the execution in execution contract
+        #[feature("safe_dispatcher")]
         fn _to_execution_contract(
             self: @ContractState,
             owner: ContractAddress, 

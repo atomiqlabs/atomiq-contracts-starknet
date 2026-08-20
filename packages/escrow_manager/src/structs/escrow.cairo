@@ -97,15 +97,14 @@ pub impl EscrowDataImpl of EscrowDataImplTrait {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use starknet::contract_address::{contract_address_const};
 
     fn get_escrow_data(flags: u128, security_deposit: u256, claimer_bounty: u256) -> EscrowData {
         EscrowData {
-            offerer: contract_address_const::<'offerer'>(),
-            claimer: contract_address_const::<'claimer'>(),
-            token: contract_address_const::<'token'>(),
-            refund_handler: contract_address_const::<'refund_handler'>(),
-            claim_handler: contract_address_const::<'claim_handler'>(),
+            offerer: 'offerer'.try_into().unwrap(),
+            claimer: 'claimer'.try_into().unwrap(),
+            token: 'token'.try_into().unwrap(),
+            refund_handler: 'refund_handler'.try_into().unwrap(),
+            claim_handler: 'claim_handler'.try_into().unwrap(),
 
             flags,
 
@@ -114,7 +113,7 @@ mod tests {
 
             amount: 0,
 
-            fee_token: contract_address_const::<'fee_token'>(),
+            fee_token: 'fee_token'.try_into().unwrap(),
             security_deposit,
             claimer_bounty,
             success_action: Option::None
@@ -185,11 +184,11 @@ mod tests {
     #[test]
     fn execution_hash() {
         let escrow_data_1 = EscrowData {
-            offerer: contract_address_const::<'offerer'>(),
-            claimer: contract_address_const::<'claimer'>(),
-            token: contract_address_const::<'token'>(),
-            refund_handler: contract_address_const::<'refund_handler'>(),
-            claim_handler: contract_address_const::<'claim_handler'>(),
+            offerer: 'offerer'.try_into().unwrap(),
+            claimer: 'claimer'.try_into().unwrap(),
+            token: 'token'.try_into().unwrap(),
+            refund_handler: 'refund_handler'.try_into().unwrap(),
+            claim_handler: 'claim_handler'.try_into().unwrap(),
 
             flags: 0b011,
 
@@ -198,17 +197,17 @@ mod tests {
 
             amount: 0,
 
-            fee_token: contract_address_const::<'fee_token'>(),
+            fee_token: 'fee_token'.try_into().unwrap(),
             security_deposit: 12312,
             claimer_bounty: 324241,
             success_action: Option::None
         };
         let escrow_data_2 = EscrowData {
-            offerer: contract_address_const::<'offerer'>(),
-            claimer: contract_address_const::<'claimer'>(),
-            token: contract_address_const::<'token'>(),
-            refund_handler: contract_address_const::<'refund_handler'>(),
-            claim_handler: contract_address_const::<'claim_handler'>(),
+            offerer: 'offerer'.try_into().unwrap(),
+            claimer: 'claimer'.try_into().unwrap(),
+            token: 'token'.try_into().unwrap(),
+            refund_handler: 'refund_handler'.try_into().unwrap(),
+            claim_handler: 'claim_handler'.try_into().unwrap(),
 
             flags: 0b011,
 
@@ -217,7 +216,7 @@ mod tests {
 
             amount: 0,
 
-            fee_token: contract_address_const::<'fee_token'>(),
+            fee_token: 'fee_token'.try_into().unwrap(),
             security_deposit: 12312,
             claimer_bounty: 324241,
             success_action: Option::Some(EscrowExecution {

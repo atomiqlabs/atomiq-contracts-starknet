@@ -28,6 +28,7 @@ use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
 const CLAIM_BLOCK_NUMBER: u64 = 92348243;
 
+#[feature("safe_dispatcher")]
 fn claim_escrow(
     context: Context,
     escrow: structs::escrow::EscrowData,
@@ -289,4 +290,3 @@ fn invalid_claim_double() {
         assert_result_error(claim_escrow(context, escrow, array![0xcbad72bc73bce871]), '_finalize: Not committed', escrow);
     }
 }
-

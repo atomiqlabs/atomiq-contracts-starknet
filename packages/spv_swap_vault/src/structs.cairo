@@ -22,7 +22,7 @@ pub struct BitcoinVaultTransactionData {
     pub execution_handler_fee_amount_0: u64,
 
     pub execution_hash: felt252,
-    pub execution_expiry: u32
+    pub execution_expiry: u64
 }
 
 #[generate_trait]
@@ -58,7 +58,7 @@ pub impl BitcoinVaultTransactionDataImpl of BitcoinVaultTransactionDataTrait {
         let fronting_fee_u20: u32 = (((input_0_nsequence / 0b100_0000_0000) & 0b1111_1111_1100_0000_0000) + ((input_1_nsequence / 0b1_0000_0000_0000_0000_0000) & 0b11_1111_1111)).try_into().unwrap();
 
         //Use locktime to determine timeout of the execution handler
-        let execution_expiry = btc_tx.get_locktime() + 1_000_000_000;
+        let execution_expiry: u64 = btc_tx.get_locktime().into() + 1_000_000_000;
 
         //Make sure output has correct length
         let (recipient_felt252, amount_0_u64, amount_1_u64, execution_hash) = if *output_1.script_length == 42 {
@@ -190,7 +190,7 @@ mod tests {
     fn get_valid_tx(
         recipient: felt252, amount_0: u64, amount_1: Option<u64>, execution_hash: Option<felt252>,
         caller_fee_u20: u32, fronting_fee_u20: u32, execution_fee_u20: u32,
-        execution_expiry: u32
+        execution_expiry: u64
     ) -> BitcoinTransaction {
         let mut output_1_script: ByteArray = "\x6a"; //OP_RETURN
         let mut length: u32 = 40;
@@ -226,7 +226,7 @@ mod tests {
         let n_sequence_0 = ((fronting_fee_u20 / 0b100_0000_0000) & 0b11_1111_1111) * 0b1_0000_0000_0000_0000_0000 + caller_fee_u20;
         let n_sequence_1 = (fronting_fee_u20 & 0b11_1111_1111) * 0b1_0000_0000_0000_0000_0000 + execution_fee_u20;
 
-        get_btc_tx(array![n_sequence_0, n_sequence_1], array!["", output_1_script], execution_expiry - 1_000_000_000)
+        get_btc_tx(array![n_sequence_0, n_sequence_1], array!["", output_1_script], (execution_expiry - 1_000_000_000).try_into().unwrap())
     }
 
     fn parse_and_assert(
@@ -237,7 +237,7 @@ mod tests {
         caller_fee: u32,
         fronting_fee: u32,
         execution_fee: u32,
-        execution_expiry: u32
+        execution_expiry: u64
     ) {
         let btc_tx = get_valid_tx(recipient.into(), amount_0, amount_1, execution_hash, caller_fee, fronting_fee, execution_fee, execution_expiry);
         let parsed = BitcoinVaultTransactionDataImpl::from_tx(@btc_tx).unwrap();
@@ -295,6 +295,20 @@ mod tests {
             784864,
             12215,
             1897411442
+        );
+    }
+
+    #[test]
+    fn parse_valid_long_expiry_u32_overflow_check() {
+        parse_and_assert(
+            0x0700000000000000000000000000000000000000000000000000000000000011.try_into().unwrap(),
+            439123123,
+            Option::Some(1535515),
+            Option::Some(0x85684656468644861352168416841573469846546846878189434846846844),
+            2131,
+            4213,
+            5424,
+            5_000_000_000 // Should result in locktime around ~4 billion, which when summed up with 1 billion, would overflow a u32 variable
         );
     }
 

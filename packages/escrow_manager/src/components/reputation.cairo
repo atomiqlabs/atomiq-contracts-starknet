@@ -9,10 +9,10 @@ pub trait IReputationTracker<TContractState> {
 
 #[starknet::component]
 pub mod reputation {
-    use core::starknet::storage::{
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
-    use core::starknet::ContractAddress;
+    use starknet::ContractAddress;
     use crate::state::reputation::{Reputation, ReputationStorePacking, ReputationUpdateTrait, ReputationUpdate};
 
     pub const REPUTATION_SUCCESS: felt252 = 0;

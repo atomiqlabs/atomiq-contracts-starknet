@@ -1,4 +1,4 @@
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use openzeppelin_token::erc20::interface::{ERC20ABIDispatcherTrait};
 
@@ -14,7 +14,7 @@ use crate::utils::erc20;
 #[test]
 fn valid_deposit_single() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -30,7 +30,7 @@ fn valid_deposit_single() {
 #[test]
 fn valid_deposit_multiple() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -57,7 +57,7 @@ fn valid_deposit_multiple() {
 #[should_panic(expected: 'deposit: vault closed')]
 fn invalid_deposit_not_opened() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let token_0_multiplier: felt252 = 854845;
     let token_1_multiplier: felt252 = 434345;
@@ -82,7 +82,7 @@ fn invalid_deposit_not_opened() {
 #[should_panic(expected: 'ERC20: insufficient balance')]
 fn invalid_balance_token0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -112,7 +112,7 @@ fn invalid_balance_token0() {
 #[should_panic(expected: 'ERC20: insufficient balance')]
 fn invalid_balance_token1() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -142,7 +142,7 @@ fn invalid_balance_token1() {
 #[should_panic(expected: 'ERC20: insufficient allowance')]
 fn invalid_allowance_token0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -172,7 +172,7 @@ fn invalid_allowance_token0() {
 #[should_panic(expected: 'ERC20: insufficient allowance')]
 fn invalid_allowance_token1() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);

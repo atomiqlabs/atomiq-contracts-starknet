@@ -41,4 +41,4 @@ Set the conditions that need to be satisfied by the __offerer__ before they are 
 
 ## Tests
 
-In order to test the contracts simply run `scarb test`, this will first run the scripts to generate the test data and then use snforge to test all the contracts and libraries.
+In order to test the contracts simply run `scarb run --workspace-root test-all`, this will first run the scripts to generate the test data and then use snforge to test all the contracts and libraries.

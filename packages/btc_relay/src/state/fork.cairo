@@ -1,4 +1,4 @@
-use core::starknet::storage::Map;
+use starknet::storage::Map;
 
 //Storing data about persisted long forks
 #[starknet::storage_node]

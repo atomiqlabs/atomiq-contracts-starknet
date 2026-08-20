@@ -116,6 +116,7 @@ pub fn init_escrow_and_assert(
     _init_escrow_and_assert(context, sender, escrow, signer, timeout, current_time, false, false)
 }
 
+#[feature("safe_dispatcher")]
 pub fn _init_escrow_and_assert(
     context: Context,
     sender: ContractAddress, escrow: structs::escrow::EscrowData, signer: KeyPair<felt252, felt252>,
@@ -138,7 +139,7 @@ pub fn _init_escrow_and_assert(
         let sighash = if sign_random_message { 
             generate_random_felt()
         } else {
-            sighash::get_init_sighash(escrow, escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
+            sighash::get_init_sighash(context.contract_address, escrow, escrow_hash, if sign_different_timeout { 0 } else { timeout }, signer_address)
         };
         let (r, s) = signer.sign(sighash).expect('Failed to sign');
         array![r, s]

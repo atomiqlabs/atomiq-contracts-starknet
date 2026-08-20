@@ -1,4 +1,4 @@
-use core::starknet::{get_contract_address, ContractAddress};
+use starknet::{get_contract_address, ContractAddress};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 
 //Transfer ERC20 tokens to the current contract using transfer_from function

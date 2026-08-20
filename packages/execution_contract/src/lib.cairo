@@ -41,10 +41,10 @@ pub mod ExecutionContract {
 use starknet::contract_address::ContractAddress;
     use starknet::syscalls::deploy_syscall;
 
-    use core::starknet::{get_caller_address, get_block_timestamp};
+    use starknet::{get_caller_address, get_block_timestamp};
     use core::hash::{HashStateTrait, HashStateExTrait};
     use core::poseidon::PoseidonTrait;
-    use core::starknet::storage::{
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
     
@@ -72,7 +72,7 @@ use starknet::contract_address::ContractAddress;
     #[constructor]
     fn constructor(ref self: ContractState) {
         let (execution_proxy_address, _) = deploy_syscall(
-            0x11c5e6e9fac6c0bc989ff1204f5c2edbadde6cd4fa8ca4f05abf803f257711c.try_into().unwrap(),
+            0x7f4a720debf069ed318c0987a85e8ce79d01d16ca91d9fd8c53e4ea42df3248.try_into().unwrap(),
             0,
             array![].span(),
             false
@@ -128,6 +128,7 @@ use starknet::contract_address::ContractAddress;
             });
         }
 
+        #[feature("safe_dispatcher")]
         fn execute(ref self: ContractState, owner: ContractAddress, salt: felt252, calls: Span<ContractCall>, drain_tokens: Span<ContractAddress>, clear_all: bool) {
             let execution_ptr = self.executions.entry(owner).entry(salt);
             let mut execution = execution_ptr.read();

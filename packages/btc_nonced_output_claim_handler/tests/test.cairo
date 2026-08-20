@@ -44,6 +44,7 @@ pub fn execute(dispatcher: IClaimHandlerDispatcher, commitment: Commitment, witn
     assert!(result==witness_result.span());
 }
 
+#[feature("safe_dispatcher")]
 pub fn execute_should_fail(dispatcher: IClaimHandlerDispatcher, commitment: Commitment, witness: Witness, panic_reason: felt252) {
     let safe_dispatcher = IClaimHandlerSafeDispatcher { contract_address: dispatcher.contract_address };
     let mut witness_arr = array![];
@@ -94,6 +95,7 @@ fn test_valid_random() {
 
 //Invalid call due to empty witness array
 #[test]
+#[feature("safe_dispatcher")]
 fn test_invalid_empty_witness() {
     for element in crate::data::valid_random::TEST_DATA.span() {
         let (btc_relay_data, data) = *element;
@@ -112,7 +114,7 @@ fn test_invalid_empty_witness() {
         let mut witness_arr = array![];
         let result = safe_dispatcher.claim(PoseidonTrait::new().update_with(commitment).finalize(), witness_arr);
         let error = result.unwrap_err();
-        assert!(error==array!['btcnoutlock: Deserialize witnes']);
+        assert(*error[0]=='btcnoutlock: Deserialize witnes', *error[0]);
     }
 }
 

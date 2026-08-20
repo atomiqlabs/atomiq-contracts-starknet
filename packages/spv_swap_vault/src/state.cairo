@@ -1,7 +1,7 @@
 use core::num::traits::{CheckedMul, CheckedSub};
 
-use core::starknet::storage_access::StorePacking;
-use core::starknet::contract_address::ContractAddress;
+use starknet::storage_access::StorePacking;
+use starknet::contract_address::ContractAddress;
 
 use btc_utils::bitcoin_tx::{BitcoinTransactionImpl, BitcoinTransaction};
 

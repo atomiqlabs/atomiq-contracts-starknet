@@ -23,6 +23,7 @@ use openzeppelin_token::erc20::ERC20ABIDispatcherTrait;
 
 const REFUND_BLOCK_NUMBER: u64 = 836263212;
 
+#[feature("safe_dispatcher")]
 fn refund_escrow(
     context: Context,
     escrow: structs::escrow::EscrowData,
@@ -244,4 +245,3 @@ fn invalid_refund_double() {
         assert_result_error(refund_escrow(context, escrow, array![0xcbad72bc73bce871]), '_finalize: Not committed', escrow);
     }
 }
-

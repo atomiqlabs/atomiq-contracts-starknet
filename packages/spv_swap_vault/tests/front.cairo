@@ -1,4 +1,4 @@
-use starknet::contract_address::{ContractAddress, contract_address_const};
+use starknet::contract_address::ContractAddress;
 
 use openzeppelin_token::erc20::interface::{ERC20ABIDispatcherTrait};
 
@@ -21,7 +21,7 @@ use crate::utils::btc_tx::get_valid_tx;
 #[test]
 fn valid_front() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -33,8 +33,8 @@ fn valid_front() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::None;
@@ -55,7 +55,7 @@ fn valid_front() {
 #[test]
 fn valid_front_only_token0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -67,8 +67,8 @@ fn valid_front_only_token0() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::None;
     let execution_hash: Option<felt252> = Option::None;
@@ -89,7 +89,7 @@ fn valid_front_only_token0() {
 #[test]
 fn valid_front_exec_hash() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -101,8 +101,8 @@ fn valid_front_exec_hash() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::Some(0x88666767c6767c76c67);
@@ -123,7 +123,7 @@ fn valid_front_exec_hash() {
 #[test]
 fn valid_front_exec_hash_only_token0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -135,8 +135,8 @@ fn valid_front_exec_hash_only_token0() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::None;
     let execution_hash: Option<felt252> = Option::Some(0x88666767c6767c76c67);
@@ -158,14 +158,14 @@ fn valid_front_exec_hash_only_token0() {
 #[should_panic(expected: 'front: vault closed')]
 fn invalid_vault_not_opened() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let utxo: (u256, u32) = (1, 1);
     let token_0_multiplier: felt252 = 6325;
     let token_1_multiplier: felt252 = 23412;
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::Some(0x88666767c6767c76c67);
@@ -187,7 +187,7 @@ fn invalid_vault_not_opened() {
 #[should_panic(expected: 'front: already fronted')]
 fn invalid_front_already_fronted() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -199,8 +199,8 @@ fn invalid_front_already_fronted() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::Some(0x88666767c6767c76c67);
@@ -223,7 +223,7 @@ fn invalid_front_already_fronted() {
 #[should_panic(expected: 'ERC20: insufficient balance')]
 fn invalid_balance_token0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -235,8 +235,8 @@ fn invalid_balance_token0() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::None;
@@ -274,7 +274,7 @@ fn invalid_balance_token0() {
 #[should_panic(expected: 'ERC20: insufficient balance')]
 fn invalid_balance_token1() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -286,8 +286,8 @@ fn invalid_balance_token1() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::None;
@@ -325,7 +325,7 @@ fn invalid_balance_token1() {
 #[should_panic(expected: 'ERC20: insufficient allowance')]
 fn invalid_allowance_token0() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -337,8 +337,8 @@ fn invalid_allowance_token0() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::None;
@@ -376,7 +376,7 @@ fn invalid_allowance_token0() {
 #[should_panic(expected: 'ERC20: insufficient allowance')]
 fn invalid_allowance_token1() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let (_, relay_contract) = get_btc_relay_with_txs(array![].span(), 1);
     let utxo: (u256, u32) = (1, 1);
@@ -388,8 +388,8 @@ fn invalid_allowance_token1() {
 
     get_funded_spv_vault(context, owner, vault_id, relay_contract, utxo, confirmations, token_0_multiplier, token_1_multiplier, raw_amount_0, raw_amount_1);
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::None;
@@ -427,7 +427,7 @@ fn invalid_allowance_token1() {
 #[should_panic(expected: 'front: already processed')]
 fn invalid_front_already_claimed() {
     let context: Context = get_context();
-    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let owner: ContractAddress = 'owner'.try_into().unwrap();
     let vault_id: felt252 = 0;
     let utxo: (u256, u32) = (1, 1);
     let confirmations: u8 = 3;
@@ -436,8 +436,8 @@ fn invalid_front_already_claimed() {
     let raw_amount_0: u64 = 123123;
     let raw_amount_1: u64 = 4848;
 
-    let fronter = contract_address_const::<'fronter'>();
-    let recipient = contract_address_const::<'recipient'>();
+    let fronter: ContractAddress = 'fronter'.try_into().unwrap();
+    let recipient: ContractAddress = 'recipient'.try_into().unwrap();
     let raw_withdraw_amount_0: u64 = 48485;
     let raw_withdraw_amount_1: Option<u64> = Option::Some(448);
     let execution_hash: Option<felt252> = Option::None;

@@ -12,10 +12,10 @@ pub trait ILPVault<TContractState> {
 
 #[starknet::component]
 pub mod lp_vault {
-    use core::starknet::storage::{
+    use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
     };
-    use core::starknet::{get_caller_address, ContractAddress};
+    use starknet::{get_caller_address, ContractAddress};
 
     #[event]
     #[derive(Drop, starknet::Event)]

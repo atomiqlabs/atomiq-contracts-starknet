@@ -9,6 +9,7 @@ const StarknetDomain = [
     { name: 'revision', type: 'shortstring' },
 ];
 const Initialize = [
+    { name: 'Escrow contract', type: 'ContractAddress' },
     { name: 'Swap hash', type: 'felt' },
     { name: 'Offerer', type: 'ContractAddress'},
     { name: 'Claimer', type: 'ContractAddress'},
@@ -26,6 +27,7 @@ const Initialize = [
     { name: 'Deadline', type: 'timestamp' }
 ];
 const Refund = [
+    { name: 'Escrow contract', type: 'ContractAddress' },
     { name: 'Swap hash', type: 'felt' },
     { name: 'Timeout', type: 'timestamp' }
 ];
@@ -55,8 +57,9 @@ const RefundType = {
     domain
 };
 
-function getInitHashTest(swapEscrow, swapHash, timeout, signer) {
+function getInitHashTest(escrowContract, swapEscrow, swapHash, timeout, signer) {
     const data = {
+        "Escrow contract": escrowContract,
         "Swap hash": "0x"+swapHash.toString("hex"),
         "Offerer": swapEscrow.offerer,
         "Claimer": swapEscrow.claimer,
@@ -95,10 +98,11 @@ function getInitHashTest(swapEscrow, swapHash, timeout, signer) {
     swapEscrow.refund_handler += ".try_into().unwrap()";
     swapEscrow.fee_token += ".try_into().unwrap()";
     return "let escrow = "+toCairoStruct("EscrowData", swapEscrow)+";\n"+
-        "assert_eq!(get_init_sighash(escrow, 0x"+swapHash.toString("hex")+", 0x"+timeout.toString("hex")+", "+signer+".try_into().unwrap()), "+hash+");\n";
+        "assert_eq!(get_init_sighash("+escrowContract+".try_into().unwrap(), escrow, 0x"+swapHash.toString("hex")+", 0x"+timeout.toString("hex")+", "+signer+".try_into().unwrap()), "+hash+");\n";
 }
 
 function getRandomInitTest() {
+    const escrowContract = starknet.stark.randomAddress();
     const signer = starknet.stark.randomAddress();
     const timeout = crypto.randomBytes(8);
     const swapHash = crypto.randomBytes(31);
@@ -119,23 +123,28 @@ function getRandomInitTest() {
         success_action: "Option::None"
     };
     
-    return getInitHashTest(escrowData, swapHash, timeout, signer);
+    return getInitHashTest(escrowContract, escrowData, swapHash, timeout, signer);
 }
 
-function getRefundHashTest(swapHash, timeout, signer) {
-    const data = {"Swap hash": "0x"+swapHash.toString("hex"), "Timeout": "0x"+timeout.toString("hex")};
+function getRefundHashTest(escrowContract, swapHash, timeout, signer) {
+    const data = {
+        "Escrow contract": escrowContract,
+        "Swap hash": "0x"+swapHash.toString("hex"), 
+        "Timeout": "0x"+timeout.toString("hex")
+    };
     // console.log(starknet.typedData.getStructHash({Initialize}, "Initialize", data, '1'));
     
     const hash = starknet.typedData.getMessageHash({...RefundType, message: data}, signer);
-    return "assert_eq!(get_refund_sighash(0x"+swapHash.toString("hex")+", 0x"+timeout.toString("hex")+", "+signer+".try_into().unwrap()), "+hash+");\n";
+    return "assert_eq!(get_refund_sighash("+escrowContract+".try_into().unwrap(), 0x"+swapHash.toString("hex")+", 0x"+timeout.toString("hex")+", "+signer+".try_into().unwrap()), "+hash+");\n";
 }
 
 function getRandomRefundTest() {
+    const escrowContract = starknet.stark.randomAddress();
     const signer = starknet.stark.randomAddress();
     const timeout = crypto.randomBytes(8);
     const swapHash = crypto.randomBytes(31);
     
-    return getRefundHashTest(swapHash, timeout, signer);
+    return getRefundHashTest(escrowContract, swapHash, timeout, signer);
 }
 
 // console.log(starknet.typedData.getTypeHash({StarknetDomain}, "StarknetDomain", '1'));
