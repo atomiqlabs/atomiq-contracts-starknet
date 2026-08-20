@@ -69,8 +69,8 @@ snforge_std.workspace = true
 sierra = true
 casm = true
 
-[scripts]
-test = "cd scripts; npm i; npm run integration; cd ..; snforge test -w;"
+[workspace.scripts]
+test-all = "cd scripts && npm i && npm run integration && cd .. && snforge test -w"
 
 # Visit https://foundry-rs.github.io/starknet-foundry/appendix/scarb-toml.html for more information
 
