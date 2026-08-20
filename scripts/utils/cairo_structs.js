@@ -16,7 +16,7 @@ function toCairoElement(e, spaces = 0) {
 
 function serializeByteArray(buffer) {
     const data = [];
-    for(let i=31;i<buffer.length;i+=31) {
+    for(let i=31;i<=buffer.length;i+=31) {
         data.push(buffer.slice(i-31, i));
     }
     const pendingWordLength = buffer.length - (data.length*31);
